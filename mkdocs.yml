@@ -1,6 +1,6 @@
-site_name: IFT3150 - Template
-site_description: Template de site web pour le cours IFT3150
-site_author: Louis-Edouard Lafontant
+site_name: IFT3150 - LLM with Gentleman
+site_description: Projet IFT3150 - Projection avec les LLMs
+site_author: Esteban Maries
 site_url: https://ift3150-template.github.io
 
 theme:
@@ -35,10 +35,10 @@ theme:
     text: Roboto
     code: Roboto Mono
     
-copyright: "&copy; 2025 <b>DIRO</b> &ndash; Template pour le cours IFT3150/IFT4055 <br>Département d'informatique et de recherche opérationnelle <br>Université de Montréal"
+copyright: "&copy; 2025 <b>DIRO</b> &ndash; Département d'informatique et de recherche opérationnelle <br>Université de Montréal"
 
-repo_name: ift3150-template
-repo_url: https://github.com/ift3150-template/ift3150-template.github.io
+repo_name: gentleman-llm
+repo_url: https://github.com/Bismaon/gentleman-llm
 # edit_uri: edit/main/docs/
 
 # extra:
