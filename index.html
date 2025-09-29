@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#nom-du-projet" class="md-skip">
+        <a href="#projections-avec-les-llms" class="md-skip">
           Aller au contenu
         </a>
       
@@ -861,7 +861,7 @@
   
 
 
-<h1 id="nom-du-projet">Nom du projet<a class="headerlink" href="#nom-du-projet" title="Permanent link">&para;</a></h1>
+<h1 id="projections-avec-les-llms">Projections avec les LLMs<a class="headerlink" href="#projections-avec-les-llms" title="Permanent link">&para;</a></h1>
 <blockquote>
 <p><strong>Thèmes</strong>: Science de données, Génie logiciel, LLM  <br />
 <strong>Superviseur</strong>: Louis Edouard Lafontant<br />
@@ -874,18 +874,18 @@
 <p>Le domaine d'application de ce projet comprend l'Ingénierie Logicielle ainsi que du Traitement Automatique du Langage Naturel (NLP), avec une emphase sur l'Analyse du Code Source et la Compréhension de Programme. Alors que les systèmes logiciels gagnent en complexité, l'intégration des Grands Modèles de Langage (LLMs) dans les flux de travail d'analyse de code devient essentielle, presque obligatoire pour améliorer l'efficacité, la précision et l'automatisation du code. </p>
 <p>Cependant, les développeurs passent beaucoup de temps à chercher et digérer les informations du code source qui permettent d’y contribuer ou de le comprendre, surtout lorsqu'ils travaillent avec du code peu familier ou des environnements complexes. </p>
 <p>Une approche proposée pour atténuer ce problème est le concept de projections de code. Ces projections permettent de visualiser le même code source de multiples façons dynamiques. Au lieu d'une structure rigide, le programmeur peut choisir une structure qu'il juge la plus pertinente pour sa tâche actuelle. </p>
-<p>Ce projet s'inscrit comme une extension possible du projet gentleman visant à rendre la modélisation plus accessible aux experts du domaine et aux praticiens.</p>
+<p>Ce projet s'inscrit comme une extension possible du projet Gentleman visant à rendre la modélisation plus accessible aux experts du domaine et aux praticiens.</p>
 <h3 id="problematique-ou-motivations">Problématique ou motivations<a class="headerlink" href="#problematique-ou-motivations" title="Permanent link">&para;</a></h3>
 <h4 id="problematique">Problématique<a class="headerlink" href="#problematique" title="Permanent link">&para;</a></h4>
 <p>La problématique principale que ce projet cherche à résoudre est de combler le fossé qui existe entre la compréhension profonde du code, fournie par les LLMs, et la présentation structurée et dynamique du code source, donné par Gentleman.
-Comment peut-on, à l’aide d’une LLM, fournir les fragments de code pertinents et les présenter aux développeurs sous forme de projections compréhensible ?</p>
+Comment utiliser un LLM pour fournir les fragments de code pertinents et les présenter aux développeurs sous forme de projections compréhensible ?</p>
 <h4 id="motivations">Motivations<a class="headerlink" href="#motivations" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
 <p>Les développeurs passent un temps considérable à comprendre le comportement et la logique du code pour faciliter son édition et maintenance. En fournissant des projections ciblées, l'outil pourrait réduire considérablement la quantité de code à parcourir par le développeur. </p>
 </li>
 <li>
-<p>Bien que les LLMs excellent à expliquer le code en langage naturel, les requêtes ouvertes peuvent encore nécessiter un prompt engineering difficile, en particulier pour les novices. L'intégration d'un mécanisme de projection structurelle permet de matérialiser l'analyse du LLM dans des vues concrètes et interactives, offrant une assistance visuelle du code au développeur.</p>
+<p>Bien que les LLMs excellent à expliquer le code en langage naturel, les requêtes ouvertes peuvent encore nécessiter un prompt engineering difficile, en particulier pour les novices. L'intégration d'un mécanisme de projection permet de matérialiser l'analyse du LLM dans des vues concrètes et interactives, offrant une assistance visuelle du code au développeur.</p>
 </li>
 </ol>
 <h3 id="proposition-et-objectifs">Proposition et objectifs<a class="headerlink" href="#proposition-et-objectifs" title="Permanent link">&para;</a></h3>
@@ -895,19 +895,19 @@ Comment peut-on, à l’aide d’une LLM, fournir les fragments de code pertinen
 <p>Lecture et Contexte : Le système lira le code source.</p>
 </li>
 <li>
-<p>Analyse par LLM : Un LLM analysera le code pour comprendre ses schémas, sa structure et sa fonctionnalité, et pour identifier les fragments de code qui correspondent à des préoccupations sémantiques implicites.</p>
+<p>Analyse par LLM : Un LLM analysera le code pour comprendre sa structure et sa fonctionnalité, et pour identifier les fragments de code qui correspondent à des préoccupations sémantiques implicites. Son importance, rôle dans le code</p>
 </li>
 <li>
-<p>Sortie des Projections : Les sorties du LLM seront donnes en deux fichiers un qui est les projections et l’autre les concepts qui définiront le code source pour gentleman. </p>
+<p>Sortie des Projections : Les sorties du LLM seront donnes en deux fichiers un qui est les projections et l’autre les concepts qui définiront le code source pour Gentleman. </p>
 </li>
 </ol>
 <h4 id="objectifs-concrets">Objectifs Concrets<a class="headerlink" href="#objectifs-concrets" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
-<p>Définir et implémenter une méthodologie pour contextualiser la code source et formuler les requêtes auprès du LLM afin que ce dernier puisse identifier les fragments de code pertinents, et les différents liens de ces fragments de code dans le code source.</p>
+<p>Définir et implémenter une méthodologie pour contextualiser le code source et formuler les requêtes auprès du LLM afin que ce dernier puisse identifier les différents fragments de code pertinents, ainsi que leurs liens dans le code source.</p>
 </li>
 <li>
-<p>Manier le LLM afin qu’il renvoie dans le format attendu par Gentleman, c’est à dire un fichier projection et un fichier concept. Qui permettront à Gentleman de modeler le code source donne par le développeur.</p>
+<p>Manier le LLM afin qu’il renvoie dans le format attendu par Gentleman, c’est à dire un fichier projection et un fichier concept. Qui permettront à Gentleman de modeler le code source donné par le développeur.</p>
 </li>
 </ol>
 <h2 id="echeancier">Échéancier<a class="headerlink" href="#echeancier" title="Permanent link">&para;</a></h2>
@@ -927,26 +927,32 @@ Comment peut-on, à l’aide d’une LLM, fournir les fragments de code pertinen
 <tbody>
 <tr>
 <td>Ouverture de projet</td>
-<td>1 septembre</td>
-<td>Proposition de projet</td>
+<td>16 septembre</td>
+<td>Choix de projet</td>
 <td>✅ Terminé</td>
 </tr>
 <tr>
-<td>Analyse des exigences</td>
-<td>16 septembre</td>
-<td>Document d'analyse</td>
+<td>Definir le projet</td>
+<td>28 septembre</td>
+<td>Description du projet remis</td>
+<td>✅ Terminé</td>
+</tr>
+<tr>
+<td>Definition de fonctions</td>
+<td>5 octobre</td>
+<td>Document sur les fonctions</td>
 <td>🔄 En cours</td>
 </tr>
 <tr>
-<td>Prototype 1</td>
-<td>23 septembre</td>
-<td>Maquette + Flux d'activités</td>
-<td>⏳ À venir</td>
+<td>Choix LLM</td>
+<td>5 octobre</td>
+<td>LLM</td>
+<td>🔄 En cours</td>
 </tr>
 <tr>
-<td>Prototype 2</td>
-<td>30 septembre</td>
-<td>Prototype finale + Flux</td>
+<td>Essai de la LLM</td>
+<td>8 septembre</td>
+<td>Resultats</td>
 <td>⏳ À venir</td>
 </tr>
 <tr>
