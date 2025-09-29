@@ -1,4 +1,4 @@
-# Nom du projet
+# Projections avec les LLMs
 
 > **Thèmes**: Science de données, Génie logiciel, LLM    
 > **Superviseur**: Louis Edouard Lafontant  
@@ -17,19 +17,19 @@ Cependant, les développeurs passent beaucoup de temps à chercher et digérer l
 
 Une approche proposée pour atténuer ce problème est le concept de projections de code. Ces projections permettent de visualiser le même code source de multiples façons dynamiques. Au lieu d'une structure rigide, le programmeur peut choisir une structure qu'il juge la plus pertinente pour sa tâche actuelle. 
 
-Ce projet s'inscrit comme une extension possible du projet gentleman visant à rendre la modélisation plus accessible aux experts du domaine et aux praticiens.
+Ce projet s'inscrit comme une extension possible du projet Gentleman visant à rendre la modélisation plus accessible aux experts du domaine et aux praticiens.
 
 ### Problématique ou motivations
 
 #### Problématique
 La problématique principale que ce projet cherche à résoudre est de combler le fossé qui existe entre la compréhension profonde du code, fournie par les LLMs, et la présentation structurée et dynamique du code source, donné par Gentleman.
-Comment peut-on, à l’aide d’une LLM, fournir les fragments de code pertinents et les présenter aux développeurs sous forme de projections compréhensible ?
+Comment utiliser un LLM pour fournir les fragments de code pertinents et les présenter aux développeurs sous forme de projections compréhensible ?
 
 #### Motivations
 
-1.	Les développeurs passent un temps considérable à comprendre le comportement et la logique du code pour faciliter son édition et maintenance. En fournissant des projections ciblées, l'outil pourrait réduire considérablement la quantité de code à parcourir par le développeur. 
+1.  Les développeurs passent un temps considérable à comprendre le comportement et la logique du code pour faciliter son édition et maintenance. En fournissant des projections ciblées, l'outil pourrait réduire considérablement la quantité de code à parcourir par le développeur. 
 
-2.	Bien que les LLMs excellent à expliquer le code en langage naturel, les requêtes ouvertes peuvent encore nécessiter un prompt engineering difficile, en particulier pour les novices. L'intégration d'un mécanisme de projection structurelle permet de matérialiser l'analyse du LLM dans des vues concrètes et interactives, offrant une assistance visuelle du code au développeur.
+2.	Bien que les LLMs excellent à expliquer le code en langage naturel, les requêtes ouvertes peuvent encore nécessiter un prompt engineering difficile, en particulier pour les novices. L'intégration d'un mécanisme de projection permet de matérialiser l'analyse du LLM dans des vues concrètes et interactives, offrant une assistance visuelle du code au développeur.
 
 ### Proposition et objectifs
 
@@ -37,15 +37,15 @@ Comment peut-on, à l’aide d’une LLM, fournir les fragments de code pertinen
 
 1.	Lecture et Contexte : Le système lira le code source.
 
-2.	Analyse par LLM : Un LLM analysera le code pour comprendre ses schémas, sa structure et sa fonctionnalité, et pour identifier les fragments de code qui correspondent à des préoccupations sémantiques implicites.
+2.	Analyse par LLM : Un LLM analysera le code pour comprendre sa structure et sa fonctionnalité, et pour identifier les fragments de code qui correspondent à des préoccupations sémantiques implicites. Son importance, rôle dans le code
 
-3.	Sortie des Projections : Les sorties du LLM seront donnes en deux fichiers un qui est les projections et l’autre les concepts qui définiront le code source pour gentleman. 
+3.	Sortie des Projections : Les sorties du LLM seront donnes en deux fichiers un qui est les projections et l’autre les concepts qui définiront le code source pour Gentleman. 
 
 #### Objectifs Concrets
 
-1.	Définir et implémenter une méthodologie pour contextualiser la code source et formuler les requêtes auprès du LLM afin que ce dernier puisse identifier les fragments de code pertinents, et les différents liens de ces fragments de code dans le code source.
+1.	Définir et implémenter une méthodologie pour contextualiser le code source et formuler les requêtes auprès du LLM afin que ce dernier puisse identifier les différents fragments de code pertinents, ainsi que leurs liens dans le code source.
 
-2.	Manier le LLM afin qu’il renvoie dans le format attendu par Gentleman, c’est à dire un fichier projection et un fichier concept. Qui permettront à Gentleman de modeler le code source donne par le développeur.
+2.	Manier le LLM afin qu’il renvoie dans le format attendu par Gentleman, c’est à dire un fichier projection et un fichier concept. Qui permettront à Gentleman de modeler le code source donné par le développeur.
 
 ## Échéancier
 
@@ -54,10 +54,11 @@ Comment peut-on, à l’aide d’une LLM, fournir les fragments de code pertinen
 
 | Jalon (*Milestone*)            | Date prévue   | Livrable                            | Statut      |
 |--------------------------------|---------------|-------------------------------------|-------------|
-| Ouverture de projet            | 1 septembre   | Proposition de projet               | ✅ Terminé  |
-| Analyse des exigences          | 16 septembre  | Document d'analyse                  | 🔄 En cours |
-| Prototype 1                    | 23 septembre  | Maquette + Flux d'activités         | ⏳ À venir  |
-| Prototype 2                    | 30 septembre  | Prototype finale + Flux             | ⏳ À venir  |
+| Ouverture de projet            | 16 septembre  | Choix de projet                     | ✅ Terminé  |
+| Definir le projet              | 28 septembre  | Description du projet remis         | ✅ Terminé  |
+| Definition de fonctions        | 5 octobre     | Document sur les fonctions          | 🔄 En cours |
+| Choix LLM                      | 5 octobre     | LLM                                 | 🔄 En cours |
+| Essai de la LLM                | 8 septembre  | Resultats                           | ⏳ À venir  |
 | Architecture                   | 30 septembre  | Diagramme UML ou modèle C4          | ⏳ À venir  |
 | Modèle de donneés              | 6 octobre     | Diagramme UML ou entité-association | ⏳ À venir  |
 | Revue de conception            | 6 octobre     | Feedback encadrant + ajustements    | ⏳ À venir  |

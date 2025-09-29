@@ -1,7 +1,7 @@
 site_name: IFT3150 - LLM with Gentleman
 site_description: Projet IFT3150 - Projection avec les LLMs
 site_author: Esteban Maries
-site_url: https://ift3150-template.github.io
+site_url: https://bismaon.github.io/gentleman-llm
 
 theme:
   name: material
