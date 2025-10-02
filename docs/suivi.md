@@ -15,8 +15,14 @@
 ## Semaine 3
 
 !!! info "Notes"
-    - Definition de differents types de foncitons pour la LLM
+    - Définition de différents types de fonctions pour la LLM
     - Choix et essai de la LLM
+
+!!! warning "Problème possible"
+    - Il faut pouvoir avoir assez de crédits pour faire des requetes auprès du LLM
+
+!!! abstract "Avance"
+    - Premier essai plutot bon
 
 ## Semaine 5
 
