@@ -1,9 +1,22 @@
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-from local import FUNCTION_TYPES_GUIDE_WEB, THINKING_STEPS, FUNCTION_TYPES_GUIDE_BASE, PERSONA, DEPTHS, RULES, DEFINITIONS
+from local import (
+    FUNCTION_TYPES_GUIDE_WEB,
+    THINKING_STEPS,
+    FUNCTION_TYPES_GUIDE_BASE,
+    PERSONA,
+    DEPTHS,
+    RULES,
+)
 import json
 import ast
+
+models = [
+    "moonshotai/Kimi-K2-Instruct-0905",
+    "deepseek-ai/DeepSeek-V3.1",
+    "meta-llama/Llama-3.1-8B-Instruct",
+]
 
 def list_files(directory: str) -> list[str]:
     """
@@ -20,13 +33,18 @@ def list_files(directory: str) -> list[str]:
             Lists of all file names in a directory.
     """
     try:
-        return [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+        return [
+            f
+            for f in os.listdir(directory)
+            if os.path.isfile(os.path.join(directory, f))
+        ]
     except FileNotFoundError:
         print(f"Directory not found: {directory}")
         return []
     except Exception as e:
         print(f"Error listing files in {directory}: {e}")
         return []
+
 
 def read_file(directory: str, filename: str) -> str:
     """
@@ -54,7 +72,8 @@ def read_file(directory: str, filename: str) -> str:
     except Exception as e:
         print(f"Error reading file {filepath}: {e}")
         return ""
-    
+
+
 def write_file(directory: str, filename: str, content: str) -> str:
     """
     Write content to a file inside the given directory.
@@ -88,7 +107,8 @@ def write_file(directory: str, filename: str, content: str) -> str:
         print(f"Error writing file {filepath}: {e}")
         return ""
 
-def get_schema(filename:str) -> dict:
+
+def get_schema(filename: str) -> dict:
     """
     Load and return the JSON schema from the `filename` file.
 
@@ -115,6 +135,7 @@ def get_schema(filename:str) -> dict:
         print(f"Error loading schema: {e}")
         return {}
 
+
 def extract_defined_functions(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
         tree = ast.parse(f.read(), filename=filepath)
@@ -124,6 +145,7 @@ def extract_defined_functions(filepath):
         if isinstance(node, ast.FunctionDef):
             functions.append(node.name)
     return functions
+
 
 def extract_function_source(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
@@ -140,10 +162,16 @@ def extract_function_source(filepath):
     return functions
 
 
-def analyze_file_with_llm(directory: str, filename: str, schema_dict:dict, d_i:int =0, model: str = "meta-llama/Llama-3.1-8B-Instruct") -> str:
+def analyze_file_with_llm(
+    directory: str,
+    filename: str,
+    schema_dict: dict,
+    d_i: int = 0,
+    model: str = "meta-llama/Llama-3.1-8B-Instruct",
+) -> str:
     """
     Reads a file and sends its content to the LLM for analysis.
-    
+
     Parameters
     ----------
         directory : str
@@ -152,10 +180,10 @@ def analyze_file_with_llm(directory: str, filename: str, schema_dict:dict, d_i:i
             Name of the file to analyze.
         model : str
             Model to use (default:  Llama 3.1 8B Instruct).
-    
+
     Returns
     -------
-    str 
+    str
         The LLM response text.
     """
     depth_index = d_i
@@ -171,43 +199,54 @@ def analyze_file_with_llm(directory: str, filename: str, schema_dict:dict, d_i:i
     except Exception as e:
         return f"Error reading file {filepath}: {e}"
     pass
-    response = client.chat.completions.create(
+    concept_res = get_concept(schema_dict, model, depth_index, FUNCTION_TYPES_GUIDE, content, functions)
+    # projection_res = get_projection()
+    return concept_res.choices[0].message.content
+
+def get_concept(schema_dict, model, depth_index, FUNCTION_TYPES_GUIDE, content, functions):
+    return client.chat.completions.create(
         model=model,
         messages=[
             {"role": "system", "content": PERSONA},
             {"role": "system", "content": RULES},
-            {"role": "system", "content": DEFINITIONS},
             {"role": "system", "content": THINKING_STEPS},
             {"role": "user", "content": DEPTHS[depth_index]},
             {"role": "user", "content": FUNCTION_TYPES_GUIDE},
-            {"role": "user", "content": f"Classify every function {functions} listed in this file:\n\n{content}"}
+            {
+                "role": "user",
+                "content": f"Classify every function {functions} listed in this file:\n\n{content}",
+            },
         ],
-        response_format={ "type": "json_schema", "json_schema": {
-        "name": "ConceptModel",
-        "schema":schema_dict }}
+        response_format={
+            "type": "json_schema",
+            "json_schema": {"name": "ConceptModel", "schema": schema_dict},
+        },
+    )
+    
+
+
+
+
+if __name__ == "__main__":
+    load_dotenv()
+
+    model_in_use = models[2]
+    concept_schema = get_schema("formats/concept_format.json")
+    # projection_schema = get_schema("projection_format.json")
+
+    client = OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=os.getenv("HF_TOKEN"),
     )
 
-    return response.choices[0].message.content
+    list_of_files = list_files("code")
+    for file in list_of_files:
+        content = read_file("code", file)
+        print(f"--- {file} ---")
+        print()
 
+    response = analyze_file_with_llm(
+        "code", list_of_files[2], concept_schema, d_i=2, model=model_in_use
+    )
 
-load_dotenv()
-
-models = ["moonshotai/Kimi-K2-Instruct-0905", "deepseek-ai/DeepSeek-V3.1", "meta-llama/Llama-3.1-8B-Instruct"]
-model_in_use = models[2]
-simplified_schema = get_schema("simplified_format.json")
-
-client = OpenAI(
-    base_url="https://router.huggingface.co/v1",
-    api_key=os.getenv("HF_TOKEN"),
-)
-
-list_of_files = list_files("code")
-for file in list_of_files:
-    content = read_file("code", file)
-    print(f"--- {file} ---")
-    print()
-
-response = analyze_file_with_llm("code", list_of_files[2], simplified_schema, d_i=2, model=model_in_use)
-
-write_file("results", f"analysis_{list_of_files[2]}.json", response)
-
+    write_file("results", f"analysis_{list_of_files[2]}.json", response)

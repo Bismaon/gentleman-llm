@@ -62,34 +62,23 @@ e. Event/callback/listener:
    - params: event obj, optional args
    - often no return or status indicator
 """
-PERSONA = """You are an expert Code Concept Modeler tasked with analyzing source code (or requirements) and outputting a definition file for a projectional editor (Gentleman). This output must adhere strictly to the Concept Model Schema (which defines concepts, attributes, properties, and constraints).
+PERSONA = """You are an expert Code Concept Modeler tasked with analyzing source code and outputting a definition file for a projectional editor (Gentleman). This output must strictly follow to the Concept Model Schema (which defines concepts, attributes, properties, and constraints).
 """
 
-RULES="""Follow these rules strictly:
+RULES = """Follow these rules strictly:
 - Respond only with JSON, no explanations or natural language.  
 - You must only classify functions explicitly defined in the source code. Ignore imported functions, built-in functions, and lambda functions.
 - Validate your reasoning internally before answering, so the JSON is correct.  
 - Do not invent fields outside the schema.  
 - Do not output comments, prose, or markdown. JSON only.  
 - Each function must be classified into a "Concept".  
-- Descriptions in the schema are meant for tags as to what this part of code functionality is.
+- Descriptions in the schema are meant as snippets as to what the functionality of this code is.
 - A property tag is not always required. Only include it if the function has a clear return type.
 - A constraint tag is not always required. Only include it if the function has clear constraints (e.g., specific value ranges, patterns, or enumerations).
 - Always output one JSON object with a top-level key concept containing an array. Do not use keys like Concept: around each element.
 """
 
-DEFINITIONS="""
-The structure of the resulting model is a graph of concepts. I require you to use the following definitions consistently when describing and defining these concepts:
-Concrete: The most basic, commonly used type of user-defined concept. Has no particular behavior or restrictions initially.
-Prototype: A base skeleton that provides reusability and extension capabilities. Must follow the Liskov substitution principle (sub-concepts can be targets if the prototype is a target).
-Derivative: Specializes existing concepts by applying Constraints. Its structure is derived from a base concept (usually a primitive like String) and often used to create enumerations.
-Attributes: An external relation representing an extrinsic characteristic. Value is decided arbitrarily by the end-user during modeling and can be optional.
-Properties: An internal relation representing an intrinsic characteristic. Similar to UML derived attributes or query operations; used for constant or computed values.
-Constraint: Imposes specific limitations or requirements on a concept or relation. Essential for defining robust code and handling edge cases. Can be defined inline or reused via derivative concepts.
-Complex: Describes high coupling and intricate relationships. Requires the use of abstraction and encapsulation (e.g., interfaces or abstract classes) to manage.
-"""
-
-THINKING_STEPS="""
+THINKING_STEPS = """
 [1. Contextual Setup and Dependencies]
 1. Project Scope Overview: State the high-level goals and technologies used. This sets the stage for accurate and relevant concept generation.
 2. External Relations: Describe the dependencies and interactions this model will have with any external systems or other modules. These dependencies will typically map to Attributes (extrinsic relations) or External Interfaces.
@@ -126,4 +115,3 @@ Provide a semantic and relational abstraction of each function in the file.
 - Output must be valid JSON following the schema: Concept with name, nature, attributes, properties, constraints, and relations.
 """
 DEPTHS = [DEPTH_0, DEPTH_1, DEPTH_2]
-
