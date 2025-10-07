@@ -1,0 +1,278 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/concept.schema.json",
+    "title": "Concept Model Schema",
+    "type": "object",
+    "properties": {
+        "type": {
+            "const": "concept"
+        },
+        "concept": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/Concept"
+            }
+        }
+    },
+    "required": [
+        "type",
+        "concept"
+    ],
+    "$defs": {
+        "Concept": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "nature": {
+                    "enum": [
+                        "concrete",
+                        "prototype",
+                        "derivative"
+                    ]
+                },
+                "root": {
+                    "type": "boolean"
+                },
+                "prototype": {
+                    "type": "string"
+                },
+                "base": {
+                    "type": "string"
+                },
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Attribute"
+                    }
+                },
+                "properties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Property"
+                    }
+                },
+                "constraint": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Constraint"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "nature"
+            ]
+        },
+        "Relation": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "Attribute": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/Relation"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "target": {
+                            "$ref": "#/$defs/Target"
+                        },
+                        "required": {
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "target",
+                        "required"
+                    ]
+                }
+            ]
+        },
+        "Property": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/Relation"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "value"
+                    ]
+                }
+            ]
+        },
+        "Target": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "default": {},
+                "accept": {
+                    "$ref": "#/$defs/ConceptRef"
+                },
+                "scope": {
+                    "$ref": "#/$defs/ConceptRef"
+                },
+                "constraint": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Constraint"
+                    }
+                },
+                "properties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Property"
+                    }
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "ConceptRef": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "Constraint": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/ValuesConstraint"
+                },
+                {
+                    "$ref": "#/$defs/EqualityConstraint"
+                },
+                {
+                    "$ref": "#/$defs/RangeConstraint"
+                },
+                {
+                    "$ref": "#/$defs/PatternConstraint"
+                },
+                {
+                    "$ref": "#/$defs/MatchConstraint"
+                }
+            ]
+        },
+        "ValuesConstraint": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "source"
+            ]
+        },
+        "EqualityConstraint": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type"
+            ]
+        },
+        "RangeConstraint": {
+            "type": "object",
+            "properties": {
+                "min": {
+                    "$ref": "#/$defs/RangeEndpoint"
+                },
+                "max": {
+                    "$ref": "#/$defs/RangeEndpoint"
+                }
+            },
+            "anyOf": [
+                {
+                    "required": [
+                        "min"
+                    ]
+                },
+                {
+                    "required": [
+                        "max"
+                    ]
+                }
+            ]
+        },
+        "RangeEndpoint": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "value"
+            ]
+        },
+        "PatternConstraint": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string"
+                },
+                "insensitive": {
+                    "type": "boolean"
+                },
+                "global": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "value"
+            ]
+        },
+        "MatchConstraint": {
+            "type": "object",
+            "properties": {
+                "start": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "start",
+                "end"
+            ]
+        }
+    }
+}

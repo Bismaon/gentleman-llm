@@ -1,0 +1,244 @@
+{
+    "type": "model",
+    "concept": [
+        {
+            "name": "main",
+            "nature": "Constructors/initializers",
+            "attributes": [
+                {
+                    "name": "root",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "import_links_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "schedule_raw_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "schedule_parsed_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "annuaire_raw_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "annuaire_parsed_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "repertoire_raw_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "repertoire_parsed_directory",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "hierarchy_path",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "debug",
+                    "type": "bool",
+                    "constraints": {
+                        "type": "boolean"
+                    }
+                }
+            ],
+            "properties": [
+                {
+                    "name": "return",
+                    "type": "None"
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "store_data",
+            "nature": "Data access / repository",
+            "attributes": [
+                {
+                    "name": "master_data",
+                    "type": "dict",
+                    "constraints": {
+                        "type": "dictionary"
+                    }
+                },
+                {
+                    "name": "annuaire",
+                    "type": "list",
+                    "constraints": {
+                        "type": "list"
+                    }
+                },
+                {
+                    "name": "faculties",
+                    "type": "list",
+                    "constraints": {
+                        "type": "list"
+                    }
+                },
+                {
+                    "name": "schedule_dict",
+                    "type": "dict",
+                    "constraints": {
+                        "type": "dictionary"
+                    }
+                },
+                {
+                    "name": "db",
+                    "type": "MongoDB",
+                    "constraints": {
+                        "type": "MongoDB"
+                    }
+                }
+            ],
+            "properties": [
+                {
+                    "name": "return",
+                    "type": "None"
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "log_insertion_details",
+            "nature": "I/O functions",
+            "attributes": [
+                {
+                    "name": "schedule_diff",
+                    "type": "set",
+                    "constraints": {
+                        "type": "set"
+                    }
+                },
+                {
+                    "name": "annuaire_diff",
+                    "type": "set",
+                    "constraints": {
+                        "type": "set"
+                    }
+                }
+            ],
+            "properties": [
+                {
+                    "name": "return",
+                    "type": "None"
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "find_in_sorted_list",
+            "nature": "Pure utilities",
+            "attributes": [
+                {
+                    "name": "elem",
+                    "type": "str",
+                    "constraints": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "sorted_list",
+                    "type": "list",
+                    "constraints": {
+                        "type": "list"
+                    }
+                }
+            ],
+            "properties": [
+                {
+                    "name": "return",
+                    "type": "int"
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "refactor_faculties",
+            "nature": "Data access / repository",
+            "attributes": [
+                {
+                    "name": "faculties",
+                    "type": "list",
+                    "constraints": {
+                        "type": "list"
+                    }
+                },
+                {
+                    "name": "annuaires",
+                    "type": "dict",
+                    "constraints": {
+                        "type": "dictionary"
+                    }
+                },
+                {
+                    "name": "directories_tuples",
+                    "type": "list",
+                    "constraints": {
+                        "type": "list"
+                    }
+                }
+            ],
+            "properties": [
+                {
+                    "name": "return",
+                    "type": "list"
+                }
+            ],
+            "relations": []
+        },
+        {
+            "name": "readImportLinks",
+            "nature": "I/O functions",
+            "attributes": [
+                {
+                    "name": "directories_tuples",
+                    "type": "list",
+                    "constraints": {
+                        "type": "list"
+                    }
+                }
+            ],
+            "properties": [
+                {
+                    "name": "return",
+                    "type": "dict"
+                }
+            ],
+            "relations": []
+        }
+    ]
+}
