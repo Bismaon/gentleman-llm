@@ -246,7 +246,7 @@ if __name__ == "__main__":
         print()
 
     response = analyze_file_with_llm(
-        "code", list_of_files[2], concept_schema, d_i=2, model=model_in_use
+        "code", list_of_files[2], concept_schema, d_i=0, model=model_in_use
     )
 
     write_file("results", f"analysis_{list_of_files[2]}.json", response)

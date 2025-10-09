@@ -93,24 +93,23 @@ THINKING_STEPS = """
 [4. Final Output Format]
 Generate the complete Concept Model Definition strictly in JSON format, ensuring it adheres to the schema fields (including name, nature, attributes, properties, and constraint). Ensure the output integrates the code fragments relevant to the concepts and their context."""
 
-
 DEPTH_0 = """
-Provide a high-level abstraction of each function in the file.
-- Only include the function name and its general category (nature).
-- Do not include parameters, return types, constraints, or relations.
-- Output must be valid JSON following the schema: Concept with only name + nature.
+Provide a high-level abstraction of each function in the file using the context level of the C4 model.
+- Only include the function type, its nature (must be `concrete`, `prototype`, or `derivative`), the parameters (as attributes with type) and return types.
+- Do not include relations, or any internal logic.
+- Output must be valid JSON following the schema
 """
 
 DEPTH_1 = """
-Provide a structural abstraction of each function in the file.
-- Include the function name, parameters (as attributes with type), and return type (as a property).
-- Ignore relations, constraints, and internal logic.
+Provide a high-level abstraction of each function in the file using the container level of the C4 model.
+- Include the function name (as one of the types of function defined), its nature (must be `concrete`, `prototype`, or `derivative`), parameters,  return type (as a property) and relations.
+- Ignore constraints, and internal logic.
 - Output must be valid JSON following the schema: Concept with name, nature, attributes (parameters), and properties (return type).
 """
 
 DEPTH_2 = """
 Provide a semantic and relational abstraction of each function in the file.
-- Include function name, parameters (attributes with types and constraints if present), return type (as a property), and notable constraints (pattern, range, values, equality, match).
+- Include function name (as one of the types of function defined), parameters (attributes with types and constraints if present), return type (as a property), and notable constraints (pattern, range, values, equality, match).
 - Include relations to other functions or modules (calls, called_by, dependencies).
 - Output must be valid JSON following the schema: Concept with name, nature, attributes, properties, constraints, and relations.
 """

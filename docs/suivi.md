@@ -25,7 +25,12 @@
     - Premier essai plutot bon
 
 ## Semaine 5
+!!! info "Notes"
+    - Besoin de definir de maniere plus severe les instructions
+    - Besoin d'un template pour le `concept.json`
 
+!!! warning "Problèmes"
+    - Le LLM ne suit pas toujours les instructions, creer des `tags` qui n'existent pas ainsi que fait des actions explicitement interdite.
 ## Semaine 7
 
 ## Semaine 9
