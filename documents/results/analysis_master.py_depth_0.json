@@ -133,66 +133,6 @@
                 }
             ],
             "Properties": []
-        },
-        {
-            "name": "Pattern",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "MongoDB",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "argparse",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "logging",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "os",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "re",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "bisect",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "json",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "datetime",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
-        },
-        {
-            "name": "pprint",
-            "nature": "prototype",
-            "Attributes": [],
-            "Properties": []
         }
     ]
 }

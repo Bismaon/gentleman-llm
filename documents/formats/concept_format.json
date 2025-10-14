@@ -4,6 +4,7 @@
         {
             "name": "model element",
             "nature": "prototype",
+            "description": "The most abstract element of the Gentleman metamodel. All concepts inherit from it, including primitives and structures.",
             "attributes": [
                 {
                     "name": "name",
@@ -23,8 +24,8 @@
         },
         {
             "name": "model concept",
-            "description": "A prototype of a concept.",
             "nature": "prototype",
+            "description": "Base prototype for all definable model concepts. Represents a composable unit with properties and optional root status.",
             "prototype": "model element",
             "attributes": [
                 {
@@ -48,8 +49,8 @@
         },
         {
             "name": "prototype-concept",
-            "description": "A prototype creates a base skeleton to provide reusability and extension to concepts of the model. Any concept can reuse a prototype and would inherit its structure.",
             "nature": "concrete",
+            "description": "Reusable template concept providing structural inheritance to other concepts. Acts as a base skeleton in the model graph.",
             "prototype": "model concept",
             "root": true,
             "attributes": [
@@ -84,8 +85,8 @@
         },
         {
             "name": "concrete-concept",
-            "description": "A concrete concept represents the model's actual concepts. Projections can be defined against its structure.",
             "nature": "concrete",
+            "description": "User-defined concept representing actual model structures. Instantiable and targetable by projections.",
             "prototype": "model concept",
             "root": true,
             "attributes": [
@@ -120,8 +121,8 @@
         },
         {
             "name": "derivative-concept",
-            "description": "A derivative concept represents...",
             "nature": "concrete",
+            "description": "A specialization of another concept (usually a primitive) through added constraints or enumerated values.",
             "prototype": "model concept",
             "root": true,
             "attributes": [
@@ -152,6 +153,7 @@
         {
             "name": "structure",
             "nature": "prototype",
+            "description": "Abstract prototype for all relations between concepts (attributes and properties).",
             "prototype": "model element",
             "attributes": [
                 {
@@ -167,6 +169,7 @@
         {
             "name": "attribute",
             "nature": "concrete",
+            "description": "External relation of a concept. Represents data provided by the end-user or environment.",
             "prototype": "structure",
             "attributes": [
                 {
@@ -175,7 +178,7 @@
                         "name": "boolean"
                     },
                     "required": true,
-                    "description": "The value indicating whether the structure is required for the parent concept."
+                    "description": "Whether the attribute must be present in all instances."
                 },
                 {
                     "name": "target",
@@ -183,13 +186,14 @@
                         "name": "primitive"
                     },
                     "required": true,
-                    "description": "The target concept of the attribute structure."
+                    "description": "The primitive or concept targeted by this attribute."
                 }
             ]
         },
         {
             "name": "property",
             "nature": "concrete",
+            "description": "Internal relation of a concept. Represents intrinsic or computed data always available in each instance.",
             "prototype": "structure",
             "attributes": [
                 {
@@ -198,13 +202,14 @@
                         "name": "value"
                     },
                     "required": true,
-                    "description": "The target concept of the property structure."
+                    "description": "The value type returned by the property."
                 }
             ]
         },
         {
             "name": "constraint",
             "nature": "concrete",
+            "description": "Defines a rule restricting possible values or structures of concepts or relations.",
             "attributes": [
                 {
                     "name": "property",
@@ -230,11 +235,13 @@
         {
             "name": "primitive",
             "nature": "prototype",
+            "description": "The base prototype for all atomic self-defined types. Serves as the foundation for String, Number, Boolean, Set, and Reference.",
             "attributes": []
         },
         {
             "name": "string primitive",
             "nature": "concrete",
+            "description": "Primitive concept representing textual data. Can be constrained by length, pattern, or allowed values.",
             "prototype": "primitive",
             "attributes": [
                 {
@@ -309,6 +316,7 @@
         {
             "name": "number primitive",
             "nature": "concrete",
+            "description": "Primitive concept representing numeric values. Supports range and exact value constraints.",
             "prototype": "primitive",
             "attributes": [
                 {
@@ -364,6 +372,7 @@
         {
             "name": "boolean primitive",
             "nature": "concrete",
+            "description": "Primitive concept representing a truth value (true/false).",
             "prototype": "primitive",
             "attributes": [
                 {
@@ -384,6 +393,7 @@
         {
             "name": "set primitive",
             "nature": "concrete",
+            "description": "Primitive concept representing an unordered or ordered collection of elements. Accepts any concept as member type and may define cardinality constraints.",
             "prototype": "primitive",
             "attributes": [
                 {
@@ -448,6 +458,7 @@
         {
             "name": "reference primitive",
             "nature": "concrete",
+            "description": "Primitive concept that explicitly defines a link to another concept or scope. Enables direct reference manipulation within models.",
             "prototype": "primitive",
             "attributes": [
                 {
@@ -518,6 +529,7 @@
         {
             "name": "concept primitive",
             "nature": "concrete",
+            "description": "Primitive referencing another concept by name, enabling reflective relations and meta-model introspection.",
             "prototype": "primitive",
             "attributes": [
                 {
@@ -551,11 +563,13 @@
         {
             "name": "constraint-type",
             "nature": "prototype",
+            "description": "Prototype grouping all specific constraint implementations (value, range, pattern, etc.).",
             "attributes": []
         },
         {
             "name": "constraint-number-value",
             "nature": "concrete",
+            "description": "Constraint limiting a number primitive to a specific value.",
             "prototype": "constraint-type",
             "attributes": [
                 {
@@ -569,6 +583,7 @@
         {
             "name": "constraint-number-range",
             "nature": "concrete",
+            "description": "Constraint restricting a number primitive to a minimum and maximum bound.",
             "prototype": "constraint-type",
             "attributes": [
                 {
@@ -588,6 +603,7 @@
         {
             "name": "constraint-string-pattern",
             "nature": "concrete",
+            "description": "Constraint enforcing that a string matches a regular expression or specific pattern.",
             "prototype": "constraint-type",
             "attributes": [
                 {
@@ -613,6 +629,7 @@
         {
             "name": "constraint-string-values",
             "nature": "concrete",
+            "description": "Constraint defining an enumeration of valid string values.",
             "prototype": "constraint-type",
             "attributes": [
                 {
@@ -639,11 +656,13 @@
         {
             "name": "value",
             "nature": "prototype",
+            "description": "Prototype representing any literal or computed value used by a property or primitive.",
             "attributes": []
         },
         {
             "name": "string-value",
             "nature": "concrete",
+            "description": "Concrete value holding a string literal.",
             "prototype": "value",
             "attributes": [
                 {
@@ -664,6 +683,7 @@
         {
             "name": "number-value",
             "nature": "concrete",
+            "description": "Concrete value holding a numeric literal.",
             "prototype": "value",
             "attributes": [
                 {
@@ -684,6 +704,7 @@
         {
             "name": "name",
             "nature": "derivative",
+            "description": "Derivative of String that constrains textual identifiers to 1-50 characters. Used to uniquely name concepts and relations.",
             "base": "string",
             "constraint": {
                 "length": {

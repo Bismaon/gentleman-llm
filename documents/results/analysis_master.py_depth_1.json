@@ -47,8 +47,16 @@
             ],
             "properties": [
                 {
-                    "name": "logger",
-                    "type": "logging.Logger"
+                    "name": "annuaire",
+                    "type": "list"
+                },
+                {
+                    "name": "faculties",
+                    "type": "list"
+                },
+                {
+                    "name": "schedule_dict",
+                    "type": "dict"
                 }
             ]
         },
@@ -77,7 +85,12 @@
                     "type": "MongoDB"
                 }
             ],
-            "properties": []
+            "properties": [
+                {
+                    "name": "result",
+                    "type": "bool"
+                }
+            ]
         },
         {
             "name": "log_insertion_details",
@@ -92,7 +105,12 @@
                     "type": "set"
                 }
             ],
-            "properties": []
+            "properties": [
+                {
+                    "name": "result",
+                    "type": "str"
+                }
+            ]
         },
         {
             "name": "find_in_sorted_list",
@@ -107,7 +125,12 @@
                     "type": "list"
                 }
             ],
-            "properties": []
+            "properties": [
+                {
+                    "name": "result",
+                    "type": "int"
+                }
+            ]
         },
         {
             "name": "refactor_faculties",
@@ -126,7 +149,12 @@
                     "type": "list"
                 }
             ],
-            "properties": []
+            "properties": [
+                {
+                    "name": "result",
+                    "type": "list"
+                }
+            ]
         },
         {
             "name": "readImportLinks",
@@ -137,7 +165,12 @@
                     "type": "list"
                 }
             ],
-            "properties": []
+            "properties": [
+                {
+                    "name": "result",
+                    "type": "dict"
+                }
+            ]
         }
     ]
 }

@@ -3,7 +3,7 @@
         {
             "name": "main",
             "nature": "concrete",
-            "parameters": [
+            "attributes": [
                 {
                     "name": "root",
                     "type": "str"
@@ -45,12 +45,12 @@
                     "type": "bool"
                 }
             ],
-            "return_type": "None"
+            "returnType": "void"
         },
         {
             "name": "store_data",
             "nature": "concrete",
-            "parameters": [
+            "attributes": [
                 {
                     "name": "master_data",
                     "type": "dict"
@@ -72,12 +72,12 @@
                     "type": "MongoDB"
                 }
             ],
-            "return_type": "None"
+            "returnType": "void"
         },
         {
             "name": "log_insertion_details",
             "nature": "concrete",
-            "parameters": [
+            "attributes": [
                 {
                     "name": "schedule_diff",
                     "type": "set"
@@ -87,12 +87,12 @@
                     "type": "set"
                 }
             ],
-            "return_type": "None"
+            "returnType": "void"
         },
         {
             "name": "find_in_sorted_list",
-            "nature": "pure_utility",
-            "parameters": [
+            "nature": "concrete",
+            "attributes": [
                 {
                     "name": "elem",
                     "type": "str"
@@ -102,12 +102,12 @@
                     "type": "list"
                 }
             ],
-            "return_type": "int"
+            "returnType": "int"
         },
         {
             "name": "refactor_faculties",
-            "nature": "pure_utility",
-            "parameters": [
+            "nature": "concrete",
+            "attributes": [
                 {
                     "name": "faculties",
                     "type": "list"
@@ -121,18 +121,84 @@
                     "type": "list"
                 }
             ],
-            "return_type": "list"
+            "returnType": "list"
         },
         {
             "name": "readImportLinks",
-            "nature": "pure_utility",
-            "parameters": [
+            "nature": "concrete",
+            "attributes": [
                 {
                     "name": "directories_tuples",
                     "type": "list"
                 }
             ],
-            "return_type": "dict"
+            "returnType": "dict"
+        },
+        {
+            "name": "parse_file",
+            "nature": "derivative",
+            "attributes": [
+                {
+                    "name": "file",
+                    "type": "str"
+                }
+            ],
+            "returnType": "dict"
+        },
+        {
+            "name": "parse_annuaire",
+            "nature": "derivative",
+            "attributes": [
+                {
+                    "name": "file",
+                    "type": "str"
+                }
+            ],
+            "returnType": "list"
+        },
+        {
+            "name": "parse_schedule",
+            "nature": "derivative",
+            "attributes": [
+                {
+                    "name": "file",
+                    "type": "str"
+                }
+            ],
+            "returnType": "dict"
+        },
+        {
+            "name": "parse_repertoire",
+            "nature": "derivative",
+            "attributes": [
+                {
+                    "name": "file",
+                    "type": "str"
+                }
+            ],
+            "returnType": "list"
+        },
+        {
+            "name": "parse_faculties",
+            "nature": "derivative",
+            "attributes": [
+                {
+                    "name": "hierarchy_path",
+                    "type": "str"
+                }
+            ],
+            "returnType": "list"
+        },
+        {
+            "name": "default_course",
+            "nature": "derivative",
+            "attributes": [
+                {
+                    "name": "course",
+                    "type": "dict"
+                }
+            ],
+            "returnType": "dict"
         }
     ]
 }

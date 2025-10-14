@@ -1,0 +1,93 @@
+{
+    "FUNCTION_TYPES": {
+        "Constructor": {
+            "MustHave": [
+                "Defines or initializes object state",
+                "Returns None or no explicit return",
+                "Uses or mirrors class parameters (self, cls)",
+                "Called automatically or via factory pattern"
+            ],
+            "Optional": [
+                "Assigns instance attributes"
+            ],
+            "MustNotHave": [
+                "Performs external I/O",
+                "Returns data or computation result",
+                "Creates side effects outside initialization"
+            ]
+        },
+        "Property": {
+            "MustHave": [
+                "Short body (less than 3 statements)",
+                "Names match patterns: get*, set*, is*, has*, contains*, len*, size*"
+            ],
+            "Optional": [
+                "Performs minimal validation"
+            ],
+            "MustNotHave": [
+                "Complex computation or external calls",
+                "Multiple parameters or branching logic"
+            ]
+        },
+        "PureUtility": {
+            "MustHave": [
+                "No I/O operations",
+                "No global or external state access",
+                "Output depends only on input parameters",
+                "Deterministic result for same inputs"
+            ],
+            "Optional": [
+                "Performs math, string, or data transformations",
+                "Used across modules as helper"
+            ],
+            "MustNotHave": [
+                "File, network, or database access",
+                "Randomness or time dependence",
+                "Logging or printing"
+            ]
+        },
+        "TestFunction": {
+            "MustHave": [
+                "Contains assertions or test framework calls",
+                "Usually named with 'test_' prefix or '_test' suffix"
+            ],
+            "Optional": [
+                "No parameters or uses fixture injection",
+                "Raises exceptions upon failure"
+            ],
+            "MustNotHave": [
+                "Business logic or computation unrelated to testing",
+                "External I/O beyond mocks"
+            ]
+        },
+        "DataAccessOrRepository": {
+            "MustHave": [
+                "Interacts with database, cache, or persistent storage",
+                "Queries, inserts, updates, or deletes records",
+                "Uses identifiers or sessions as parameters"
+            ],
+            "Optional": [
+                "Implements ORM patterns (SQLAlchemy, Django ORM, etc.)",
+                "Returns model object or query result"
+            ],
+            "MustNotHave": [
+                "Pure computation or formatting",
+                "Network I/O not tied to persistence"
+            ]
+        },
+        "IOFunction": {
+            "MustHave": [
+                "Performs file, socket, network, or HTTP I/O",
+                "Accepts path, URL, or handle as parameter"
+            ],
+            "Optional": [
+                "Reads/writes structured data (JSON, CSV, etc.)",
+                "Handles encoding or serialization"
+            ],
+            "MustNotHave": [
+                "Pure logic or transformations",
+                "Detached from external system interactions"
+            ]
+        }
+    }
+}
