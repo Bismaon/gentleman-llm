@@ -1,0 +1,58 @@
+{
+    "name": "main",
+    "nature": "Concrete",
+    "attributes": [
+        {
+            "name": "root",
+            "type": "str"
+        },
+        {
+            "name": "import_links_directory",
+            "type": "str"
+        },
+        {
+            "name": "schedule_raw_directory",
+            "type": "str"
+        },
+        {
+            "name": "schedule_parsed_directory",
+            "type": "str"
+        },
+        {
+            "name": "annuaire_raw_directory",
+            "type": "str"
+        },
+        {
+            "name": "annuaire_parsed_directory",
+            "type": "str"
+        },
+        {
+            "name": "repertoire_raw_directory",
+            "type": "str"
+        },
+        {
+            "name": "repertoire_parsed_directory",
+            "type": "str"
+        },
+        {
+            "name": "hierarchy_path",
+            "type": "str"
+        },
+        {
+            "name": "debug",
+            "type": "bool"
+        }
+    ],
+    "properties": [],
+    "constraints": [],
+    "relations": [
+        {
+            "type": "calls",
+            "target": "store_data"
+        },
+        {
+            "type": "calls",
+            "target": "log_insertion_details"
+        }
+    ]
+}
