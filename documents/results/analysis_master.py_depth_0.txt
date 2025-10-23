@@ -1,9 +1,11 @@
+Here is the classification of each function in the provided code:
+
 ```json
 [
   {
     "function_name": "main",
-    "function_type": "DataAccessOrRepository",
-    "nature": "concrete",
+    "function_type": "Constructor",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "root",
@@ -47,17 +49,14 @@
       }
     ],
     "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database",
-    "tags": [
-      "DataAccess",
-      "Repository"
-    ],
+    "description": "Main function to parse the raw data and populate the database.",
+    "tags": ["database", "parsing", "main"],
     "reasoning": null
   },
   {
     "function_name": "store_data",
-    "function_type": "DataAccessOrRepository",
-    "nature": "concrete",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "master_data",
@@ -81,17 +80,14 @@
       }
     ],
     "return_type": "None",
-    "description": "Store the data in the database",
-    "tags": [
-      "DataAccess",
-      "Repository"
-    ],
+    "description": "Store the data in the database.",
+    "tags": ["database", "storage"],
     "reasoning": null
   },
   {
     "function_name": "log_insertion_details",
-    "function_type": "IOFunction",
-    "nature": "concrete",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "schedule_diff",
@@ -103,16 +99,14 @@
       }
     ],
     "return_type": "None",
-    "description": "Log insertion details",
-    "tags": [
-      "IOFunction"
-    ],
+    "description": "Log insertion details.",
+    "tags": ["logging", "details"],
     "reasoning": null
   },
   {
     "function_name": "find_in_sorted_list",
     "function_type": "PureUtility",
-    "nature": "concrete",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "elem",
@@ -124,16 +118,14 @@
       }
     ],
     "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x",
-    "tags": [
-      "PureUtility"
-    ],
+    "description": "Locate the leftmost value exactly equal to x in a sorted list.",
+    "tags": ["search", "list"],
     "reasoning": null
   },
   {
     "function_name": "refactor_faculties",
     "function_type": "PureUtility",
-    "nature": "concrete",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "faculties",
@@ -149,16 +141,14 @@
       }
     ],
     "return_type": "list",
-    "description": "Refactor faculties",
-    "tags": [
-      "PureUtility"
-    ],
+    "description": "Refactor faculties data.",
+    "tags": ["refactoring", "faculties"],
     "reasoning": null
   },
   {
     "function_name": "readImportLinks",
-    "function_type": "IOFunction",
-    "nature": "concrete",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "directories_tuples",
@@ -166,11 +156,11 @@
       }
     ],
     "return_type": "dict",
-    "description": "Read import links",
-    "tags": [
-      "IOFunction"
-    ],
+    "description": "Read import links from directories.",
+    "tags": ["links", "directories"],
     "reasoning": null
   }
 ]
 ```
+
+This classification is based on the provided code and follows the specified schema. Each function is classified as either a constructor, pure utility, or property, based on its functionality and return type. The nature of each function is also specified as either concrete, prototype, or derivative, based on its implementation and dependencies. The parameters, return type, description, and tags for each function are also included in the classification.

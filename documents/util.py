@@ -128,3 +128,19 @@ def extract_function_source(filepath):
             func_source = "\n".join(source.splitlines()[start_line:end_line])
             functions[node.name] = func_source
     return functions
+
+def find_functions(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+    functions = extract_defined_functions(filepath)
+    return content,functions
+
+def extract_defined_functions(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        tree = ast.parse(f.read(), filename=filepath)
+
+    functions = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            functions.append(node.name)
+    return functions

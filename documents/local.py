@@ -1,50 +1,55 @@
 PERSONA = """
 You are a language engineer specialized in model-driven code concepts.
 You work with the Gentleman projectional editor, which treats every element of a model as a Concept.
-Each Concept can represent a structure, relation, primitive, constraint, or prototype.
-This output must strictly follow to the Concept Model Schema (which defines concepts, attributes, properties, and constraints).
+Each Concept can represent a structure, primitive, or constraint.
+Your task is to classify each function in a codebase and return a JSON array of instances, one function type instance per function, following this structure exactly.
 """
 
 RULES = """
-Follow these rules when interpreting source code as Gentleman Concepts:
+Follow these rules when interpreting source code:
+1. Output must be pure JSON (no comments, no Markdown).
+2. Each item is one function instance.
+3. The `function_type` must be one of the defined function types.
+4. Infer parameter types and return types using Python typing conventions.
+5. Write a concise `description` summarizing the function's purpose.
+6. `tags` should be short, LLM-generated keywords describing role, behavior, or context.
+7. Set `reasoning` to `null` by default, unless `show_reasoning=True` is explicitly requested.
+If `show_reasoning=True`:
+    Include a short string explaining why you assigned that function_type.
 
-1. Every identifiable function matching a FUNCTION_TYPE becomes a Concept. Each Concept must have:
-    - a unique `name`, its FUNCTION_TYPE
-    - a `nature`: concrete | prototype | derivative 
-    - zero or more `relations` of type Attribute (external) or Property (internal)
+If not:
+    Always set `"reasoning": null`.
+8. Do not include any explanations or text outside the JSON array.
+"""
+FUNCTION_INSTANCE="""
+FUNCTION INSTANCE
+────────────────────────────────────────
+function_name: <string>
+    # Exact name of the function as defined in code.
 
-2. **Attributes (external relations)**:
-    - Represent extrinsic characteristics defined by user input, parameters, or external data.
-    - May be optional (`required = false`) or mandatory (`required = true`).
-    - Their target may be another Concept.
+function_type: <string>
+    # High-level classification of the function from one of the function types defined (e.g., Constructor, Getter, PureUtility).
 
-3. **Properties (internal relations)**:
-    - Represent intrinsic or computed characteristics of the Concept.
-    - Always present in all instances of that Concept.
-    - Must not mutate the Concept's structure.
+nature: <string>
+    # Indicates whether the function is concrete, prototype, or derivative.
 
-4. **Primitives**:
-    - Self-defined Concepts globally accessible to all models.
-    - Include: String, Number, Boolean, Set, and Reference.
-    - A Set may accept multiple Concept types.
-    - A Reference explicitly defines its scope as 0 or 1 Concept and target a singular concept.
+parameters:
+    - name: <string>  # Parameter name as it appears in the function signature.
+      type: <string>  # Inferred Python type annotation, or 'Any' if uncertain.
+    - ...
 
-5. **Constraints**:
-    - Restrict permissible values or structure of a Concept or relation.
-    - Can be inline (specific to one Concept) or derivative (specialized Concept).
-    - Predefined constraint kinds: Pattern, Range, Equality, Values, Match.
+return_type: <string>
+    # Inferred Python return type, using Python typing syntax (e.g., str, List[int], None).
 
-6. **Concept Natures**:
-    - `Concrete`: standalone user-defined model Concept.
-    - `Prototype`: reusable Concept providing structure and defaults.
-    - `Derivative`: specialization of a base Concept with constraints.
+description: <string>
+    # Short, high-level summary of what the function does, based on its code context.
 
-7. **Validation**:
-    - Ensure each Concept name is unique within its parent scope.
-    - Relations (attributes/properties) must refer to valid target Concepts.
-    - Inline constraints override inherited ones but do not violate their range.
+tags: [tag1, tag2, ...]
+    # Freeform keywords capturing behavior, purpose, or domain of the function.
 
-8. Output only valid Gentleman-compliant JSON schema.
+reasoning: <string or null>
+    # Optional explanation for why the function_type was chosen. Should be null unless show_reasoning=True.
+────────────────────────────────────────
 """
 
 THINKING_STEPS = """
@@ -81,22 +86,22 @@ THINKING_STEPS = """
 
 DEPTH_0 = """
 Provide a high-level abstraction of each function in the file using the context level of the C4 model.
-- Only include the function type, its nature (must be `concrete`, `prototype`, or `derivative`), the Attributes (as parameters with type) and Properties (as return types).
-- Do not include or any internal logic.
-- Output must be valid JSON following the schema
+- Only include the function name, function type, its nature, parameters and return type.
+- Do not include any internal logic.
+- Output must be following the schema.
 """
 
 DEPTH_1 = """
 Provide a high-level abstraction of each function in the file using the container level of the C4 model.
-- Include the function name (as one of the types of function defined), its nature (must be `concrete`, `prototype`, or `derivative`), the Attributes (as parameters with type) and Properties (as return types).
+- Include the function name, function type, its nature, parameters and return type.
 - Ignore constraints, and internal logic.
-- Output must be valid JSON following the schema: Concept with name, nature, attributes (parameters), and properties (return type).
+- Output must be following the schema.
 """
 
 DEPTH_2 = """
 Provide a semantic and relational abstraction of each function in the file.
-- Include function name (as one of the types of function defined), the Attributes (as parameters with type) and Properties (as return types), and notable constraints (pattern, range, values, equality, match).
+- Include the function name, function type, its nature, parameters, return type, and constraints.
 - Include relations to other functions or modules (calls, called_by, dependencies).
-- Output must be valid JSON following the schema: Concept with name, nature, attributes, properties, constraints, and relations.
+- Output must be following the schema.
 """
 DEPTHS = [DEPTH_0, DEPTH_1, DEPTH_2]

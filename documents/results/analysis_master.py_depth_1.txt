@@ -2,8 +2,8 @@
 [
   {
     "function_name": "main",
-    "function_type": "DataAccessOrRepository",
-    "nature": "concrete",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "root",
@@ -47,17 +47,14 @@
       }
     ],
     "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database",
-    "tags": [
-      "DataAccess",
-      "Repository"
-    ],
-    "reasoning": null
+    "description": "Main function to parse the raw data and populate the database.",
+    "tags": ["database", "parser", "main"],
+    "reasoning": "This function acts as a utility as it only performs a series of operations to parse and populate the database, with no complex logic or side effects."
   },
   {
     "function_name": "store_data",
     "function_type": "DataAccessOrRepository",
-    "nature": "concrete",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "master_data",
@@ -81,17 +78,14 @@
       }
     ],
     "return_type": "None",
-    "description": "Store the data in the database",
-    "tags": [
-      "DataAccess",
-      "Repository"
-    ],
-    "reasoning": null
+    "description": "Store the data in the database.",
+    "tags": ["database", "repository"],
+    "reasoning": "This function interacts with the database to populate the collections, making it a data access or repository function."
   },
   {
     "function_name": "log_insertion_details",
-    "function_type": "IOFunction",
-    "nature": "concrete",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "schedule_diff",
@@ -103,16 +97,14 @@
       }
     ],
     "return_type": "None",
-    "description": "Log insertion details",
-    "tags": [
-      "IOFunction"
-    ],
-    "reasoning": null
+    "description": "Log insertion details.",
+    "tags": ["log", "details"],
+    "reasoning": "This function acts as a utility as it only logs the insertion details, with no complex logic or side effects."
   },
   {
     "function_name": "find_in_sorted_list",
     "function_type": "PureUtility",
-    "nature": "concrete",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "elem",
@@ -124,16 +116,14 @@
       }
     ],
     "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x",
-    "tags": [
-      "PureUtility"
-    ],
-    "reasoning": null
+    "description": "Locate the leftmost value exactly equal to x.",
+    "tags": ["find", "sorted"],
+    "reasoning": "This function acts as a utility as it only performs a series of operations to locate a value in a sorted list, with no complex logic or side effects."
   },
   {
     "function_name": "refactor_faculties",
     "function_type": "PureUtility",
-    "nature": "concrete",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "faculties",
@@ -145,32 +135,36 @@
       },
       {
         "name": "directories_tuples",
-        "type": "list"
+        "type": "list[tuple]"
       }
     ],
     "return_type": "list",
-    "description": "Refactor faculties",
-    "tags": [
-      "PureUtility"
-    ],
-    "reasoning": null
+    "description": "Refactor faculties.",
+    "tags": ["refactor", "faculties"],
+    "reasoning": "This function acts as a utility as it only performs a series of operations to refactor the faculties, with no complex logic or side effects."
   },
   {
     "function_name": "readImportLinks",
     "function_type": "IOFunction",
-    "nature": "concrete",
+    "nature": "Concrete",
     "parameters": [
       {
         "name": "directories_tuples",
-        "type": "list"
+        "type": "list[tuple]"
       }
     ],
     "return_type": "dict",
-    "description": "Read import links",
-    "tags": [
-      "IOFunction"
-    ],
-    "reasoning": null
+    "description": "Read import links.",
+    "tags": ["read", "links"],
+    "reasoning": "This function interacts with the file system to read the import links, making it an I/O function."
   }
 ]
 ```
+
+Note that I've assumed the following:
+
+- `PureUtility` functions are those that only perform a series of operations with no complex logic or side effects.
+- `DataAccessOrRepository` functions are those that interact with the database to populate the collections.
+- `IOFunction` functions are those that interact with the file system.
+
+Please let me know if you'd like me to adjust these classifications.

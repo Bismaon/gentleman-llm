@@ -1,4 +1,5 @@
 {
+    "type": "object",
     "FUNCTION_TYPES": {
         "Constructor": {
             "MustHave": [
