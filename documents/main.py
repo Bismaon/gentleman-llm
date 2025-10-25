@@ -80,7 +80,18 @@ def get_concept(
             {"role": "system", "content": THINKING_STEPS},
             {"role": "system", "content": function_types_guide},
             {"role": "user", "content": DEPTHS[depth_index]},
-            {"role": "user", "content": f"show_reasoning={show_reasoning}"},
+            {
+                "role": "system",
+                "content": (
+                    "Output rule: "
+                    + (
+                        "You must include a non-null 'reasoning' field for every function instance. "
+                        "Each reasoning must briefly explain why that function_type was chosen."
+                        if show_reasoning
+                        else "Set the 'reasoning' field of every function instance to null."
+                    )
+                ),
+            },
             {
                 "role": "user",
                 "content": f"Classify every function {functions} listed in this file:\n\n{content}",

@@ -74,14 +74,6 @@ THINKING_STEPS = """
     - Identify explicit range or pattern restrictions.
     - Infer constraints from types (e.g., regex, numerical bounds, enumerations).
     - Tag constraint concepts accordingly (Pattern, Range, Equality, etc.).
-
-6. **Compose the Model Graph**
-    - Each Concept becomes a node in the model graph.
-    - Relations become edges (Attribute = external, Property = internal).
-    - Inherit structure from prototypes; apply constraints from derivatives.
-
-7. **Emit Gentleman JSON**
-    - Serialize all Concepts and their relations in Gentleman JSON format, preserving schema consistency (concept_format.json).
 """
 
 DEPTH_0 = """

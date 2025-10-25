@@ -12,4 +12,10 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 python main.py
 ```
 
-have to write a answer format for the llm, need to make it make tags for each function and what they do, if they have calls in or out, 
+all
+```bash
+cd documents
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+.venv/Scripts/activate.ps1
+python main.py
+```

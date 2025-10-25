@@ -4,44 +4,44 @@
         "Constructor": {
             "MustHave": [
                 "Defines or initializes object state",
-                "Returns None or no explicit return",
-                "Uses or mirrors class parameters (self, cls)",
-                "Called automatically or via factory pattern"
+                "Uses or mirrors class parameters (self, cls)"
             ],
             "Optional": [
-                "Assigns instance attributes"
+                "Assigns instance attributes",
+                "Performs lightweight I/O strictly for initialization (loading configuration, reading defaults)"
             ],
             "MustNotHave": [
-                "Performs external I/O",
-                "Returns data or computation result",
-                "Creates side effects outside initialization"
+                "Standalone data processing or business logic",
+                "Returns computed results not tied to initialization"
             ]
         },
         "Property": {
             "MustHave": [
-                "Short body (less than 3 statements)",
-                "Names match patterns: get*, set*, is*, has*, contains*, len*, size*"
+                "Accesses or modifies object attributes directly",
+                "Short body (less than 3 statements)"
             ],
             "Optional": [
-                "Performs minimal validation"
+                "Performs minimal validation on assigned values",
+                "Names match getter/setter/boolean patterns"
             ],
             "MustNotHave": [
-                "Complex computation or external calls",
-                "Multiple parameters or branching logic"
+                "Creates new data structures or computations unrelated to attributes",
+                "Performs I/O or external calls"
             ]
         },
         "PureUtility": {
             "MustHave": [
+                "No dependency on object state (`self`, `cls`)",
                 "No I/O operations",
-                "No global or external state access",
-                "Output depends only on input parameters",
-                "Deterministic result for same inputs"
+                "Deterministic output based only on input parameters"
             ],
             "Optional": [
                 "Performs math, string, or data transformations",
                 "Used across modules as helper"
             ],
             "MustNotHave": [
+                "I/O operations",
+                "Global or external state access",
                 "File, network, or database access",
                 "Randomness or time dependence",
                 "Logging or printing"
@@ -61,33 +61,20 @@
                 "External I/O beyond mocks"
             ]
         },
-        "DataAccessOrRepository": {
+        "ExternalInteraction": {
             "MustHave": [
-                "Interacts with database, cache, or persistent storage",
-                "Queries, inserts, updates, or deletes records",
-                "Uses identifiers or sessions as parameters"
+                "Performs communication with an external system, service, or persistent storage",
+                "Produces or consumes data exchanged outside the program’s in-memory context"
             ],
             "Optional": [
-                "Implements ORM patterns (SQLAlchemy, Django ORM, etc.)",
-                "Returns model object or query result"
+                "Accepts identifiers, paths, URLs, or connection handles as parameters",
+                "Reads or writes structured data (e.g., JSON, CSV, database rows, API payloads)",
+                "Implements protocols or query patterns (HTTP requests, SQL, ORM calls, caching operations)",
+                "Handles encoding, serialization, or deserialization"
             ],
             "MustNotHave": [
-                "Pure computation or formatting",
-                "Network I/O not tied to persistence"
-            ]
-        },
-        "IOFunction": {
-            "MustHave": [
-                "Performs file, socket, network, or HTTP I/O",
-                "Accepts path, URL, or handle as parameter"
-            ],
-            "Optional": [
-                "Reads/writes structured data (JSON, CSV, etc.)",
-                "Handles encoding or serialization"
-            ],
-            "MustNotHave": [
-                "Pure logic or transformations",
-                "Detached from external system interactions"
+                "Purely computational or formatting logic with no system interaction",
+                "Internal data transformation detached from external communication"
             ]
         }
     }

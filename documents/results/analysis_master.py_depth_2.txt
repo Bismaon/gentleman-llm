@@ -1,103 +1,185 @@
-Here are the classifications of each function:
+Here is the classification of each function in the provided code:
 
 ```json
 [
   {
     "function_name": "main",
-    "function_type": "DataAccessOrRepository",
+    "function_type": "Constructor",
+    "reasoning": "This function is responsible for initializing the program and setting up the database connection.",
     "nature": "Concrete",
     "parameters": [
-      {"name": "root", "type": "str"},
-      {"name": "import_links_directory", "type": "str"},
-      {"name": "schedule_raw_directory", "type": "str"},
-      {"name": "schedule_parsed_directory", "type": "str"},
-      {"name": "annuaire_raw_directory", "type": "str"},
-      {"name": "annuaire_parsed_directory", "type": "str"},
-      {"name": "repertoire_raw_directory", "type": "str"},
-      {"name": "repertoire_parsed_directory", "type": "str"},
-      {"name": "hierarchy_path", "type": "str"},
-      {"name": "debug", "type": "bool"}
+      {
+        "name": "root",
+        "type": "str"
+      },
+      {
+        "name": "import_links_directory",
+        "type": "str"
+      },
+      {
+        "name": "schedule_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "schedule_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "annuaire_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "annuaire_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "repertoire_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "repertoire_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "hierarchy_path",
+        "type": "str"
+      },
+      {
+        "name": "debug",
+        "type": "bool"
+      }
     ],
     "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database",
-    "tags": ["database", "data", "parser"],
-    "reasoning": "This function is responsible for orchestrating the data parsing and population process, making it a DataAccessOrRepository."
+    "description": "The main function is responsible for initializing the program and setting up the database connection.",
+    "tags": ["main", "program", "database"],
+    "relations": {
+      "calls": ["store_data", "log_insertion_details"]
+    }
   },
   {
     "function_name": "store_data",
-    "function_type": "DataAccessOrRepository",
+    "function_type": "PureUtility",
+    "reasoning": "This function is responsible for storing data in the database, and does not perform any complex computations.",
     "nature": "Concrete",
     "parameters": [
-      {"name": "master_data", "type": "dict"},
-      {"name": "annuaire", "type": "list"},
-      {"name": "faculties", "type": "list"},
-      {"name": "schedule_dict", "type": "dict"},
-      {"name": "db", "type": "MongoDB"}
+      {
+        "name": "master_data",
+        "type": "dict"
+      },
+      {
+        "name": "annuaire",
+        "type": "list"
+      },
+      {
+        "name": "faculties",
+        "type": "list"
+      },
+      {
+        "name": "schedule_dict",
+        "type": "dict"
+      },
+      {
+        "name": "db",
+        "type": "MongoDB"
+      }
     ],
     "return_type": "None",
-    "description": "Store the data in the database",
+    "description": "The store_data function is responsible for storing data in the database.",
     "tags": ["database", "storage"],
-    "reasoning": "This function is responsible for storing data in the database, making it a DataAccessOrRepository."
+    "relations": {
+      "called_by": ["main"]
+    }
   },
   {
     "function_name": "log_insertion_details",
-    "function_type": "IOFunction",
+    "function_type": "PureUtility",
+    "reasoning": "This function is responsible for logging details about insertion into the database, and does not perform any complex computations.",
     "nature": "Concrete",
     "parameters": [
-      {"name": "schedule_diff", "type": "set"},
-      {"name": "annuaire_diff", "type": "set"}
+      {
+        "name": "schedule_diff",
+        "type": "set"
+      },
+      {
+        "name": "annuaire_diff",
+        "type": "set"
+      }
     ],
     "return_type": "None",
-    "description": "Log insertion details",
-    "tags": ["logging", "IO"],
-    "reasoning": "This function is responsible for logging details about the insertion process, making it an IOFunction."
+    "description": "The log_insertion_details function is responsible for logging details about insertion into the database.",
+    "tags": ["logging", "database"],
+    "relations": {
+      "called_by": ["main"]
+    }
   },
   {
     "function_name": "find_in_sorted_list",
     "function_type": "PureUtility",
+    "reasoning": "This function is responsible for finding an element in a sorted list, and does not perform any complex computations.",
     "nature": "Concrete",
     "parameters": [
-      {"name": "elem", "type": "str"},
-      {"name": "sorted_list", "type": "list"}
+      {
+        "name": "elem",
+        "type": "any"
+      },
+      {
+        "name": "sorted_list",
+        "type": "list"
+      }
     ],
     "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x",
-    "tags": ["search", "utility"],
-    "reasoning": "This function is responsible for searching a sorted list for a specific element, making it a PureUtility."
+    "description": "The find_in_sorted_list function is responsible for finding an element in a sorted list.",
+    "tags": ["list", "search"],
+    "relations": {
+      "called_by": ["refactor_faculties"]
+    }
   },
   {
     "function_name": "refactor_faculties",
-    "function_type": "DataAccessOrRepository",
+    "function_type": "PureUtility",
+    "reasoning": "This function is responsible for refactoring faculties data, and does not perform any complex computations.",
     "nature": "Concrete",
     "parameters": [
-      {"name": "faculties", "type": "list"},
-      {"name": "annuaires", "type": "dict"},
-      {"name": "directories_tuples", "type": "list[tuple]"}
+      {
+        "name": "faculties",
+        "type": "list"
+      },
+      {
+        "name": "annuaires",
+        "type": "dict"
+      },
+      {
+        "name": "directories_tuples",
+        "type": "list"
+      }
     ],
     "return_type": "list",
-    "description": "Refactor faculties",
-    "tags": ["data", "repository"],
-    "reasoning": "This function is responsible for refactoring faculties data, making it a DataAccessOrRepository."
+    "description": "The refactor_faculties function is responsible for refactoring faculties data.",
+    "tags": ["faculties", "refactoring"],
+    "relations": {
+      "called_by": ["main"],
+      "calls": ["find_in_sorted_list"]
+    }
   },
   {
     "function_name": "readImportLinks",
-    "function_type": "IOFunction",
+    "function_type": "PureUtility",
+    "reasoning": "This function is responsible for reading import links, and does not perform any complex computations.",
     "nature": "Concrete",
     "parameters": [
-      {"name": "directories_tuples", "type": "list[tuple]"}
+      {
+        "name": "directories_tuples",
+        "type": "list"
+      }
     ],
     "return_type": "dict",
-    "description": "Read import links",
-    "tags": ["IO", "import"],
-    "reasoning": "This function is responsible for reading import links from directories, making it an IOFunction."
+    "description": "The readImportLinks function is responsible for reading import links.",
+    "tags": ["links", "reading"],
+    "relations": {
+      "called_by": ["refactor_faculties"]
+    }
   }
 ]
 ```
 
-Note that the function types were assigned based on the following criteria:
-
-* `DataAccessOrRepository`: functions that interact with databases, store or retrieve data.
-* `IOFunction`: functions that perform input/output operations, such as reading or writing files.
-* `PureUtility`: functions that perform calculations or other computations without side effects.
-
-Also note that the `nature` field was set to "Concrete" for all functions, as they are all standalone functions and not prototypes or derivatives.
+Note: The function types, reasons, and tags are based on my interpretation of the code and may not be exact. The relations section is also based on my interpretation of the code and may not be exhaustive.

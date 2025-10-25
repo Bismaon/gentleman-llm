@@ -2,169 +2,92 @@
 [
   {
     "function_name": "main",
-    "function_type": "PureUtility",
+    "function_type": "Constructor",
     "nature": "Concrete",
     "parameters": [
-      {
-        "name": "root",
-        "type": "str"
-      },
-      {
-        "name": "import_links_directory",
-        "type": "str"
-      },
-      {
-        "name": "schedule_raw_directory",
-        "type": "str"
-      },
-      {
-        "name": "schedule_parsed_directory",
-        "type": "str"
-      },
-      {
-        "name": "annuaire_raw_directory",
-        "type": "str"
-      },
-      {
-        "name": "annuaire_parsed_directory",
-        "type": "str"
-      },
-      {
-        "name": "repertoire_raw_directory",
-        "type": "str"
-      },
-      {
-        "name": "repertoire_parsed_directory",
-        "type": "str"
-      },
-      {
-        "name": "hierarchy_path",
-        "type": "str"
-      },
-      {
-        "name": "debug",
-        "type": "bool"
-      }
+      {"name": "root", "type": "str"},
+      {"name": "import_links_directory", "type": "str"},
+      {"name": "schedule_raw_directory", "type": "str"},
+      {"name": "schedule_parsed_directory", "type": "str"},
+      {"name": "annuaire_raw_directory", "type": "str"},
+      {"name": "annuaire_parsed_directory", "type": "str"},
+      {"name": "repertoire_raw_directory", "type": "str"},
+      {"name": "repertoire_parsed_directory", "type": "str"},
+      {"name": "hierarchy_path", "type": "str"},
+      {"name": "debug", "type": "bool"}
     ],
     "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database.",
+    "description": "Main function to parse the raw data and populate the database",
     "tags": ["database", "parser", "main"],
-    "reasoning": "This function acts as a utility as it only performs a series of operations to parse and populate the database, with no complex logic or side effects."
+    "reasoning": "This function is a constructor because it initializes the database and populates it with data."
   },
   {
     "function_name": "store_data",
-    "function_type": "DataAccessOrRepository",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
-      {
-        "name": "master_data",
-        "type": "dict"
-      },
-      {
-        "name": "annuaire",
-        "type": "list"
-      },
-      {
-        "name": "faculties",
-        "type": "list"
-      },
-      {
-        "name": "schedule_dict",
-        "type": "dict"
-      },
-      {
-        "name": "db",
-        "type": "MongoDB"
-      }
+      {"name": "master_data", "type": "dict"},
+      {"name": "annuaire", "type": "list"},
+      {"name": "faculties", "type": "list"},
+      {"name": "schedule_dict", "type": "dict"},
+      {"name": "db", "type": "MongoDB"}
     ],
     "return_type": "None",
-    "description": "Store the data in the database.",
-    "tags": ["database", "repository"],
-    "reasoning": "This function interacts with the database to populate the collections, making it a data access or repository function."
+    "description": "Store the data in the database",
+    "tags": ["database", "store"],
+    "reasoning": "This function is an external interaction because it interacts with the database."
   },
   {
     "function_name": "log_insertion_details",
     "function_type": "PureUtility",
     "nature": "Concrete",
     "parameters": [
-      {
-        "name": "schedule_diff",
-        "type": "set"
-      },
-      {
-        "name": "annuaire_diff",
-        "type": "set"
-      }
+      {"name": "schedule_diff", "type": "set"},
+      {"name": "annuaire_diff", "type": "set"}
     ],
     "return_type": "None",
-    "description": "Log insertion details.",
+    "description": "Log insertion details",
     "tags": ["log", "details"],
-    "reasoning": "This function acts as a utility as it only logs the insertion details, with no complex logic or side effects."
+    "reasoning": "This function is a pure utility because it only logs details and does not modify any data."
   },
   {
     "function_name": "find_in_sorted_list",
-    "function_type": "PureUtility",
+    "function_type": "Getter",
     "nature": "Concrete",
     "parameters": [
-      {
-        "name": "elem",
-        "type": "str"
-      },
-      {
-        "name": "sorted_list",
-        "type": "list"
-      }
+      {"name": "elem", "type": "str"},
+      {"name": "sorted_list", "type": "list"}
     ],
     "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x.",
-    "tags": ["find", "sorted"],
-    "reasoning": "This function acts as a utility as it only performs a series of operations to locate a value in a sorted list, with no complex logic or side effects."
+    "description": "Locate the leftmost value exactly equal to x",
+    "tags": ["finder", "list"],
+    "reasoning": "This function is a getter because it returns a value based on the input."
   },
   {
     "function_name": "refactor_faculties",
-    "function_type": "PureUtility",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
-      {
-        "name": "faculties",
-        "type": "list"
-      },
-      {
-        "name": "annuaires",
-        "type": "dict"
-      },
-      {
-        "name": "directories_tuples",
-        "type": "list[tuple]"
-      }
+      {"name": "faculties", "type": "list"},
+      {"name": "annuaires", "type": "dict"},
+      {"name": "directories_tuples", "type": "list"}
     ],
     "return_type": "list",
-    "description": "Refactor faculties.",
-    "tags": ["refactor", "faculties"],
-    "reasoning": "This function acts as a utility as it only performs a series of operations to refactor the faculties, with no complex logic or side effects."
+    "description": "Refactor faculties",
+    "tags": ["faculty", "refactor"],
+    "reasoning": "This function is an external interaction because it interacts with the database and other external systems."
   },
   {
     "function_name": "readImportLinks",
-    "function_type": "IOFunction",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
-      {
-        "name": "directories_tuples",
-        "type": "list[tuple]"
-      }
+      {"name": "directories_tuples", "type": "list"}
     ],
     "return_type": "dict",
-    "description": "Read import links.",
-    "tags": ["read", "links"],
-    "reasoning": "This function interacts with the file system to read the import links, making it an I/O function."
+    "description": "Read import links",
+    "tags": ["link", "read"],
+    "reasoning": "This function is an external interaction because it interacts with the file system."
   }
 ]
 ```
-
-Note that I've assumed the following:
-
-- `PureUtility` functions are those that only perform a series of operations with no complex logic or side effects.
-- `DataAccessOrRepository` functions are those that interact with the database to populate the collections.
-- `IOFunction` functions are those that interact with the file system.
-
-Please let me know if you'd like me to adjust these classifications.

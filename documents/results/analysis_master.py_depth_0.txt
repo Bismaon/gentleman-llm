@@ -1,5 +1,3 @@
-Here is the classification of each function in the provided code:
-
 ```json
 [
   {
@@ -50,12 +48,12 @@ Here is the classification of each function in the provided code:
     ],
     "return_type": "None",
     "description": "Main function to parse the raw data and populate the database.",
-    "tags": ["database", "parsing", "main"],
-    "reasoning": null
+    "tags": ["main", "constructor"],
+    "reasoning": "This function is a constructor because it initializes the database and populates it with data."
   },
   {
     "function_name": "store_data",
-    "function_type": "PureUtility",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
       {
@@ -81,8 +79,8 @@ Here is the classification of each function in the provided code:
     ],
     "return_type": "None",
     "description": "Store the data in the database.",
-    "tags": ["database", "storage"],
-    "reasoning": null
+    "tags": ["store", "database"],
+    "reasoning": "This function is an external interaction because it interacts with the database."
   },
   {
     "function_name": "log_insertion_details",
@@ -100,8 +98,8 @@ Here is the classification of each function in the provided code:
     ],
     "return_type": "None",
     "description": "Log insertion details.",
-    "tags": ["logging", "details"],
-    "reasoning": null
+    "tags": ["log", "details"],
+    "reasoning": "This function is a pure utility because it performs a simple operation that doesn't depend on any external factors."
   },
   {
     "function_name": "find_in_sorted_list",
@@ -118,13 +116,13 @@ Here is the classification of each function in the provided code:
       }
     ],
     "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x in a sorted list.",
-    "tags": ["search", "list"],
-    "reasoning": null
+    "description": "Locate the leftmost value exactly equal to x.",
+    "tags": ["find", "sorted"],
+    "reasoning": "This function is a pure utility because it performs a simple operation that doesn't depend on any external factors."
   },
   {
     "function_name": "refactor_faculties",
-    "function_type": "PureUtility",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
       {
@@ -141,13 +139,13 @@ Here is the classification of each function in the provided code:
       }
     ],
     "return_type": "list",
-    "description": "Refactor faculties data.",
-    "tags": ["refactoring", "faculties"],
-    "reasoning": null
+    "description": "Refactor faculties.",
+    "tags": ["refactor", "faculties"],
+    "reasoning": "This function is an external interaction because it interacts with external data."
   },
   {
     "function_name": "readImportLinks",
-    "function_type": "PureUtility",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
       {
@@ -156,11 +154,9 @@ Here is the classification of each function in the provided code:
       }
     ],
     "return_type": "dict",
-    "description": "Read import links from directories.",
-    "tags": ["links", "directories"],
-    "reasoning": null
+    "description": "Read import links.",
+    "tags": ["read", "links"],
+    "reasoning": "This function is an external interaction because it interacts with external data."
   }
 ]
 ```
-
-This classification is based on the provided code and follows the specified schema. Each function is classified as either a constructor, pure utility, or property, based on its functionality and return type. The nature of each function is also specified as either concrete, prototype, or derivative, based on its implementation and dependencies. The parameters, return type, description, and tags for each function are also included in the classification.
