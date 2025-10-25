@@ -20,6 +20,12 @@ If `show_reasoning=True`:
 If not:
     Always set `"reasoning": null`.
 8. Do not include any explanations or text outside the JSON array.
+9. Each reasoning must explicitly state the main evidence for the chosen function_type
+   using one of these patterns:
+   - "classified as <type> because it [core behavior]"
+   - "fits the <type> type since it [reason]"
+   This ensures consistent phrasing and easier parsing.
+
 """
 FUNCTION_INSTANCE="""
 FUNCTION INSTANCE
@@ -76,24 +82,31 @@ THINKING_STEPS = """
     - Tag constraint concepts accordingly (Pattern, Range, Equality, etc.).
 """
 
+HIERARCHY_NOTE = """
+Prompt precedence order (highest to lowest):
+1. FUNCTION_TYPES guide — the definitive taxonomy for function_type labels.
+2. RULES — governs format and schema.
+3. DEPTH prompt — only controls *detail level*, not label meaning.
+4. THINKING_STEPS — reasoning outline, not structural output.
+Never invent function_type labels beyond FUNCTION_TYPES.
+"""
+
 DEPTH_0 = """
-Provide a high-level abstraction of each function in the file using the context level of the C4 model.
-- Only include the function name, function type, its nature, parameters and return type.
-- Do not include any internal logic.
-- Output must be following the schema.
+Depth 0 (Context level):
+Classify each function only by its broad conceptual role.
+- Output strictly follows schema.
+- Use FUNCTION_TYPES only.
+- Provide one-sentence reasoning.
+"""
+DEPTH_1 = DEPTH_0 + """
+Depth 1 adds operational context:
+- Refine descriptions and reasoning to mention external interactions or data flow.
+- Keep function_type identical to Depth 0 unless strong evidence suggests otherwise.
+"""
+DEPTH_2 = DEPTH_1 + """
+Depth 2 adds relationships:
+- Include relations (calls, called_by, dependencies).
+- Never alter function_type decided in previous depth; refine reasoning only.
 """
 
-DEPTH_1 = """
-Provide a high-level abstraction of each function in the file using the container level of the C4 model.
-- Include the function name, function type, its nature, parameters and return type.
-- Ignore constraints, and internal logic.
-- Output must be following the schema.
-"""
-
-DEPTH_2 = """
-Provide a semantic and relational abstraction of each function in the file.
-- Include the function name, function type, its nature, parameters, return type, and constraints.
-- Include relations to other functions or modules (calls, called_by, dependencies).
-- Output must be following the schema.
-"""
 DEPTHS = [DEPTH_0, DEPTH_1, DEPTH_2]

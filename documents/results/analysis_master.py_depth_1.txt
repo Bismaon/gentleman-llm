@@ -1,93 +1,93 @@
 ```json
 [
-  {
-    "function_name": "main",
-    "function_type": "Constructor",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "root", "type": "str"},
-      {"name": "import_links_directory", "type": "str"},
-      {"name": "schedule_raw_directory", "type": "str"},
-      {"name": "schedule_parsed_directory", "type": "str"},
-      {"name": "annuaire_raw_directory", "type": "str"},
-      {"name": "annuaire_parsed_directory", "type": "str"},
-      {"name": "repertoire_raw_directory", "type": "str"},
-      {"name": "repertoire_parsed_directory", "type": "str"},
-      {"name": "hierarchy_path", "type": "str"},
-      {"name": "debug", "type": "bool"}
-    ],
-    "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database",
-    "tags": ["database", "parser", "main"],
-    "reasoning": "This function is a constructor because it initializes the database and populates it with data."
-  },
-  {
-    "function_name": "store_data",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "master_data", "type": "dict"},
-      {"name": "annuaire", "type": "list"},
-      {"name": "faculties", "type": "list"},
-      {"name": "schedule_dict", "type": "dict"},
-      {"name": "db", "type": "MongoDB"}
-    ],
-    "return_type": "None",
-    "description": "Store the data in the database",
-    "tags": ["database", "store"],
-    "reasoning": "This function is an external interaction because it interacts with the database."
-  },
-  {
-    "function_name": "log_insertion_details",
-    "function_type": "PureUtility",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "schedule_diff", "type": "set"},
-      {"name": "annuaire_diff", "type": "set"}
-    ],
-    "return_type": "None",
-    "description": "Log insertion details",
-    "tags": ["log", "details"],
-    "reasoning": "This function is a pure utility because it only logs details and does not modify any data."
-  },
-  {
-    "function_name": "find_in_sorted_list",
-    "function_type": "Getter",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "elem", "type": "str"},
-      {"name": "sorted_list", "type": "list"}
-    ],
-    "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x",
-    "tags": ["finder", "list"],
-    "reasoning": "This function is a getter because it returns a value based on the input."
-  },
-  {
-    "function_name": "refactor_faculties",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "faculties", "type": "list"},
-      {"name": "annuaires", "type": "dict"},
-      {"name": "directories_tuples", "type": "list"}
-    ],
-    "return_type": "list",
-    "description": "Refactor faculties",
-    "tags": ["faculty", "refactor"],
-    "reasoning": "This function is an external interaction because it interacts with the database and other external systems."
-  },
-  {
-    "function_name": "readImportLinks",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "directories_tuples", "type": "list"}
-    ],
-    "return_type": "dict",
-    "description": "Read import links",
-    "tags": ["link", "read"],
-    "reasoning": "This function is an external interaction because it interacts with the file system."
-  }
+    {
+        "function_name": "main",
+        "function_type": "ExternalInteraction",
+        "nature": "Concrete",
+        "parameters": [
+            {"name": "root", "type": "str"},
+            {"name": "import_links_directory", "type": "str"},
+            {"name": "schedule_raw_directory", "type": "str"},
+            {"name": "schedule_parsed_directory", "type": "str"},
+            {"name": "annuaire_raw_directory", "type": "str"},
+            {"name": "annuaire_parsed_directory", "type": "str"},
+            {"name": "repertoire_raw_directory", "type": "str"},
+            {"name": "repertoire_parsed_directory", "type": "str"},
+            {"name": "hierarchy_path", "type": "str"},
+            {"name": "debug", "type": "bool"}
+        ],
+        "return_type": "None",
+        "description": "Main function to parse the raw data and populate the database.",
+        "tags": ["Database", "Parser", "Main"],
+        "reasoning": "classified as ExternalInteraction because it performs communication with external systems and stores data in a database."
+    },
+    {
+        "function_name": "store_data",
+        "function_type": "ExternalInteraction",
+        "nature": "Concrete",
+        "parameters": [
+            {"name": "master_data", "type": "dict"},
+            {"name": "annuaire", "type": "list"},
+            {"name": "faculties", "type": "list"},
+            {"name": "schedule_dict", "type": "dict"},
+            {"name": "db", "type": "MongoDB"}
+        ],
+        "return_type": "None",
+        "description": "Store the data in the database.",
+        "tags": ["Database", "Store"],
+        "reasoning": "classified as ExternalInteraction because it stores data in a database."
+    },
+    {
+        "function_name": "log_insertion_details",
+        "function_type": "ExternalInteraction",
+        "nature": "Concrete",
+        "parameters": [
+            {"name": "schedule_diff", "type": "set"},
+            {"name": "annuaire_diff", "type": "set"}
+        ],
+        "return_type": "None",
+        "description": "Log insertion details.",
+        "tags": ["Logging", "Details"],
+        "reasoning": "classified as ExternalInteraction because it logs data."
+    },
+    {
+        "function_name": "find_in_sorted_list",
+        "function_type": "PureUtility",
+        "nature": "Concrete",
+        "parameters": [
+            {"name": "elem", "type": "any"},
+            {"name": "sorted_list", "type": "list"}
+        ],
+        "return_type": "int",
+        "description": "Locate the leftmost value exactly equal to x.",
+        "tags": ["Search", "Utility"],
+        "reasoning": "classified as PureUtility because it performs a simple search and returns a value based on the input parameters."
+    },
+    {
+        "function_name": "refactor_faculties",
+        "function_type": "PureUtility",
+        "nature": "Concrete",
+        "parameters": [
+            {"name": "faculties", "type": "list"},
+            {"name": "annuaires", "type": "dict"},
+            {"name": "directories_tuples", "type": "list"}
+        ],
+        "return_type": "list",
+        "description": "Refactor faculties.",
+        "tags": ["Refactor", "Utility"],
+        "reasoning": "classified as PureUtility because it performs a simple refactoring and returns a list of values based on the input parameters."
+    },
+    {
+        "function_name": "readImportLinks",
+        "function_type": "PureUtility",
+        "nature": "Concrete",
+        "parameters": [
+            {"name": "directories_tuples", "type": "list"}
+        ],
+        "return_type": "dict",
+        "description": "Read import links.",
+        "tags": ["Read", "Utility"],
+        "reasoning": "classified as PureUtility because it reads data and returns a dictionary based on the input parameters."
+    }
 ]
 ```

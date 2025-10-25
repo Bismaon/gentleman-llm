@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from util import find_functions, get_json, list_files, read_file, write_file
 from local import (
     FUNCTION_INSTANCE,
+    HIERARCHY_NOTE,
     THINKING_STEPS,
     PERSONA,
     DEPTHS,
@@ -78,7 +79,9 @@ def get_concept(
             {"role": "system", "content": RULES},
             {"role": "system", "content": FUNCTION_INSTANCE},
             {"role": "system", "content": THINKING_STEPS},
-            {"role": "system", "content": function_types_guide},
+            {"role": "system", "content": HIERARCHY_NOTE},
+            {"role": "system", "content": f"FUNCTION_TYPES_GUIDE_START\n{function_types_guide}\nFUNCTION_TYPES_GUIDE_END\n"
+            "Always pick the closest match from this list; do not generate new labels."},
             {"role": "user", "content": DEPTHS[depth_index]},
             {
                 "role": "system",

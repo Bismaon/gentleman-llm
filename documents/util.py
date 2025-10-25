@@ -142,5 +142,11 @@ def extract_defined_functions(filepath):
     functions = []
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
-            functions.append(node.name)
+            doc = ast.get_docstring(node)
+            deco = [d.id for d in node.decorator_list if isinstance(d, ast.Name)]
+            functions.append({
+                "name": node.name,
+                "doc": doc or "",
+                "decorators": deco,
+            })
     return functions
