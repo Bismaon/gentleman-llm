@@ -34,7 +34,7 @@ function_name: <string>
     # Exact name of the function as defined in code.
 
 function_type: <string>
-    # High-level classification of the function from one of the function types defined (e.g., Constructor, Getter, PureUtility).
+    # High-level classification of the function from one of the function types defined.
 
 nature: <string>
     # Indicates whether the function is concrete, prototype, or derivative.

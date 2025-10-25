@@ -18,8 +18,8 @@
     ],
     "return_type": "None",
     "description": "Main function to parse the raw data and populate the database.",
-    "tags": ["main", "parser", "database"],
-    "reasoning": "classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage."
+    "tags": ["database", "parsing", "main"],
+    "reasoning": "classified as ExternalInteraction because it performs communication with an external system, MongoDB, for database connection."
   },
   {
     "function_name": "store_data",
@@ -28,16 +28,18 @@
     "parameters": [
       {"name": "master_data", "type": "dict"},
       {"name": "annuaire", "type": "list"},
+      {"name": "faculties", "type": "list"},
+      {"name": "schedule_dict", "type": "dict"},
       {"name": "db", "type": "MongoDB"}
     ],
     "return_type": "None",
     "description": "Store the data in the database.",
     "tags": ["database", "storage"],
-    "reasoning": "classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage."
+    "reasoning": "classified as ExternalInteraction because it performs communication with an external system, MongoDB, for database connection."
   },
   {
     "function_name": "log_insertion_details",
-    "function_type": "Getter",
+    "function_type": "ExternalInteraction",
     "nature": "Concrete",
     "parameters": [
       {"name": "schedule_diff", "type": "set"},
@@ -45,35 +47,35 @@
     ],
     "return_type": "None",
     "description": "Log insertion details.",
-    "tags": ["logging", "insertion"],
-    "reasoning": "classified as Getter because it provides information about the insertion details."
+    "tags": ["logging", "details"],
+    "reasoning": "classified as ExternalInteraction because it performs I/O operations, logging."
   },
   {
     "function_name": "find_in_sorted_list",
     "function_type": "PureUtility",
     "nature": "Concrete",
     "parameters": [
-      {"name": "elem", "type": "any"},
+      {"name": "elem", "type": "str"},
       {"name": "sorted_list", "type": "list"}
     ],
     "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x",
-    "tags": ["list", "search"],
-    "reasoning": "classified as PureUtility because it performs a deterministic operation with no side effects."
+    "description": "Locate the leftmost value exactly equal to x.",
+    "tags": ["sorting", "searching"],
+    "reasoning": "classified as PureUtility because it performs a deterministic computation based only on input parameters."
   },
   {
     "function_name": "refactor_faculties",
     "function_type": "PureUtility",
     "nature": "Concrete",
     "parameters": [
-      {"name": "faculties", "type": "dict"},
+      {"name": "faculties", "type": "list"},
       {"name": "annuaires", "type": "dict"},
       {"name": "directories_tuples", "type": "list"}
     ],
     "return_type": "list",
-    "description": "refactor faculties",
-    "tags": ["faculties", "refactor"],
-    "reasoning": "classified as PureUtility because it performs a deterministic operation with no side effects."
+    "description": "Refactor faculties.",
+    "tags": ["refactoring", "faculties"],
+    "reasoning": "classified as PureUtility because it performs a deterministic computation based only on input parameters."
   },
   {
     "function_name": "readImportLinks",
@@ -83,9 +85,9 @@
       {"name": "directories_tuples", "type": "list"}
     ],
     "return_type": "dict",
-    "description": "There is many version, because we might change the format of the export",
-    "tags": ["version", "import"],
-    "reasoning": "classified as PureUtility because it performs a deterministic operation with no side effects."
+    "description": "Read import links.",
+    "tags": ["reading", "links"],
+    "reasoning": "classified as PureUtility because it performs a deterministic computation based only on input parameters."
   }
 ]
 ```

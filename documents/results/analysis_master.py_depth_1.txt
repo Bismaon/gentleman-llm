@@ -18,76 +18,74 @@
         ],
         "return_type": "None",
         "description": "Main function to parse the raw data and populate the database.",
-        "tags": ["Database", "Parser", "Main"],
-        "reasoning": "classified as ExternalInteraction because it performs communication with external systems and stores data in a database."
+        "tags": ["database", "parsing", "main"],
+        "reasoning": "classified as ExternalInteraction because it performs communication with an external system by reading and writing data to the database and handling file operations."
     },
     {
         "function_name": "store_data",
         "function_type": "ExternalInteraction",
         "nature": "Concrete",
         "parameters": [
-            {"name": "master_data", "type": "dict"},
-            {"name": "annuaire", "type": "list"},
-            {"name": "faculties", "type": "list"},
-            {"name": "schedule_dict", "type": "dict"},
-            {"name": "db", "type": "MongoDB"}
+        {"name": "master_data", "type": "dict"},
+        {"name": "annuaire", "type": "list"},
+        {"name": "db", "type": "MongoDB"}
         ],
         "return_type": "None",
         "description": "Store the data in the database.",
-        "tags": ["Database", "Store"],
-        "reasoning": "classified as ExternalInteraction because it stores data in a database."
+        "tags": ["database", "storage"],
+        "reasoning": "classified as ExternalInteraction because it interacts with the database by inserting and dropping collections."
     },
     {
         "function_name": "log_insertion_details",
         "function_type": "ExternalInteraction",
         "nature": "Concrete",
         "parameters": [
-            {"name": "schedule_diff", "type": "set"},
-            {"name": "annuaire_diff", "type": "set"}
+        {"name": "schedule_diff", "type": "set"},
+        {"name": "annuaire_diff", "type": "set"}
         ],
         "return_type": "None",
         "description": "Log insertion details.",
-        "tags": ["Logging", "Details"],
-        "reasoning": "classified as ExternalInteraction because it logs data."
+        "tags": ["logging", "insertion"],
+        "reasoning": "classified as ExternalInteraction because it prints information to the console."
     },
     {
         "function_name": "find_in_sorted_list",
         "function_type": "PureUtility",
         "nature": "Concrete",
         "parameters": [
-            {"name": "elem", "type": "any"},
-            {"name": "sorted_list", "type": "list"}
+        {"name": "elem", "type": "any"},
+        {"name": "sorted_list", "type": "list"}
         ],
         "return_type": "int",
-        "description": "Locate the leftmost value exactly equal to x.",
-        "tags": ["Search", "Utility"],
-        "reasoning": "classified as PureUtility because it performs a simple search and returns a value based on the input parameters."
+        "description": "Locate the leftmost value exactly equal to x",
+        "tags": ["search", "utility"],
+        "reasoning": "classified as PureUtility because it performs a deterministic computation with no side effects."
     },
     {
         "function_name": "refactor_faculties",
         "function_type": "PureUtility",
         "nature": "Concrete",
         "parameters": [
-            {"name": "faculties", "type": "list"},
-            {"name": "annuaires", "type": "dict"},
-            {"name": "directories_tuples", "type": "list"}
+        {"name": "faculties", "type": "list"},
+        {"name": "annuaires", "type": "dict"},
+        {"name": "directories_tuples", "type": "list"}
         ],
         "return_type": "list",
         "description": "Refactor faculties.",
-        "tags": ["Refactor", "Utility"],
-        "reasoning": "classified as PureUtility because it performs a simple refactoring and returns a list of values based on the input parameters."
+        "tags": ["refactoring", "faculties"],
+        "reasoning": "classified as PureUtility because it performs a deterministic computation with no side effects."
     },
     {
         "function_name": "readImportLinks",
-        "function_type": "PureUtility",
+        "function_type": "ExternalInteraction",
         "nature": "Concrete",
         "parameters": [
-            {"name": "directories_tuples", "type": "list"}
+        {"name": "directories_tuples", "type": "list"}
         ],
         "return_type": "dict",
         "description": "Read import links.",
-        "tags": ["Read", "Utility"],
-        "reasoning": "classified as PureUtility because it reads data and returns a dictionary based on the input parameters."
+        "tags": ["reading", "links"],
+        "reasoning": "classified as ExternalInteraction because it reads files and performs file operations."
     }
 ]
 ```
