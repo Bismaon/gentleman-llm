@@ -1,93 +1,171 @@
-```json
-[
-  {
-    "function_name": "main",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "root", "type": "str"},
-      {"name": "import_links_directory", "type": "str"},
-      {"name": "schedule_raw_directory", "type": "str"},
-      {"name": "schedule_parsed_directory", "type": "str"},
-      {"name": "annuaire_raw_directory", "type": "str"},
-      {"name": "annuaire_parsed_directory", "type": "str"},
-      {"name": "repertoire_raw_directory", "type": "str"},
-      {"name": "repertoire_parsed_directory", "type": "str"},
-      {"name": "hierarchy_path", "type": "str"},
-      {"name": "debug", "type": "bool"}
-    ],
-    "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database.",
-    "tags": ["database", "parsing", "main"],
-    "reasoning": "classified as ExternalInteraction because it performs communication with an external system, MongoDB, for database connection."
-  },
-  {
-    "function_name": "store_data",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "master_data", "type": "dict"},
-      {"name": "annuaire", "type": "list"},
-      {"name": "faculties", "type": "list"},
-      {"name": "schedule_dict", "type": "dict"},
-      {"name": "db", "type": "MongoDB"}
-    ],
-    "return_type": "None",
-    "description": "Store the data in the database.",
-    "tags": ["database", "storage"],
-    "reasoning": "classified as ExternalInteraction because it performs communication with an external system, MongoDB, for database connection."
-  },
-  {
-    "function_name": "log_insertion_details",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "schedule_diff", "type": "set"},
-      {"name": "annuaire_diff", "type": "set"}
-    ],
-    "return_type": "None",
-    "description": "Log insertion details.",
-    "tags": ["logging", "details"],
-    "reasoning": "classified as ExternalInteraction because it performs I/O operations, logging."
-  },
-  {
-    "function_name": "find_in_sorted_list",
-    "function_type": "PureUtility",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "elem", "type": "str"},
-      {"name": "sorted_list", "type": "list"}
-    ],
-    "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x.",
-    "tags": ["sorting", "searching"],
-    "reasoning": "classified as PureUtility because it performs a deterministic computation based only on input parameters."
-  },
-  {
-    "function_name": "refactor_faculties",
-    "function_type": "PureUtility",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "faculties", "type": "list"},
-      {"name": "annuaires", "type": "dict"},
-      {"name": "directories_tuples", "type": "list"}
-    ],
-    "return_type": "list",
-    "description": "Refactor faculties.",
-    "tags": ["refactoring", "faculties"],
-    "reasoning": "classified as PureUtility because it performs a deterministic computation based only on input parameters."
-  },
-  {
-    "function_name": "readImportLinks",
-    "function_type": "PureUtility",
-    "nature": "Concrete",
-    "parameters": [
-      {"name": "directories_tuples", "type": "list"}
-    ],
-    "return_type": "dict",
-    "description": "Read import links.",
-    "tags": ["reading", "links"],
-    "reasoning": "classified as PureUtility because it performs a deterministic computation based only on input parameters."
-  }
-]
+Here are the classifications for each function in the provided codebase.
+
+```python
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: main
+function_type: Constructor
+nature: Concrete
+parameters:
+  - name: root
+    type: str
+  - name: import_links_directory
+    type: str
+  - name: schedule_raw_directory
+    type: str
+  - name: schedule_parsed_directory
+    type: str
+  - name: annuaire_raw_directory
+    type: str
+  - name: annuaire_parsed_directory
+    type: str
+  - name: repertoire_raw_directory
+    type: str
+  - name: repertoire_parsed_directory
+    type: str
+  - name: hierarchy_path
+    type: str
+  - name: debug
+    type: bool
+return_type: None
+description: Main function to parse the raw data and populate the database.
+tags: [main, parser, data_model]
+reasoning: classified as Constructor because it Defines or initializes object state and uses or mirrors class parameters (self, cls).
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: store_data
+function_type: ExternalInteraction
+nature: Concrete
+parameters:
+  - name: master_data
+    type: dict
+  - name: annuaire
+    type: list
+  - name: faculties
+    type: list
+  - name: schedule_dict
+    type: dict
+  - name: db
+    type: MongoDB
+return_type: None
+description: Store the data in the database.
+tags: [store, data_model, MongoDB]
+reasoning: classified as ExternalInteraction because it Performs communication with an external system (MongoDB) and produces or consumes data exchanged outside the program’s in-memory context.
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: log_insertion_details
+function_type: PureUtility
+nature: Concrete
+parameters:
+  - name: schedule_diff
+    type: set
+  - name: annuaire_diff
+    type: set
+return_type: None
+description: Log insertion details.
+tags: [logger, log]
+reasoning: classified as PureUtility because it No dependency on object state (`self`, `cls`) and No I/O operations.
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: find_in_sorted_list
+function_type: PureUtility
+nature: Concrete
+parameters:
+  - name: elem
+    type: str
+  - name: sorted_list
+    type: list
+return_type: int
+description: Locate the leftmost value exactly equal to x.
+tags: [search, sorted_list]
+reasoning: classified as PureUtility because it No dependency on object state (`self`, `cls`) and No I/O operations.
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: refactor_faculties
+function_type: ExternalInteraction
+nature: Concrete
+parameters:
+  - name: faculties
+    type: list
+  - name: annuaires
+    type: dict
+  - name: directories_tuples
+    type: list
+return_type: list
+description: Refactor faculties.
+tags: [refactor, faculties]
+reasoning: classified as ExternalInteraction because it Performs communication with an external system (directory) and produces or consumes data exchanged outside the program’s in-memory context.
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: readImportLinks
+function_type: ExternalInteraction
+nature: Concrete
+parameters:
+  - name: directories_tuples
+    type: list
+return_type: dict
+description: Read import links.
+tags: [read, links]
+reasoning: classified as ExternalInteraction because it Performs communication with an external system (directory) and produces or consumes data exchanged outside the program’s in-memory context.
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: parse_args
+function_type: PureUtility
+nature: Concrete
+parameters:
+  - name: parser
+    type: argparse.ArgumentParser
+  - name: args
+    type: argparse.Namespace
+return_type: None
+description: Parse arguments.
+tags: [parser, args]
+reasoning: classified as PureUtility because it No dependency on object state (`self`, `cls`) and No I/O operations.
+────────────────────────────────────────
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: main
+function_type: Constructor
+nature: Prototype
+parameters:
+  - name: root
+    type: str
+  - name: import_links_directory
+    type: str
+  - name: schedule_raw_directory
+    type: str
+  - name: schedule_parsed_directory
+    type: str
+  - name: annuaire_raw_directory
+    type: str
+  - name: annuaire_parsed_directory
+    type: str
+  - name: repertoire_raw_directory
+    type: str
+  - name: repertoire_parsed_directory
+    type: str
+  - name: hierarchy_path
+    type: str
+  - name: debug
+    type: bool
+return_type: None
+description: Main function to parse the raw data and populate the database.
+tags: [main, parser, data_model]
+reasoning: classified as Constructor because it Defines or initializes object state and uses or mirrors class parameters (self, cls).
+────────────────────────────────────────
 ```
+
+Note: The `FUNCTION_INSTANCE_BEGIN` and `FUNCTION_INSTANCE_END` are for formatting purposes only. The actual output should be in the format specified in the rules.

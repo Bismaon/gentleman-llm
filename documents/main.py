@@ -25,7 +25,6 @@ def analyze_file_with_llm(
     d_i: int = 0,
     function_types_guide: str = "",
     model: str = "meta-llama/Llama-3.1-8B-Instruct",
-    show_reasoning: bool = False,
 ) -> str:
     """
     Reads a file and sends its content to the LLM for analysis.
@@ -57,7 +56,6 @@ def analyze_file_with_llm(
         function_types_guide,
         content,
         functions,
-        show_reasoning,
     )
     # projection_res = get_projection()
     return concept_res.choices[0].message.content
@@ -70,7 +68,6 @@ def get_concept(
     function_types_guide,
     content,
     functions,
-    show_reasoning,
 ):
     return client.chat.completions.create(
         model=model,
@@ -83,18 +80,6 @@ def get_concept(
             {"role": "system", "content": f"FUNCTION_TYPES_GUIDE_START\n{function_types_guide}\nFUNCTION_TYPES_GUIDE_END\n"
             "Always pick the closest match from this list; do not generate new labels."},
             {"role": "user", "content": DEPTHS[depth_index]},
-            {
-                "role": "system",
-                "content": (
-                    "Output rule: "
-                    + (
-                        "You must include a non-null 'reasoning' field for every function instance. "
-                        "Each reasoning must briefly explain why that function_type was chosen."
-                        if show_reasoning
-                        else "Set the 'reasoning' field of every function instance to null."
-                    )
-                ),
-            },
             {
                 "role": "user",
                 "content": f"Classify every function {functions} listed in this file:\n\n{content}",

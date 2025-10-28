@@ -1,6 +1,6 @@
 {
     "type": "object",
-    "FUNCTION_TYPES": {
+    "FUNCTION_TYPES_GUIDE": {
         "Constructor": {
             "MustHave": [
                 "Defines or initializes object state",
