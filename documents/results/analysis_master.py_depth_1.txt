@@ -1,237 +1,279 @@
-FUNCTION_INSTANCE_START
-{
-    "name": "main",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-        {
-            "name": "root",
-            "type": "str"
-        },
-        {
-            "name": "import_links_directory",
-            "type": "str"
-        },
-        {
-            "name": "schedule_raw_directory",
-            "type": "str"
-        },
-        {
-            "name": "schedule_parsed_directory",
-            "type": "str"
-        },
-        {
-            "name": "annuaire_raw_directory",
-            "type": "str"
-        },
-        {
-            "name": "annuaire_parsed_directory",
-            "type": "str"
-        },
-        {
-            "name": "repertoire_raw_directory",
-            "type": "str"
-        },
-        {
-            "name": "repertoire_parsed_directory",
-            "type": "str"
-        },
-        {
-            "name": "hierarchy_path",
-            "type": "str"
-        },
-        {
-            "name": "debug",
-            "type": "bool"
-        }
-    ],
-    "return_type": "None",
-    "description": "Main function to parse the raw data and populate the database.",
-    "tags": ["database", "parsing", "main"],
-    "constraints": [
-        {
-            "type": "Pattern",
-            "details": "Follows the main function pattern with required parameters and return type."
-        }
-    ],
-    "relations": [
-        {
-            "calls": ["store_data", "log_insertion_details"]
-        }
-    ],
-    "reasoning": "classified as ExternalInteraction because it performs external communication with the MongoDB database."
-}
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: main
+    # Exact name of the function as defined in code.
 
-FUNCTION_INSTANCE_START
-{
-    "name": "store_data",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-        {
-            "name": "master_data",
-            "type": "dict"
-        },
-        {
-            "name": "annuaire",
-            "type": "list"
-        },
-        {
-            "name": "faculties",
-            "type": "list"
-        },
-        {
-            "name": "schedule_dict",
-            "type": "dict"
-        },
-        {
-            "name": "db",
-            "type": "MongoDB"
-        }
-    ],
-    "return_type": "None",
-    "description": "Store the data in the database.",
-    "tags": ["database", "store"],
-    "constraints": [
-        {
-            "type": "Pattern",
-            "details": "Follows the store data pattern with required parameters and return type."
-        }
-    ],
-    "relations": [
-        {
-            "calls": []
-        }
-    ],
-    "reasoning": "classified as ExternalInteraction because it performs external communication with the MongoDB database."
-}
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
 
-FUNCTION_INSTANCE_START
-{
-    "name": "log_insertion_details",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-        {
-            "name": "schedule_diff",
-            "type": "set"
-        },
-        {
-            "name": "annuaire_diff",
-            "type": "set"
-        }
-    ],
-    "return_type": "None",
-    "description": "Log insertion details.",
-    "tags": ["logging", "details"],
-    "constraints": [
-        {
-            "type": "Pattern",
-            "details": "Follows the log insertion details pattern with required parameters and return type."
-        }
-    ],
-    "relations": [
-        {
-            "calls": []
-        }
-    ],
-    "reasoning": "classified as ExternalInteraction because it performs external communication with the logging system."
-}
+nature: Concrete
+    # Indicates whether the function is concrete, prototype, or derivative.
 
-FUNCTION_INSTANCE_START
-{
-    "name": "find_in_sorted_list",
-    "function_type": "PureUtility",
-    "nature": "Concrete",
-    "parameters": [
-        {
-            "name": "elem",
-            "type": "str"
-        },
-        {
-            "name": "sorted_list",
-            "type": "list"
-        }
-    ],
-    "return_type": "int",
-    "description": "Locate the leftmost value exactly equal to x.",
-    "tags": ["sorting", "finding", "utility"],
-    "constraints": [
-        {
-            "type": "Pattern",
-            "details": "Follows the find in sorted list pattern with required parameters and return type."
-        }
-    ],
-    "relations": [
-        {
-            "calls": []
-        }
-    ],
-    "reasoning": "classified as PureUtility because it performs a simple utility task without any external interaction or side effects."
-}
+parameters:
+    - name: root
+      type: str
+    - name: import_links_directory
+      type: str
+    - name: schedule_raw_directory
+      type: str
+    - name: schedule_parsed_directory
+      type: str
+    - name: annuaire_raw_directory
+      type: str
+    - name: annuaire_parsed_directory
+      type: str
+    - name: repertoire_raw_directory
+      type: str
+    - name: repertoire_parsed_directory
+      type: str
+    - name: hierarchy_path
+      type: str
+    - name: debug
+      type: bool
 
-FUNCTION_INSTANCE_START
-{
-    "name": "refactor_faculties",
-    "function_type": "ExternalInteraction",
-    "nature": "Concrete",
-    "parameters": [
-        {
-            "name": "faculties",
-            "type": "list"
-        },
-        {
-            "name": "annuaires",
-            "type": "dict"
-        },
-        {
-            "name": "directories_tuples",
-            "type": "list"
-        }
-    ],
-    "return_type": "list",
-    "description": "Refactor faculties based on the annuaires and directories.",
-    "tags": ["refactoring", "faculties", "annuaires"],
-    "constraints": [
-        {
-            "type": "Pattern",
-            "details": "Follows the refactor faculties pattern with required parameters and return type."
-        }
-    ],
-    "relations": [
-        {
-            "calls": []
-        }
-    ],
-    "reasoning": "classified as ExternalInteraction because it performs external communication with the directories and annuaires."
-}
+return_type: None
+    # Inferred return Python type.
 
-FUNCTION_INSTANCE_START
-{
-    "name": "readImportLinks",
-    "function_type": "PureUtility",
-    "nature": "Concrete",
-    "parameters": [
-        {
-            "name": "directories_tuples",
-            "type": "list"
-        }
-    ],
-    "return_type": "dict",
-    "description": "Read import links from directories.",
-    "tags": ["reading", "links", "directories"],
-    "constraints": [
-        {
-            "type": "Pattern",
-            "details": "Follows the read import links pattern with required parameters and return type."
-        }
-    ],
-    "relations": [
-        {
-            "calls": []
-        }
-    ],
-    "reasoning": "classified as PureUtility because it performs a simple utility task without any external interaction or side effects."
-}
+description: Main function to parse the raw data and populate the database.
+    # Short summary of what the function does, based on its code context.
 
+tags: [database, parsing, logging]
+    # Keywords capturing behavior, purpose, and/or domain of the function.
+
+inheritance:
+    - base_concept: None
+    - prototype_concept: None
+
+constraints:
+    - type: Equality
+      details: "Arguments must match the expected types"
+
+relations:
+    - calls: [store_data, log_insertion_details, readImportLinks, refactor_faculties]
+    - called_by: [log_insertion_details, store_data]
+    - dependencies: [MongoDB, logging.getLogger]
+
+reasoning: "classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context."
+────────────────────────────────────────
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: store_data
+    # Exact name of the function as defined in code.
+
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+nature: Concrete
+    # Indicates whether the function is concrete, prototype, or derivative.
+
+parameters:
+    - name: master_data
+      type: dict
+    - name: annuaire
+      type: list
+    - name: faculties
+      type: list
+    - name: schedule_dict
+      type: dict
+    - name: db
+      type: MongoDB
+
+return_type: None
+    # Inferred return Python type.
+
+description: Store the data in the database.
+    # Short summary of what the function does, based on its code context.
+
+tags: [database, MongoDB]
+    # Keywords capturing behavior, purpose, and/or domain of the function.
+
+inheritance:
+    - base_concept: None
+    - prototype_concept: None
+
+constraints:
+    - type: Equality
+      details: "Arguments must match the expected types"
+
+relations:
+    - calls: [MongoDB.drop, MongoDB.insert_many]
+    - called_by: [main]
+    - dependencies: [MongoDB]
+
+reasoning: "classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context."
+────────────────────────────────────────
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: log_insertion_details
+    # Exact name of the function as defined in code.
+
+function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+nature: Concrete
+    # Indicates whether the function is concrete, prototype, or derivative.
+
+parameters:
+    - name: schedule_diff
+      type: set
+    - name: annuaire_diff
+      type: set
+
+return_type: None
+    # Inferred return Python type.
+
+description: Log insertion details.
+    # Short summary of what the function does, based on its code context.
+
+tags: [logging]
+    # Keywords capturing behavior, purpose, and/or domain of the function.
+
+inheritance:
+    - base_concept: None
+    - prototype_concept: None
+
+constraints:
+    - type: Equality
+      details: "Arguments must match the expected types"
+
+relations:
+    - calls: [logging.info]
+    - called_by: [main]
+    - dependencies: [logging]
+
+reasoning: "classified as PureUtility because it performs deterministic output based only on input parameters and does not depend on object state or perform I/O operations."
+────────────────────────────────────────
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: find_in_sorted_list
+    # Exact name of the function as defined in code.
+
+function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+nature: Concrete
+    # Indicates whether the function is concrete, prototype, or derivative.
+
+parameters:
+    - name: elem
+      type: str
+    - name: sorted_list
+      type: list
+
+return_type: int
+    # Inferred return Python type.
+
+description: Locate the leftmost value exactly equal to x in a sorted list.
+    # Short summary of what the function does, based on its code context.
+
+tags: [search, sorting]
+    # Keywords capturing behavior, purpose, and/or domain of the function.
+
+inheritance:
+    - base_concept: None
+    - prototype_concept: None
+
+constraints:
+    - type: Equality
+      details: "Arguments must match the expected types"
+
+relations:
+    - calls: [bisect.bisect_left]
+    - called_by: [refactor_faculties]
+    - dependencies: [bisect]
+
+reasoning: "classified as PureUtility because it performs deterministic output based only on input parameters and does not depend on object state or perform I/O operations."
+────────────────────────────────────────
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: refactor_faculties
+    # Exact name of the function as defined in code.
+
+function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+nature: Concrete
+    # Indicates whether the function is concrete, prototype, or derivative.
+
+parameters:
+    - name: faculties
+      type: list
+    - name: annuaires
+      type: dict
+    - name: directories_tuples
+      type: list
+
+return_type: list
+    # Inferred return Python type.
+
+description: Refactor faculties data.
+    # Short summary of what the function does, based on its code context.
+
+tags: [data refinement, normalization]
+    # Keywords capturing behavior, purpose, and/or domain of the function.
+
+inheritance:
+    - base_concept: None
+    - prototype_concept: None
+
+constraints:
+    - type: Equality
+      details: "Arguments must match the expected types"
+
+relations:
+    - calls: [readImportLinks]
+    - called_by: [main]
+    - dependencies: [logging]
+
+reasoning: "classified as PureUtility because it performs deterministic output based only on input parameters and does not depend on object state or perform I/O operations."
+────────────────────────────────────────
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
+function_name: readImportLinks
+    # Exact name of the function as defined in code.
+
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+nature: Concrete
+    # Indicates whether the function is concrete, prototype, or derivative.
+
+parameters:
+    - name: directories_tuples
+      type: list
+
+return_type: dict
+    # Inferred return Python type.
+
+description: Read import links.
+    # Short summary of what the function does, based on its code context.
+
+tags: [data import, file access]
+    # Keywords capturing behavior, purpose, and/or domain of the function.
+
+inheritance:
+    - base_concept: None
+    - prototype_concept: None
+
+constraints:
+    - type: Equality
+      details: "Arguments must match the expected types"
+
+relations:
+    - calls: [os.path.join, logging.error]
+    - called_by: [refactor_faculties]
+    - dependencies: [logging, os]
+
+reasoning: "classified as ExternalInteraction because it performs communication with an external system (file system) and produces/consumes data exchanged outside the program's in-memory context."
+────────────────────────────────────────
 FUNCTION_INSTANCE_END

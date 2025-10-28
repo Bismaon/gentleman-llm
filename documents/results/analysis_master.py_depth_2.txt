@@ -1,151 +1,208 @@
-Here is the classification of each function in the provided codebase:
+Here are the classifications for each function in the provided codebase:
 
-### 1. `main`
+```json
+[
+  {
+    "function_name": "main",
+    "function_type": "Constructor",
+    "nature": "Concrete",
+    "parameters": [
+      {
+        "name": "root",
+        "type": "str"
+      },
+      {
+        "name": "import_links_directory",
+        "type": "str"
+      },
+      {
+        "name": "schedule_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "schedule_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "annuaire_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "annuaire_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "repertoire_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "repertoire_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "hierarchy_path",
+        "type": "str"
+      },
+      {
+        "name": "debug",
+        "type": "bool"
+      }
+    ],
+    "return_type": "None",
+    "description": "Main function to parse the raw data and populate the database.",
+    "tags": ["database", "parsing", "main"],
+    "inheritance": null,
+    "constraints": null,
+    "relations": {
+      "calls": ["store_data", "log_insertion_details"],
+      "called_by": null,
+      "dependencies": ["MongoDB", "logging", "json", "argparse", "bisect", "re"]
+    },
+    "reasoning": "classified as Constructor because it defines or initializes object state."
+  },
+  {
+    "function_name": "store_data",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
+    "parameters": [
+      {
+        "name": "master_data",
+        "type": "dict"
+      },
+      {
+        "name": "annuaire",
+        "type": "list"
+      },
+      {
+        "name": "faculties",
+        "type": "list"
+      },
+      {
+        "name": "schedule_dict",
+        "type": "dict"
+      },
+      {
+        "name": "db",
+        "type": "MongoDB"
+      }
+    ],
+    "return_type": "None",
+    "description": "Store the data in the database.",
+    "tags": ["database", "storage"],
+    "inheritance": null,
+    "constraints": null,
+    "relations": {
+      "calls": null,
+      "called_by": ["main"],
+      "dependencies": ["MongoDB", "logging"]
+    },
+    "reasoning": "classified as PureUtility because it has no dependency on object state (`self`, `cls`) and performs deterministic output based only on input parameters."
+  },
+  {
+    "function_name": "log_insertion_details",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
+    "parameters": [
+      {
+        "name": "schedule_diff",
+        "type": "set"
+      },
+      {
+        "name": "annuaire_diff",
+        "type": "set"
+      }
+    ],
+    "return_type": "None",
+    "description": "Log insertion details.",
+    "tags": ["logging", "details"],
+    "inheritance": null,
+    "constraints": null,
+    "relations": {
+      "calls": null,
+      "called_by": ["main"],
+      "dependencies": ["logging", "set"]
+    },
+    "reasoning": "classified as PureUtility because it has no dependency on object state (`self`, `cls`) and performs deterministic output based only on input parameters."
+  },
+  {
+    "function_name": "find_in_sorted_list",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
+    "parameters": [
+      {
+        "name": "elem",
+        "type": "str"
+      },
+      {
+        "name": "sorted_list",
+        "type": "list"
+      }
+    ],
+    "return_type": "int",
+    "description": "Locate the leftmost value exactly equal to x.",
+    "tags": ["sorting", "search"],
+    "inheritance": null,
+    "constraints": null,
+    "relations": {
+      "calls": null,
+      "called_by": ["refactor_faculties"],
+      "dependencies": ["bisect", "list"]
+    },
+    "reasoning": "classified as PureUtility because it has no dependency on object state (`self`, `cls`) and performs deterministic output based only on input parameters."
+  },
+  {
+    "function_name": "refactor_faculties",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
+    "parameters": [
+      {
+        "name": "faculties",
+        "type": "list"
+      },
+      {
+        "name": "annuaires",
+        "type": "dict"
+      },
+      {
+        "name": "directories_tuples",
+        "type": "list"
+      }
+    ],
+    "return_type": "list",
+    "description": "Refactor faculties.",
+    "tags": ["faculties", "refactoring"],
+    "inheritance": null,
+    "constraints": null,
+    "relations": {
+      "calls": ["readImportLinks"],
+      "called_by": ["main"],
+      "dependencies": ["list", "dict"]
+    },
+    "reasoning": "classified as PureUtility because it has no dependency on object state (`self`, `cls`) and performs deterministic output based only on input parameters."
+  },
+  {
+    "function_name": "readImportLinks",
+    "function_type": "PureUtility",
+    "nature": "Concrete",
+    "parameters": [
+      {
+        "name": "directories_tuples",
+        "type": "list"
+      }
+    ],
+    "return_type": "dict",
+    "description": "Read import links.",
+    "tags": ["links", "reading"],
+    "inheritance": null,
+    "constraints": null,
+    "relations": {
+      "calls": null,
+      "called_by": ["refactor_faculties"],
+      "dependencies": ["list", "dict", "re"]
+    },
+    "reasoning": "classified as PureUtility because it has no dependency on object state (`self`, `cls`) and performs deterministic output based only on input parameters."
+  }
+]
+```
 
-| Property | Value |
-| --- | --- |
-| function_type | ExternalInteraction |
-| nature | Concrete |
-| parameters | `root: str`, `import_links_directory: str`, `schedule_raw_directory: str`, `schedule_parsed_directory: str`, `annuaire_raw_directory: str`, `annuaire_parsed_directory: str`, `repertoire_raw_directory: str`, `repertoire_parsed_directory: str`, `hierarchy_path: str`, `debug: bool` |
-| return_type | None |
-| description | Main function to parse the raw data and populate the database. |
-| tags | `parser`, `database`, `annuaire`, `repertoire`, `schedule` |
-| constraints | No explicit constraints |
-| relations | Calls `store_data`, `log_insertion_details` |
-| reasoning | Classified as `ExternalInteraction` because it performs communication with external systems (parsers, database). |
-| reasoning_detail | `main` orchestrates the entire process of parsing data from various sources (parsers) and storing it in a database. |
-
-### 2. `store_data`
-
-| Property | Value |
-| --- | --- |
-| function_type | PureUtility |
-| nature | Concrete |
-| parameters | `master_data: dict`, `annuaire: list`, `faculties: dict`, `schedule_dict: dict`, `db: MongoDB` |
-| return_type | None |
-| description | Store the data in the database. |
-| tags | `database`, `storage` |
-| constraints | No explicit constraints |
-| relations | Calls `db.drop`, `db.insert_many` |
-| reasoning | Classified as `PureUtility` because it performs a simple, deterministic operation (storing data in a database). |
-| reasoning_detail | `store_data` is a utility function that takes in various data structures and stores them in a MongoDB database using the `MongoDB` class. |
-
-### 3. `log_insertion_details`
-
-| Property | Value |
-| --- | --- |
-| function_type | PureUtility |
-| nature | Concrete |
-| parameters | `schedule_diff: set`, `annuaire_diff: set` |
-| return_type | None |
-| description | Log insertion details. |
-| tags | `logging`, `reporting` |
-| constraints | No explicit constraints |
-| relations | No external calls |
-| reasoning | Classified as `PureUtility` because it performs a simple, deterministic operation (logging). |
-| reasoning_detail | `log_insertion_details` is a utility function that takes in two sets of course IDs and logs the differences between them. |
-
-### 4. `find_in_sorted_list`
-
-| Property | Value |
-| --- | --- |
-| function_type | PureUtility |
-| nature | Concrete |
-| parameters | `elem: str`, `sorted_list: list` |
-| return_type | `int` |
-| description | Locate the leftmost value exactly equal to x. |
-| tags | `search`, `list` |
-| constraints | Requires a sorted list |
-| relations | No external calls |
-| reasoning | Classified as `PureUtility` because it performs a simple, deterministic operation (binary search). |
-| reasoning_detail | `find_in_sorted_list` is a utility function that takes in an element and a sorted list and returns the index of the element if it exists, or -1 otherwise. |
-
-### 5. `refactor_faculties`
-
-| Property | Value |
-| --- | --- |
-| function_type | PureUtility |
-| nature | Concrete |
-| parameters | `faculties: dict`, `annuaires: dict`, `directories_tuples: list` |
-| return_type | `dict` |
-| description | Refactor faculties. |
-| tags | `faculty`, `annuaire`, `repertoire` |
-| constraints | Requires a sorted list of faculties and annuaires |
-| relations | Calls `readImportLinks` |
-| reasoning | Classified as `PureUtility` because it performs a simple, deterministic operation (refactoring faculties). |
-| reasoning_detail | `refactor_faculties` is a utility function that takes in a dictionary of faculties, a dictionary of annuaires, and a list of directories tuples, and returns a refactored dictionary of faculties. |
-
-### 6. `readImportLinks`
-
-| Property | Value |
-| --- | --- |
-| function_type | ExternalInteraction |
-| nature | Concrete |
-| parameters | `directories_tuples: list` |
-| return_type | `dict` |
-| description | Read import links. |
-| tags | `links`, `orientation` |
-| constraints | Requires a list of directories tuples |
-| relations | Calls `open`, `re` |
-| reasoning | Classified as `ExternalInteraction` because it performs communication with external systems (reading files). |
-| reasoning_detail | `readImportLinks` is a function that takes in a list of directories tuples and returns a dictionary of import links. |
-
-### 7. `annuaire_parser.parse`
-
-| Property | Value |
-| --- | --- |
-| function_type | ExternalInteraction |
-| nature | Concrete |
-| parameters | `file: str` |
-| return_type | `list` |
-| description | Parse annuaire. |
-| tags | `annuaire`, `parser` |
-| constraints | Requires a file path |
-| relations | No external calls |
-| reasoning | Classified as `ExternalInteraction` because it performs communication with external systems (parsing an annuaire file). |
-| reasoning_detail | `annuaire_parser.parse` is a function that takes in a file path and returns a list of parsed annuaires. |
-
-### 8. `repertoire_parser.parse`
-
-| Property | Value |
-| --- | --- |
-| function_type | ExternalInteraction |
-| nature | Concrete |
-| parameters | `file: str` |
-| return_type | `list` |
-| description | Parse repertoire. |
-| tags | `repertoire`, `parser` |
-| constraints | Requires a file path |
-| relations | No external calls |
-| reasoning | Classified as `ExternalInteraction` because it performs communication with external systems (parsing a repertoire file). |
-| reasoning_detail | `repertoire_parser.parse` is a function that takes in a file path and returns a list of parsed repertoires. |
-
-### 9. `schedule_parser.parse`
-
-| Property | Value |
-| --- | --- |
-| function_type | ExternalInteraction |
-| nature | Concrete |
-| parameters | `file: str` |
-| return_type | `list` |
-| description | Parse schedule. |
-| tags | `schedule`, `parser` |
-| constraints | Requires a file path |
-| relations | No external calls |
-| reasoning | Classified as `ExternalInteraction` because it performs communication with external systems (parsing a schedule file). |
-| reasoning_detail | `schedule_parser.parse` is a function that takes in a file path and returns a list of parsed schedules. |
-
-### 10. `faculty_parser.parse`
-
-| Property | Value |
-| --- | --- |
-| function_type | ExternalInteraction |
-| nature | Concrete |
-| parameters | `file: str` |
-| return_type | `dict` |
-| description | Parse faculty. |
-| tags | `faculty`, `parser` |
-| constraints | Requires a file path |
-| relations | No external calls |
-| reasoning | Classified as `ExternalInteraction` because it performs communication with external systems (parsing a faculty file). |
-| reasoning_detail | `faculty_parser.parse` is a function that takes in a file path and returns a dictionary of parsed faculties. |
+Note that the `function_type` for each function is classified based on the `FUNCTION_TYPES_GUIDE` provided, and the `reasoning` field explains the reasoning behind the classification.

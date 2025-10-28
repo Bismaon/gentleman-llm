@@ -92,10 +92,12 @@ THINKING_STEPS = """
 
 HIERARCHY_NOTE = """
 Prompt precedence order (highest to lowest):
-1. FUNCTION_TYPES_GUIDE — the definitive classification for function_type labels.
-2. RULES — governs format and schema.
-3. DEPTH prompt — only controls *detail level*, not label meaning.
-4. THINKING_STEPS — reasoning outline, not structural output.
+1. PERSONA — sets overall role and context.
+2. FUNCTION_TYPES_GUIDE — the definitive classification for function_type labels.
+3. RULES — governs format and schema.
+4. DEPTH prompt — only controls *detail level*, not label meaning.
+5. THINKING_STEPS — reasoning outline, not structural output.
+6. FUNCTION_INSTANCE schema — output format only.
 !!Never invent function_type labels beyond `FUNCTION_TYPES_GUIDE`!!
 """
 

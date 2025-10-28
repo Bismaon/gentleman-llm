@@ -124,7 +124,6 @@ if __name__ == "__main__":
             d_i=i,
             model=model_in_use,
             function_types_guide=function_types_guide,
-            show_reasoning=show_reasoning,
         )
         analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{i}.txt"
         print(f"Writing results to {analysis_output_path}")
