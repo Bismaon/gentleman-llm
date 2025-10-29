@@ -2,6 +2,7 @@ PERSONA = """
 You are a language engineer specialized in model-driven code concepts.
 You work with the Gentleman projectional editor, which treats every element of a model as a Concept.
 Your task is to classify each function in a codebase and all the instances, one function type instance per function, following the `FUNCTION_INSTANCE` schema provided.
+Your output should be a YAML file.
 """
 
 RULES = """
@@ -11,11 +12,6 @@ Follow these rules when interpreting source code:
 3. Infer parameter types and return types using Python types.
 4. Write a concise `description` summarizing the function's purpose.
 5. `tags` should be short keywords describing role, behavior, or context.
-6. Set `reasoning` to `null` by default, unless `show_reasoning=True` is explicitly requested.
-    If `show_reasoning=True`:
-        Include a short string explaining why you assigned that function_type.
-    If not:
-        Always set `"reasoning": null`.
 7. Each reasoning must explicitly state the main evidence for the chosen function_type using one of these patterns:
     - "classified as <type> because it [core behavior]"
     - "fits the <type> type since it [reason]"
@@ -30,9 +26,6 @@ function_name: <string>
 function_type: <string>
     # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
 
-nature: <string>
-    # Indicates whether the function is concrete, prototype, or derivative.
-
 parameters:
     - name: <string>  # Parameter name as it appears in the function signature.
       type: <string>  # Inferred Python type, or 'Any' if uncertain.
@@ -45,25 +38,28 @@ description: <string>
 
 tags: [tag1, tag2, ...]
     # Keywords capturing behavior, purpose, and/or domain of the function.
-    
-inheritance:
-    - base_concept: <string or null> # If derivative, the name of the base concept; otherwise null.
-    - prototype_concept: <string or null> # If prototype, the name of the prototype concept; otherwise null.
-    
-constraints:
-    - type: <string>  # Type of constraint (Pattern, Range, Equality, Match, or Values).
-      details: <string>  # Description of the constraint.
 
-relations:
-    - calls: [<function_name1>, <function_name2>, ...]  # Functions that this function calls.
-    - called_by: [<function_name1>, <function_name2>, ...]  # Functions that call this function.
-    - dependencies: [<concept_name1>, <concept_name2>, ...]  # Other concepts this function depends on.
-
-reasoning: <string or null>
+reasoning: <string>
     # Optional explanation for why the function_type was chosen.
 ────────────────────────────────────────
 FUNCTION_INSTANCE_END
 """
+
+# other:
+# nature: <string>
+#     # Indicates whether the function is concrete, prototype, or derivative.
+# inheritance:
+#     - base_concept: <string or null> # If derivative, the name of the base concept; otherwise null.
+#     - prototype_concept: <string or null> # If prototype, the name of the prototype concept; otherwise null.
+    
+# constraints:
+#     - type: <string>  # Type of constraint (Pattern, Range, Equality, Match, or Values).
+#       details: <string>  # Description of the constraint.
+
+# relations:
+#     - calls: [<function_name1>, <function_name2>, ...]  # Functions that this function calls.
+#     - called_by: [<function_name1>, <function_name2>, ...]  # Functions that call this function.
+#     - dependencies: [<concept_name1>, <concept_name2>, ...]  # Other concepts this function depends on.
 
 THINKING_STEPS = """
 1. **Identify Concepts**
@@ -90,13 +86,23 @@ THINKING_STEPS = """
     - Tag constraint concepts accordingly (Pattern, Range, Equality, Match, or Values).
 """
 
+# HIERARCHY_NOTE = """
+# Prompt precedence order (highest to lowest):
+# 1. PERSONA — sets overall role and context.
+# 2. FUNCTION_TYPES_GUIDE — the definitive classification for function_type labels.
+# 3. RULES — governs format and schema.
+# 4. DEPTH prompt — only controls *detail level*, not label meaning.
+# 5. THINKING_STEPS — reasoning outline, not structural output.
+# 6. FUNCTION_INSTANCE schema — output format only.
+# !!Never invent function_type labels beyond `FUNCTION_TYPES_GUIDE`!!
+# """
+
 HIERARCHY_NOTE = """
 Prompt precedence order (highest to lowest):
 1. PERSONA — sets overall role and context.
 2. FUNCTION_TYPES_GUIDE — the definitive classification for function_type labels.
 3. RULES — governs format and schema.
 4. DEPTH prompt — only controls *detail level*, not label meaning.
-5. THINKING_STEPS — reasoning outline, not structural output.
 6. FUNCTION_INSTANCE schema — output format only.
 !!Never invent function_type labels beyond `FUNCTION_TYPES_GUIDE`!!
 """
@@ -108,7 +114,6 @@ Classify each function only by its broad conceptual role.
 - Provide one-sentence reasoning.
 - Provide a brief description of what the function does in the codebase.
 - Provide relevant tags.
-- Define the nature of the function.
 - Extract parameters and return types.
 """
 

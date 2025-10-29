@@ -1,0 +1,94 @@
+```yml
+function_instances:
+  - function_name: main
+    function_type: ExternalInteraction
+    parameters:
+      - name: root
+        type: str
+      - name: import_links_directory
+        type: str
+      - name: schedule_raw_directory
+        type: str
+      - name: schedule_parsed_directory
+        type: str
+      - name: annuaire_raw_directory
+        type: str
+      - name: annuaire_parsed_directory
+        type: str
+      - name: repertoire_raw_directory
+        type: str
+      - name: repertoire_parsed_directory
+        type: str
+      - name: hierarchy_path
+        type: str
+      - name: debug
+        type: bool
+    return_type: None
+    description: Main function to parse the raw data and populate the database.
+    tags: [data_parsing, database_population]
+
+  - function_name: store_data
+    function_type: ExternalInteraction
+    parameters:
+      - name: master_data
+        type: dict
+      - name: annuaire
+        type: list
+      - name: faculties
+        type: list
+      - name: schedule_dict
+        type: dict
+      - name: db
+        type: MongoDB
+    return_type: None
+    description: Store the data in the database.
+    tags: [database_population]
+
+  - function_name: log_insertion_details
+    function_type: ExternalInteraction
+    parameters:
+      - name: schedule_diff
+        type: set
+      - name: annuaire_diff
+        type: set
+    return_type: None
+    description: Log insertion details.
+    tags: [logging]
+
+  - function_name: find_in_sorted_list
+    function_type: PureUtility
+    parameters:
+      - name: elem
+        type: str
+      - name: sorted_list
+        type: list
+    return_type: int
+    description: Locate the leftmost value exactly equal to x.
+    tags: [sorting]
+
+  - function_name: refactor_faculties
+    function_type: ExternalInteraction
+    parameters:
+      - name: faculties
+        type: list
+      - name: annuaires
+        type: dict
+      - name: directories_tuples
+        type: list
+        type: tuple
+    return_type: list
+    description: Refactor faculties.
+    tags: [data_processing]
+
+  - function_name: readImportLinks
+    function_type: ExternalInteraction
+    parameters:
+      - name: directories_tuples
+        type: list
+        type: tuple
+    return_type: dict
+    description: Read import links.
+    tags: [data_import]
+```
+
+This output follows the `FUNCTION_INSTANCE` schema, providing the classification, description, tags, parameters, and return types for each function. The `function_type` is chosen based on the `FUNCTION_TYPES_GUIDE`, and a brief reasoning is provided for each classification.

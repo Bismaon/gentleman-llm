@@ -1,0 +1,111 @@
+Below is the classification and output for each function in the provided code:
+
+```yml
+FUNCTION_INSTANCE_BEGIN
+function_name: main
+function_type: ExternalInteraction
+parameters:
+  - name: root
+    type: str
+  - name: import_links_directory
+    type: str
+  - name: schedule_raw_directory
+    type: str
+  - name: schedule_parsed_directory
+    type: str
+  - name: annuaire_raw_directory
+    type: str
+  - name: annuaire_parsed_directory
+    type: str
+  - name: repertoire_raw_directory
+    type: str
+  - name: repertoire_parsed_directory
+    type: str
+  - name: hierarchy_path
+    type: str
+  - name: debug
+    type: bool
+return_type: None
+description: Main function to parse the raw data and populate the database.
+tags: [database, parsing, data]
+reasoning: Classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program’s in-memory context.
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+function_name: store_data
+function_type: ExternalInteraction
+parameters:
+  - name: master_data
+    type: dict
+  - name: annuaire
+    type: list
+  - name: faculties
+    type: list
+  - name: schedule_dict
+    type: dict
+  - name: db
+    type: MongoDB
+return_type: None
+description: Store the data in the database.
+tags: [database, storage]
+reasoning: Classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program’s in-memory context.
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+function_name: log_insertion_details
+function_type: PureUtility
+parameters:
+  - name: schedule_diff
+    type: set
+  - name: annuaire_diff
+    type: set
+return_type: None
+description: Log insertion details.
+tags: [logging, utility]
+reasoning: Classified as PureUtility because it does not depend on object state (`self`, `cls`) and does not perform I/O operations.
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+function_name: find_in_sorted_list
+function_type: PureUtility
+parameters:
+  - name: elem
+    type: str
+  - name: sorted_list
+    type: list
+return_type: int
+description: Locate the leftmost value exactly equal to x.
+tags: [search, utility]
+reasoning: Classified as PureUtility because it does not depend on object state (`self`, `cls`) and does not perform I/O operations.
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+function_name: refactor_faculties
+function_type: ExternalInteraction
+parameters:
+  - name: faculties
+    type: list
+  - name: annuaires
+    type: dict
+  - name: directories_tuples
+    type: list
+return_type: list
+description: Refactor faculties by integrating annuaire data.
+tags: [data, manipulation]
+reasoning: Classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program’s in-memory context.
+FUNCTION_INSTANCE_END
+
+FUNCTION_INSTANCE_BEGIN
+function_name: readImportLinks
+function_type: ExternalInteraction
+parameters:
+  - name: directories_tuples
+    type: list
+return_type: dict
+description: Read import links from directories.
+tags: [data, import]
+reasoning: Classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program’s in-memory context.
+FUNCTION_INSTANCE_END
+```
+
+Note that the classification and reasoning for each function are based on the provided `FUNCTION_TYPES_GUIDE` and the analysis of the function's behavior. The `function_type` is classified as either `ExternalInteraction` or `PureUtility` depending on whether the function performs communication with an external system and produces/consumes data exchanged outside the program’s in-memory context. The `reasoning` field provides a brief explanation for the classification.

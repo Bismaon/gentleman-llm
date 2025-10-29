@@ -75,7 +75,7 @@ def get_concept(
             {"role": "system", "content": PERSONA},
             {"role": "system", "content": RULES},
             {"role": "system", "content": FUNCTION_INSTANCE},
-            {"role": "system", "content": THINKING_STEPS},
+            # {"role": "system", "content": THINKING_STEPS},
             {"role": "system", "content": HIERARCHY_NOTE},
             {"role": "system", "content": f"FUNCTION_TYPES_GUIDE_START\n{function_types_guide}\nFUNCTION_TYPES_GUIDE_END\n"
             "Always pick the closest match from this list; do not generate new labels."},
@@ -87,6 +87,21 @@ def get_concept(
         ],
     )
 
+
+def prettyLLMflow(analyze_file_with_llm, model_in_use, concept_schema, function_types_guide, list_of_files, i,analysis_output_path):
+    filepath = f"code/{list_of_files[2]}"
+    print(
+            f"Analyzing file: {list_of_files[2]} with model {model_in_use} at depth {i}"
+        )
+    response = analyze_file_with_llm(
+            filepath,
+            concept_schema,
+            d_i=i,
+            model=model_in_use,
+            function_types_guide=function_types_guide,
+        )
+    print(f"Writing results to {analysis_output_path}")
+    write_file(analysis_output_path, response)
 
 if __name__ == "__main__":
     load_dotenv()
@@ -113,18 +128,6 @@ if __name__ == "__main__":
         print(f"Functions found in {filepath}: {functions}")
         print()
 
-    for i in range(3):
-        filepath = f"code/{list_of_files[2]}"
-        print(
-            f"Analyzing file: {list_of_files[2]} with model {model_in_use} at depth {i}"
-        )
-        response = analyze_file_with_llm(
-            filepath,
-            concept_schema,
-            d_i=i,
-            model=model_in_use,
-            function_types_guide=function_types_guide,
-        )
-        analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{i}.txt"
-        print(f"Writing results to {analysis_output_path}")
-        write_file(analysis_output_path, response)
+    for num_tries in range(10):
+        analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{d_i}_try_{num_tries}.txt"
+        prettyLLMflow(analyze_file_with_llm, model_in_use, concept_schema, function_types_guide, list_of_files, d_i, analysis_output_path)
