@@ -5,12 +5,12 @@ from util import find_functions, get_json, list_files, read_file, write_file
 from local import (
     FUNCTION_INSTANCE,
     HIERARCHY_NOTE,
+    FUNCTION_TYPES_GUIDE,
     THINKING_STEPS,
     PERSONA,
     DEPTHS,
     RULES,
 )
-import json
 
 models = [
     "moonshotai/Kimi-K2-Instruct-0905",
@@ -21,9 +21,7 @@ models = [
 
 def analyze_file_with_llm(
     filepath: str,
-    schema_dict: dict,
     d_i: int = 0,
-    function_types_guide: str = "",
     model: str = "meta-llama/Llama-3.1-8B-Instruct",
 ) -> str:
     """
@@ -50,10 +48,8 @@ def analyze_file_with_llm(
         return f"Error reading file {filepath}: {e}"
     pass
     concept_res = get_concept(
-        schema_dict,
         model,
         depth_index,
-        function_types_guide,
         content,
         functions,
     )
@@ -62,10 +58,8 @@ def analyze_file_with_llm(
 
 
 def get_concept(
-    schema_dict,
     model,
     depth_index,
-    function_types_guide,
     content,
     functions,
 ):
@@ -77,8 +71,7 @@ def get_concept(
             {"role": "system", "content": FUNCTION_INSTANCE},
             # {"role": "system", "content": THINKING_STEPS},
             {"role": "system", "content": HIERARCHY_NOTE},
-            {"role": "system", "content": f"FUNCTION_TYPES_GUIDE_START\n{function_types_guide}\nFUNCTION_TYPES_GUIDE_END\n"
-            "Always pick the closest match from this list; do not generate new labels."},
+            {"role": "system", "content": FUNCTION_TYPES_GUIDE},
             {"role": "user", "content": DEPTHS[depth_index]},
             {
                 "role": "user",
@@ -88,20 +81,20 @@ def get_concept(
     )
 
 
-def prettyLLMflow(analyze_file_with_llm, model_in_use, concept_schema, function_types_guide, list_of_files, i,analysis_output_path):
+def pretty_LLM_flow(model_in_use, list_of_files, i, analysis_output_path):
     filepath = f"code/{list_of_files[2]}"
     print(
             f"Analyzing file: {list_of_files[2]} with model {model_in_use} at depth {i}"
         )
     response = analyze_file_with_llm(
             filepath,
-            concept_schema,
             d_i=i,
             model=model_in_use,
-            function_types_guide=function_types_guide,
         )
     print(f"Writing results to {analysis_output_path}")
     write_file(analysis_output_path, response)
+
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -109,10 +102,8 @@ if __name__ == "__main__":
     model_in_use = models[2]
     show_reasoning = True
     d_i = 0  # depth index
-    concept_schema = get_json("formats/concept_format.json")
+    # concept_schema = get_json("formats/concept_format.json")
     # projection_schema = get_json("formats/projection_format.json")
-    function_types = get_json("formats/function_types_guide.json")
-    function_types_guide = json.dumps(function_types, indent=4)
 
     client = OpenAI(
         base_url="https://router.huggingface.co/v1",
@@ -130,4 +121,4 @@ if __name__ == "__main__":
 
     for num_tries in range(10):
         analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{d_i}_try_{num_tries}.txt"
-        prettyLLMflow(analyze_file_with_llm, model_in_use, concept_schema, function_types_guide, list_of_files, d_i, analysis_output_path)
+        pretty_LLM_flow(model_in_use, list_of_files, d_i, analysis_output_path)

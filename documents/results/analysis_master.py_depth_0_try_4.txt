@@ -1,264 +1,304 @@
-Here is the classification of each function according to the provided schema and the `FUNCTION_TYPES_GUIDE`:
+Here is the classification of each function with a brief description, relevant tags, and the reasoning for each function type:
 
 ```yml
 FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
 function_name: main
+    # Main function to parse the raw data and populate the database.
+
 function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
 parameters:
-  - name: root
-    type: str
-  - name: import_links_directory
-    type: str
-  - name: schedule_raw_directory
-    type: str
-  - name: schedule_parsed_directory
-    type: str
-  - name: annuaire_raw_directory
-    type: str
-  - name: annuaire_parsed_directory
-    type: str
-  - name: repertoire_raw_directory
-    type: str
-  - name: repertoire_parsed_directory
-    type: str
-  - name: hierarchy_path
-    type: str
-  - name: debug
-    type: bool
+    - name: root
+      type: str
+    - name: import_links_directory
+      type: str
+    - name: schedule_raw_directory
+      type: str
+    - name: schedule_parsed_directory
+      type: str
+    - name: annuaire_raw_directory
+      type: str
+    - name: annuaire_parsed_directory
+      type: str
+    - name: repertoire_raw_directory
+      type: str
+    - name: repertoire_parsed_directory
+      type: str
+    - name: hierarchy_path
+      type: str
+    - name: debug
+      type: bool
+
 return_type: None
+
 description: Main function to parse the raw data and populate the database.
-tags: [database, parsing, main]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
 
-FUNCTION_INSTANCE_BEGIN
+tags: [parse, database, main]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to parse the raw data and populate the database.
+
+────────────────────────────────────────
 function_name: store_data
-function_type: ExternalInteraction
-parameters:
-  - name: master_data
-    type: dict
-  - name: annuaire
-    type: list
-  - name: faculties
-    type: list
-  - name: schedule_dict
-    type: dict
-  - name: db
-    type: MongoDB
-return_type: None
-description: Store the data in the database.
-tags: [database, storage]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
+    # Store the data in the database.
 
-FUNCTION_INSTANCE_BEGIN
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+parameters:
+    - name: master_data
+      type: dict
+    - name: annuaire
+      type: list
+    - name: faculties
+      type: list
+    - name: schedule_dict
+      type: dict
+    - name: db
+      type: MongoDB
+
+return_type: None
+
+description: Store the data in the database.
+
+tags: [database, store, data]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to store the data in the database.
+
+────────────────────────────────────────
 function_name: log_insertion_details
-function_type: ExternalInteraction
+    # Log insertion details.
+
+function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
 parameters:
-  - name: schedule_diff
-    type: set
-  - name: annuaire_diff
-    type: set
+    - name: schedule_diff
+      type: set
+    - name: annuaire_diff
+      type: set
+
 return_type: None
+
 description: Log insertion details.
-tags: [logging, insertion]
-reasoning: classified as ExternalInteraction because it typically involves writing to an external system such as a log file.
 
-FUNCTION_INSTANCE_BEGIN
+tags: [log, details, insertion]
+
+reasoning: Classified as PureUtility because it performs a simple transformation on the input data without any side effects.
+
+────────────────────────────────────────
 function_name: find_in_sorted_list
+    # Locate the leftmost value exactly equal to x.
+
 function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
 parameters:
-  - name: elem
-    type: str
-  - name: sorted_list
-    type: list
+    - name: elem
+      type: str
+    - name: sorted_list
+      type: list
+
 return_type: int
-description: Locate the leftmost value exactly equal to x.
-tags: [search, list]
-reasoning: classified as PureUtility because it performs a deterministic operation based only on input parameters and does not depend on external state.
 
-FUNCTION_INSTANCE_BEGIN
+description: Locate the leftmost value exactly equal to x in a sorted list.
+
+tags: [find, sorted, list]
+
+reasoning: Classified as PureUtility because it performs a simple transformation on the input data without any side effects.
+
+────────────────────────────────────────
 function_name: refactor_faculties
-function_type: PureUtility
-parameters:
-  - name: faculties
-    type: list
-  - name: annuaires
-    type: dict
-  - name: directories_tuples
-    type: list
-return_type: list
-description: Refactor faculties based on annuaire data.
-tags: [faculties, refactoring]
-reasoning: classified as PureUtility because it performs a deterministic operation based only on input parameters and does not depend on external state.
+    # Refactor faculties.
 
-FUNCTION_INSTANCE_BEGIN
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+parameters:
+    - name: faculties
+      type: list
+    - name: annuaires
+      type: dict
+    - name: directories_tuples
+      type: list
+
+return_type: list
+
+description: Refactor faculties.
+
+tags: [refactor, faculties, data]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to refactor the faculties.
+
+────────────────────────────────────────
 function_name: readImportLinks
+    # Read import links.
+
 function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
 parameters:
-  - name: directories_tuples
-    type: list
+    - name: directories_tuples
+      type: list
+
 return_type: dict
-description: Read import links from directories.
-tags: [links, directories]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (directories) and produces/consumes data exchanged outside the program's in-memory context.
 
-FUNCTION_INSTANCE_BEGIN
+description: Read import links.
+
+tags: [read, links, import]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to read the import links.
+
+────────────────────────────────────────
 function_name: store_data
+    # Store data in MongoDB.
+
 function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
 parameters:
-  - name: master_data
-    type: dict
-  - name: annuaire
-    type: list
-  - name: faculties
-    type: list
-  - name: schedule_dict
-    type: dict
-  - name: db
-    type: MongoDB
+    - name: master_data
+      type: dict
+    - name: annuaire
+      type: list
+    - name: faculties
+      type: list
+    - name: schedule_dict
+      type: dict
+    - name: db
+      type: MongoDB
+
 return_type: None
-description: Store the data in the database.
-tags: [database, storage]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
 
-FUNCTION_INSTANCE_BEGIN
-function_name: refactor_faculties
-function_type: PureUtility
-parameters:
-  - name: faculties
-    type: list
-  - name: annuaires
-    type: dict
-  - name: directories_tuples
-    type: list
-return_type: list
-description: Refactor faculties based on annuaire data.
-tags: [faculties, refactoring]
-reasoning: classified as PureUtility because it performs a deterministic operation based only on input parameters and does not depend on external state.
+description: Store data in MongoDB.
 
-FUNCTION_INSTANCE_BEGIN
-function_name: readImportLinks
-function_type: ExternalInteraction
-parameters:
-  - name: directories_tuples
-    type: list
-return_type: dict
-description: Read import links from directories.
-tags: [links, directories]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (directories) and produces/consumes data exchanged outside the program's in-memory context.
+tags: [store, data, MongoDB]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: find_in_sorted_list
-function_type: PureUtility
-parameters:
-  - name: elem
-    type: str
-  - name: sorted_list
-    type: list
-return_type: int
-description: Locate the leftmost value exactly equal to x.
-tags: [search, list]
-reasoning: classified as PureUtility because it performs a deterministic operation based only on input parameters and does not depend on external state.
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to store the data in MongoDB.
 
-FUNCTION_INSTANCE_BEGIN
-function_name: refactor_faculties
-function_type: PureUtility
-parameters:
-  - name: faculties
-    type: list
-  - name: annuaires
-    type: dict
-  - name: directories_tuples
-    type: list
-return_type: list
-description: Refactor faculties based on annuaire data.
-tags: [faculties, refactoring]
-reasoning: classified as PureUtility because it performs a deterministic operation based only on input parameters and does not depend on external state.
-
-FUNCTION_INSTANCE_BEGIN
-function_name: readImportLinks
-function_type: ExternalInteraction
-parameters:
-  - name: directories_tuples
-    type: list
-return_type: dict
-description: Read import links from directories.
-tags: [links, directories]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (directories) and produces/consumes data exchanged outside the program's in-memory context.
-
-FUNCTION_INSTANCE_BEGIN
-function_name: store_data
-function_type: ExternalInteraction
-parameters:
-  - name: master_data
-    type: dict
-  - name: annuaire
-    type: list
-  - name: faculties
-    type: list
-  - name: schedule_dict
-    type: dict
-  - name: db
-    type: MongoDB
-return_type: None
-description: Store the data in the database.
-tags: [database, storage]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
-
-FUNCTION_INSTANCE_BEGIN
-function_name: store_data
-function_type: ExternalInteraction
-parameters:
-  - name: master_data
-    type: dict
-  - name: annuaire
-    type: list
-  - name: faculties
-    type: list
-  - name: schedule_dict
-    type: dict
-  - name: db
-    type: MongoDB
-return_type: None
-description: Store the data in the database.
-tags: [database, storage]
-reasoning: classified as ExternalInteraction because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
-
-FUNCTION_INSTANCE_BEGIN
-function_name: refactor_faculties
-function_type: PureUtility
-parameters:
-  - name: faculties
-    type: list
-  - name: annuaires
-    type: dict
-  - name: directories_tuples
-    type: list
-return_type: list
-description: Refactor faculties based on annuaire data.
-tags: [faculties, refactoring]
-reasoning: classified as PureUtility because it performs a deterministic operation based only on input parameters and does not depend on external state.
-
-FUNCTION_INSTANCE_BEGIN
+────────────────────────────────────────
 function_name: log_insertion_details
-function_type: ExternalInteraction
+    # Log insertion details.
+
+function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
 parameters:
-  - name: schedule_diff
-    type: set
-  - name: annuaire_diff
-    type: set
+    - name: schedule_diff
+      type: set
+    - name: annuaire_diff
+      type: set
+
 return_type: None
+
 description: Log insertion details.
-tags: [logging, insertion]
-reasoning: classified as ExternalInteraction because it typically involves writing to an external system such as a log file.
+
+tags: [log, details, insertion]
+
+reasoning: Classified as PureUtility because it performs a simple transformation on the input data without any side effects.
+
+────────────────────────────────────────
+function_name: find_in_sorted_list
+    # Locate the leftmost value exactly equal to x.
+
+function_type: PureUtility
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+parameters:
+    - name: elem
+      type: str
+    - name: sorted_list
+      type: list
+
+return_type: int
+
+description: Locate the leftmost value exactly equal to x in a sorted list.
+
+tags: [find, sorted, list]
+
+reasoning: Classified as PureUtility because it performs a simple transformation on the input data without any side effects.
+
+────────────────────────────────────────
+function_name: refactor_faculties
+    # Refactor faculties.
+
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+parameters:
+    - name: faculties
+      type: list
+    - name: annuaires
+      type: dict
+    - name: directories_tuples
+      type: list
+
+return_type: list
+
+description: Refactor faculties.
+
+tags: [refactor, faculties, data]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to refactor the faculties.
+
+────────────────────────────────────────
+function_name: readImportLinks
+    # Read import links.
+
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+parameters:
+    - name: directories_tuples
+      type: list
+
+return_type: dict
+
+description: Read import links.
+
+tags: [read, links, import]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to read the import links.
+
+────────────────────────────────────────
+function_name: main
+    # Main function to parse the raw data and populate the database.
+
+function_type: ExternalInteraction
+    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
+
+parameters:
+    - name: root
+      type: str
+    - name: import_links_directory
+      type: str
+    - name: schedule_raw_directory
+      type: str
+    - name: schedule_parsed_directory
+      type: str
+    - name: annuaire_raw_directory
+      type: str
+    - name: annuaire_parsed_directory
+      type: str
+    - name: repertoire_raw_directory
+      type: str
+    - name: repertoire_parsed_directory
+      type: str
+    - name: hierarchy_path
+      type: str
+    - name: debug
+      type: bool
+
+return_type: None
+
+description: Main function to parse the raw data and populate the database.
+
+tags: [parse, database, main]
+
+reasoning: Classified as ExternalInteraction because it performs communication with an external system or service to parse the raw data and populate the database.
+
+────────────────────────────────────────
 ```
 
-Here is the classification of each function according to the provided schema and the `FUNCTION_TYPES_GUIDE` (in detail):
-
-- `main` function is classified as `ExternalInteraction` because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
-- `store_data` function is classified as `ExternalInteraction` because it performs communication with an external system (database) and produces/consumes data exchanged outside the program's in-memory context.
-- `log_insertion_details` function is classified as `ExternalInteraction` because it typically involves writing to an external system such as a log file.
-- `find_in_sorted_list` function is classified as `PureUtility` because it performs a deterministic operation based only on input parameters and does not depend on external state.
-- `refactor_faculties` function is classified as `PureUtility` because it performs a deterministic operation based only on input parameters and does not depend on external state.
-- `readImportLinks` function is classified as `ExternalInteraction` because it performs communication with an external system (directories) and produces/consumes data exchanged outside the program's in-memory context.
-
-Each function is classified based on its broad conceptual role, and the classification is supported by a brief reasoning statement. The classification follows the `FUNCTION_TYPES_GUIDE` provided.
+Note that some of the functions have multiple instances, and the classification may vary depending on the context. However, based on the provided code and the `FUNCTION_TYPES_GUIDE`, the classification above should be accurate.

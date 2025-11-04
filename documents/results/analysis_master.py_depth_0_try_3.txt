@@ -1,211 +1,111 @@
-Here are the classifications for each function based on the `FUNCTION_TYPES_GUIDE`:
+Here's the classification of each function based on its broad conceptual role:
 
 ```yml
 FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
 function_name: main
-    # Exact name of the function as defined in code.
-
-function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
+function_type: Constructor
 parameters:
-    - name: root
-      type: str
-    - name: import_links_directory
-      type: str
-    - name: schedule_raw_directory
-      type: str
-    - name: schedule_parsed_directory
-      type: str
-    - name: annuaire_raw_directory
-      type: str
-    - name: annuaire_parsed_directory
-      type: str
-    - name: repertoire_raw_directory
-      type: str
-    - name: repertoire_parsed_directory
-      type: str
-    - name: hierarchy_path
-      type: str
-    - name: debug
-      type: bool
-
+  - name: root
+    type: str
+  - name: import_links_directory
+    type: str
+  - name: schedule_raw_directory
+    type: str
+  - name: schedule_parsed_directory
+    type: str
+  - name: annuaire_raw_directory
+    type: str
+  - name: annuaire_parsed_directory
+    type: str
+  - name: repertoire_raw_directory
+    type: str
+  - name: repertoire_parsed_directory
+    type: str
+  - name: hierarchy_path
+    type: str
+  - name: debug
+    type: bool
 return_type: None
+description: The main function to parse the raw data and populate the database.
+tags: [data_import, database_population]
+reasoning: Classified as Constructor because it defines or initializes object state and uses or mirrors class parameters (self, cls).
+FUNCTION_INSTANCE_END
 
-description: Main function to parse the raw data and populate the database.
-
-tags: [main, parser, database]
-
-reasoning: classified as ExternalInteraction because it performs external communication with the database.
-────────────────────────────────────────
-────────────────────────────────────────
+FUNCTION_INSTANCE_BEGIN
 function_name: store_data
-    # Exact name of the function as defined in code.
-
 function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
 parameters:
-    - name: master_data
-      type: dict
-    - name: annuaire
-      type: list
-    - name: faculties
-      type: list
-    - name: schedule_dict
-      type: dict
-    - name: db
-      type: MongoDB
-
+  - name: master_data
+    type: dict
+  - name: annuaire
+    type: list
+  - name: faculties
+    type: list
+  - name: schedule_dict
+    type: dict
+  - name: db
+    type: MongoDB
 return_type: None
+description: Store the data in the MongoDB database.
+tags: [database_population, data_storage]
+reasoning: Classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage (MongoDB).
+FUNCTION_INSTANCE_END
 
-description: Store the data in the database.
-
-tags: [store, data, database]
-
-reasoning: classified as ExternalInteraction because it performs external communication with the database.
-────────────────────────────────────────
-────────────────────────────────────────
+FUNCTION_INSTANCE_BEGIN
 function_name: log_insertion_details
-    # Exact name of the function as defined in code.
-
-function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
-parameters:
-    - name: schedule_diff
-      type: set
-    - name: annuaire_diff
-      type: set
-
-return_type: None
-
-description: Log insertion details.
-
-tags: [log, insertion, details]
-
-reasoning: classified as ExternalInteraction because it does not interact with the database, but still has a broad interaction with the system.
-────────────────────────────────────────
-────────────────────────────────────────
-function_name: find_in_sorted_list
-    # Exact name of the function as defined in code.
-
 function_type: PureUtility
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
 parameters:
-    - name: elem
-      type: any
-    - name: sorted_list
-      type: list
+  - name: schedule_diff
+    type: set
+  - name: annuaire_diff
+    type: set
+return_type: None
+description: Log insertion details for the courses that exist in schedule, annuaire, or both but not in repertoire.
+tags: [logging, course_tracking]
+reasoning: Classified as PureUtility because it performs a simple transformation or computation (logging insertion details) without depending on object state or performing I/O operations.
+FUNCTION_INSTANCE_END
 
+FUNCTION_INSTANCE_BEGIN
+function_name: find_in_sorted_list
+function_type: PureUtility
+parameters:
+  - name: elem
+    type: str
+  - name: sorted_list
+    type: list
 return_type: int
+description: Locate the leftmost value exactly equal to x in a sorted list.
+tags: [list_search, binary_search]
+reasoning: Classified as PureUtility because it performs a simple computation (binary search) without depending on object state or performing I/O operations.
+FUNCTION_INSTANCE_END
 
-description: Locate the leftmost value exactly equal to x.
-
-tags: [find, sorted, list]
-
-reasoning: classified as PureUtility because it performs a deterministic computation on input parameters without external interaction.
-────────────────────────────────────────
-────────────────────────────────────────
+FUNCTION_INSTANCE_BEGIN
 function_name: refactor_faculties
-    # Exact name of the function as defined in code.
-
-function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
+function_type: PureUtility
 parameters:
-    - name: faculties
-      type: list
-    - name: annuaires
-      type: dict
-    - name: directories_tuples
-      type: list
-
+  - name: faculties
+    type: list
+  - name: annuaires
+    type: dict
+  - name: directories_tuples
+    type: list
 return_type: list
+description: Refactor the faculties by integrating the annuaire data.
+tags: [data_integration, faculty_refactoring]
+reasoning: Classified as PureUtility because it performs a simple transformation or computation (refactoring faculties) without depending on object state or performing I/O operations.
+FUNCTION_INSTANCE_END
 
-description: Refactor faculties.
-
-tags: [refactor, faculties]
-
-reasoning: classified as ExternalInteraction because it performs external communication with the database.
-────────────────────────────────────────
-────────────────────────────────────────
+FUNCTION_INSTANCE_BEGIN
 function_name: readImportLinks
-    # Exact name of the function as defined in code.
-
 function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
 parameters:
-    - name: directories_tuples
-      type: list
-
+  - name: directories_tuples
+    type: list
 return_type: dict
-
-description: Read import links.
-
-tags: [read, import, links]
-
-reasoning: classified as ExternalInteraction because it performs external communication with the database.
-────────────────────────────────────────
-────────────────────────────────────────
-function_name: store_data
-    # Exact name of the function as defined in code.
-
-function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
-parameters:
-    - name: master_data
-      type: dict
-    - name: annuaire
-      type: list
-    - name: faculties
-      type: list
-    - name: schedule_dict
-      type: dict
-    - name: db
-      type: MongoDB
-
-return_type: None
-
-description: Store the data in the database.
-
-tags: [store, data, database]
-
-reasoning: classified as ExternalInteraction because it performs external communication with the database.
-────────────────────────────────────────
-────────────────────────────────────────
-function_name: store_data
-    # Exact name of the function as defined in code.
-
-function_type: ExternalInteraction
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
-parameters:
-    - name: master_data
-      type: dict
-    - name: annuaire
-      type: list
-    - name: faculties
-      type: list
-    - name: schedule_dict
-      type: dict
-    - name: db
-      type: MongoDB
-
-return_type: None
-
-description: Store the data in the database.
-
-tags: [store, data, database]
-
-reasoning: classified as ExternalInteraction because it performs external communication with the database.
-────────────────────────────────────────
+description: Read the import links from the directories.
+tags: [data_import, link_reading]
+reasoning: Classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage (reading from directories).
 FUNCTION_INSTANCE_END
 ```
-Note that some functions have been classified as `ExternalInteraction` because they perform external communication with the database, even though they are not directly interacting with it (e.g. `log_insertion_details`). This is because they still have a broad interaction with the system.
 
-Also note that some functions have the same name but different parameters, which is why they appear multiple times in the output. To fix this, you could create a unique name for each function based on its parameters and then use that name in the output.
+Note that the classification of `refactor_faculties` and `readImportLinks` might be debatable, as they involve some complexity and interaction with external data. However, based on the provided guidelines, I have classified them as PureUtility and ExternalInteraction, respectively. If you have any further questions or concerns, feel free to ask!

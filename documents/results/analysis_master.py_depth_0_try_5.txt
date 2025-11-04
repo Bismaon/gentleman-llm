@@ -1,139 +1,153 @@
 ```yml
-FUNCTION_INSTANCE_BEGIN
-function_name: main
-function_type: ExternalInteraction
-parameters:
-  - name: root
-    type: str
-  - name: import_links_directory
-    type: str
-  - name: schedule_raw_directory
-    type: str
-  - name: schedule_parsed_directory
-    type: str
-  - name: annuaire_raw_directory
-    type: str
-  - name: annuaire_parsed_directory
-    type: str
-  - name: repertoire_raw_directory
-    type: str
-  - name: repertoire_parsed_directory
-    type: str
-  - name: hierarchy_path
-    type: str
-  - name: debug
-    type: bool
-return_type: None
-description: Main function to parse raw data and populate the database.
-tags: [external_interaction, data_parsing, database_population]
-reasoning: classified as ExternalInteraction because it communicates with an external system (database) and produces/consumes data exchanged outside the program’s in-memory context.
-FUNCTION_INSTANCE_END
+FUNCTION_INSTANCES:
+  - name: main
+    function_type: ExternalInteraction
+    parameters:
+      - name: root
+        type: str
+      - name: import_links_directory
+        type: str
+      - name: schedule_raw_directory
+        type: str
+      - name: schedule_parsed_directory
+        type: str
+      - name: annuaire_raw_directory
+        type: str
+      - name: annuaire_parsed_directory
+        type: str
+      - name: repertoire_raw_directory
+        type: str
+      - name: repertoire_parsed_directory
+        type: str
+      - name: hierarchy_path
+        type: str
+      - name: debug
+        type: bool
+    return_type: None
+    description: Main function to parse raw data and populate database
+    tags: [database, parsing, main]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: store_data
-function_type: ExternalInteraction
-parameters:
-  - name: master_data
-    type: dict
-  - name: annuaire
-    type: list
-  - name: faculties
-    type: list
-  - name: schedule_dict
-    type: dict
-  - name: db
-    type: MongoDB
-return_type: None
-description: Store data in the database.
-tags: [external_interaction, data_storage]
-reasoning: classified as ExternalInteraction because it interacts with an external system (database) to store data.
-FUNCTION_INSTANCE_END
+  - name: store_data
+    function_type: ExternalInteraction
+    parameters:
+      - name: master_data
+        type: dict
+      - name: annuaire
+        type: list
+      - name: faculties
+        type: list
+      - name: schedule_dict
+        type: dict
+      - name: db
+        type: MongoDB
+    return_type: None
+    description: Store data in database
+    tags: [database, data, store]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: log_insertion_details
-function_type: PureUtility
-parameters:
-  - name: schedule_diff
-    type: set
-  - name: annuaire_diff
-    type: set
-return_type: None
-description: Log insertion details of courses.
-tags: [pure_utility, logging]
-reasoning: classified as PureUtility because it performs a minimal operation (logging) with no external interactions or dependencies on object state.
-FUNCTION_INSTANCE_END
+  - name: log_insertion_details
+    function_type: TestFunction
+    parameters:
+      - name: schedule_diff
+        type: set
+      - name: annuaire_diff
+        type: set
+    return_type: None
+    description: Log insertion details
+    tags: [log, insertion, details]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: find_in_sorted_list
-function_type: PureUtility
-parameters:
-  - name: elem
-    type: str
-  - name: sorted_list
-    type: list
-return_type: int
-description: Locate the leftmost value exactly equal to x in a sorted list.
-tags: [pure_utility, search]
-reasoning: classified as PureUtility because it performs a deterministic operation (search) with no external interactions or dependencies on object state.
-FUNCTION_INSTANCE_END
+  - name: find_in_sorted_list
+    function_type: PureUtility
+    parameters:
+      - name: elem
+        type: str
+      - name: sorted_list
+        type: list
+    return_type: int
+    description: Find leftmost value exactly equal to x in sorted list
+    tags: [search, list, sorted]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: refactor_faculties
-function_type: ExternalInteraction
-parameters:
-  - name: faculties
-    type: dict
-  - name: annuaires
-    type: dict
-  - name: directories_tuples
-    type: list
-return_type: list
-description: Refactor faculties based on annuaire data.
-tags: [external_interaction, data_refactoring]
-reasoning: classified as ExternalInteraction because it interacts with an external system (annuaire data) to perform data refactoring.
-FUNCTION_INSTANCE_END
+  - name: refactor_faculties
+    function_type: ExternalInteraction
+    parameters:
+      - name: faculties
+        type: list
+      - name: annuaires
+        type: dict
+      - name: directories_tuples
+        type: list
+    return_type: list
+    description: Refactor faculties based on annuaires and directories
+    tags: [faculty, refactor, annuaire]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: readImportLinks
-function_type: ExternalInteraction
-parameters:
-  - name: directories_tuples
-    type: list
-return_type: dict
-description: Read import links from directories.
-tags: [external_interaction, data_reading]
-reasoning: classified as ExternalInteraction because it interacts with an external system (directories) to read data.
-FUNCTION_INSTANCE_END
+  - name: readImportLinks
+    function_type: ExternalInteraction
+    parameters:
+      - name: directories_tuples
+        type: list
+    return_type: dict
+    description: Read import links from directories
+    tags: [link, import, read]
 
-FUNCTION_INSTANCE_BEGIN
-function_name: main
-function_type: ExternalInteraction
-parameters:
-  - name: root
-    type: str
-  - name: import_links_directory
-    type: str
-  - name: schedule_raw_directory
-    type: str
-  - name: schedule_parsed_directory
-    type: str
-  - name: annuaire_raw_directory
-    type: str
-  - name: annuaire_parsed_directory
-    type: str
-  - name: repertoire_raw_directory
-    type: str
-  - name: repertoire_parsed_directory
-    type: str
-  - name: hierarchy_path
-    type: str
-  - name: debug
-    type: bool
-return_type: None
-description: Main function to parse raw data and populate the database.
-tags: [external_interaction, data_parsing, database_population]
-reasoning: classified as ExternalInteraction because it communicates with an external system (database) and produces/consumes data exchanged outside the program’s in-memory context.
-FUNCTION_INSTANCE_END
+  - name: store_data
+    function_type: ExternalInteraction
+    parameters:
+      - name: master_data
+        type: dict
+      - name: annuaire
+        type: list
+      - name: faculties
+        type: list
+      - name: schedule_dict
+        type: dict
+      - name: db
+        type: MongoDB
+    return_type: None
+    description: Store data in database
+    tags: [database, data, store]
+
+  - name: readImportLinks
+    function_type: ExternalInteraction
+    parameters:
+      - name: directories_tuples
+        type: list
+    return_type: dict
+    description: Read import links from directories
+    tags: [link, import, read]
+
+  - name: store_data
+    function_type: ExternalInteraction
+    parameters:
+      - name: master_data
+        type: dict
+      - name: annuaire
+        type: list
+      - name: faculties
+        type: list
+      - name: schedule_dict
+        type: dict
+      - name: db
+        type: MongoDB
+    return_type: None
+    description: Store data in database
+    tags: [database, data, store]
+
+  - name: readImportLinks
+    function_type: ExternalInteraction
+    parameters:
+      - name: directories_tuples
+        type: list
+    return_type: dict
+    description: Read import links from directories
+    tags: [link, import, read]
+
+  - name: readImportLinks
+    function_type: ExternalInteraction
+    parameters:
+      - name: directories_tuples
+        type: list
+    return_type: dict
+    description: Read import links from directories
+    tags: [link, import, read]
 ```
 
-Please note that I considered each function as a separate instance, even if they have the same name.
+Please note that this is a partial analysis of the code, and there may be other functions that could be classified as well. Also, this analysis assumes that the provided code is the entire codebase, but if there are other parts of the code that are relevant to the classification of these functions, they should be taken into account.
