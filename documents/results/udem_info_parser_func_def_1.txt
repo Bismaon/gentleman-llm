@@ -1,0 +1,25 @@
+--- Function 1: CreateDict - 11:25---
+# Source:
+def CreateDict(target_subset, target_value):
+    result_dictionnary = dict()
+    reverse_result_dictionnary = dict()
+    df2 = df.drop_duplicates(
+        subset=[target_subset], keep="first", inplace=False, ignore_index=False
+    )
+    df2 = df2[[target_subset, target_value]]
+    for index, row in df2.iterrows():
+        result_dictionnary[row[target_subset]] = row[target_value]
+        if not row[target_value] in reverse_result_dictionnary:
+            reverse_result_dictionnary[row[target_value]] = list()
+        reverse_result_dictionnary[row[target_value]].append(row[target_subset])
+    result_dictionnary = dict(sorted(result_dictionnary.items()))
+    reverse_result_dictionnary = dict(sorted(reverse_result_dictionnary.items()))
+    return result_dictionnary, reverse_result_dictionnary
+
+# Parameters:
+(target_subset: str,target_value: str,)
+# Description:
+
+# Tags:
+
+
