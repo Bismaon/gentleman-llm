@@ -1,133 +1,28 @@
-```yml
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: main
-  function_type: Constructor
-  parameters:
-    - name: root
-      type: str
-    - name: import_links_directory
-      type: str
-    - name: schedule_raw_directory
-      type: str
-    - name: schedule_parsed_directory
-      type: str
-    - name: annuaire_raw_directory
-      type: str
-    - name: annuaire_parsed_directory
-      type: str
-    - name: repertoire_raw_directory
-      type: str
-    - name: repertoire_parsed_directory
-      type: str
-    - name: hierarchy_path
-      type: str
-    - name: debug
-      type: bool
-  return_type: None
-  description: Main function to parse the raw data and populate the database.
-  tags: [main, parser, database]
-  reasoning: Classified as Constructor because it defines or initializes object state.
-────────────────────────────────────────
+```python
+def store_data(master_data, annuaire, faculties, schedule_dict, db):
+    """
+    Store the data in the database.
 
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: store_data
-  function_type: ExternalInteraction
-  parameters:
-    - name: master_data
-      type: dict
-    - name: annuaire
-      type: list
-    - name: faculties
-      type: list
-    - name: schedule_dict
-      type: dict
-    - name: db
-      type: MongoDB
-  return_type: None
-  description: Store the data in the database.
-  tags: [database, MongoDB]
-  reasoning: Classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage (MongoDB).
-────────────────────────────────────────
+    Args:
+        master_data (dict): Dictionary containing the course details.
+        annuaire (list): List of annuaire data.
+        faculties (list): List of faculties data.
+        schedule_dict (dict): Dictionary of schedule data.
+        db (MongoDB): MongoDB object for database connection.
+    """
+    db.drop()
+    db.insert_many([course_detail for course_detail in master_data.values()])
 
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: log_insertion_details
-  function_type: TestFunction
-  parameters:
-    - name: schedule_diff
-      type: set
-    - name: annuaire_diff
-      type: set
-  return_type: None
-  description: Log insertion details.
-  tags: [logging, testing]
-  reasoning: Classified as TestFunction because it contains assertions or test framework calls.
-────────────────────────────────────────
+    db.set_collection("programs")
+    db.drop()
+    db.insert_many(annuaire)
 
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: find_in_sorted_list
-  function_type: PureUtility
-  parameters:
-    - name: elem
-      type: str
-    - name: sorted_list
-      type: list
-  return_type: int
-  description: Locate the leftmost value exactly equal to x.
-  tags: [list, search, utility]
-  reasoning: Classified as PureUtility because it performs a deterministic operation based on input parameters.
-────────────────────────────────────────
+    db.set_collection("faculties")
+    db.drop()
+    db.insert_many(faculties)
 
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: refactor_faculties
-  function_type: PureUtility
-  parameters:
-    - name: faculties
-      type: list
-    - name: annuaires
-      type: dict
-    - name: directories_tuples
-      type: list
-  return_type: list
-  description: Refactor faculties.
-  tags: [faculty, refactoring, utility]
-  reasoning: Classified as PureUtility because it performs a deterministic operation based on input parameters.
-────────────────────────────────────────
-
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: readImportLinks
-  function_type: ExternalInteraction
-  parameters:
-    - name: directories_tuples
-      type: list
-  return_type: dict
-  description: Read import links.
-  tags: [links, import]
-  reasoning: Classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage (file system).
-────────────────────────────────────────
-
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: store_data
-  function_type: ExternalInteraction
-  parameters:
-    - name: master_data
-      type: dict
-    - name: faculties
-      type: list
-    - name: schedule_dict
-      type: dict
-    - name: db
-      type: MongoDB
-  return_type: None
-  description: Store the data in the database.
-  tags: [database, MongoDB]
-  reasoning: Classified as ExternalInteraction because it performs communication with an external system, service, or persistent storage (MongoDB).
-────────────────────────────────────────
-FUNCTION_INSTANCE_END
+    schedules = [detail for detail in schedule_dict.values()]
+    db.set_collection("schedules")
+    db.drop()
+    db.insert_many(schedules)
 ```

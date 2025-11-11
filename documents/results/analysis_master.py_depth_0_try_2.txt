@@ -1,102 +1,38 @@
-Here is the output in YAML format based on the provided `FUNCTION_INSTANCE` schema and `FUNCTION_TYPES_GUIDE`:
+Here is the Python doc for the `store_data` function:
 
-```yml
-FUNCTION_INSTANCE_BEGIN
-- function_name: main
-  function_type: ExternalInteraction
-  parameters:
-    - name: root
-      type: str
-    - name: import_links_directory
-      type: str
-    - name: schedule_raw_directory
-      type: str
-    - name: schedule_parsed_directory
-      type: str
-    - name: annuaire_raw_directory
-      type: str
-    - name: annuaire_parsed_directory
-      type: str
-    - name: repertoire_raw_directory
-      type: str
-    - name: repertoire_parsed_directory
-      type: str
-    - name: hierarchy_path
-      type: str
-    - name: debug
-      type: bool
-  return_type: None
-  description: Main function to parse the raw data and populate the database.
-  tags: [parser, database, main]
-  reasoning: Classified as ExternalInteraction because it performs communication with external systems and services, and produces or consumes data exchanged outside the program's in-memory context.
+```python
+def store_data(
+    master_data: Dict[str, Dict[str, Any]],
+    annuaire: List[Dict[str, Any]],
+    faculties: List[Dict[str, Any]],
+    schedule_dict: Dict[str, Dict[str, Any]],
+    db: MongoDB,
+) -> None:
+    """
+    Store the data in the database.
 
-- function_name: store_data
-  function_type: ExternalInteraction
-  parameters:
-    - name: master_data
-      type: dict
-    - name: annuaire
-      type: list
-    - name: faculties
-      type: list
-    - name: schedule_dict
-      type: dict
-    - name: db
-      type: MongoDB
-  return_type: None
-  description: Store the data in the database.
-  tags: [database, mongo, store]
-  reasoning: Classified as ExternalInteraction because it interacts with the MongoDB database, a persistent storage system.
+    This function takes in four main data structures:
+    - master_data: A dictionary containing course details.
+    - annuaire: A list of annuaire data.
+    - faculties: A list of faculties data.
+    - schedule_dict: A dictionary containing schedule data.
+    - db: A MongoDB object for database connection.
 
-- function_name: log_insertion_details
-  function_type: PureUtility
-  parameters:
-    - name: schedule_diff
-      type: set
-    - name: annuaire_diff
-      type: set
-  return_type: None
-  description: Log insertion details.
-  tags: [log, details, utility]
-  reasoning: Classified as PureUtility because it performs a straightforward, deterministic computation on input parameters without depending on object state or interacting with external systems.
+    The function first drops the existing data in the database and then inserts the new data.
+    It differentiates between four collections in the database: "courses", "programs", "faculties", and "schedules".
 
-- function_name: find_in_sorted_list
-  function_type: PureUtility
-  parameters:
-    - name: elem
-      type: any
-    - name: sorted_list
-      type: list
-  return_type: int
-  description: Locate the leftmost value exactly equal to x.
-  tags: [find, sorted, utility]
-  reasoning: Classified as PureUtility because it performs a simple, deterministic computation on input parameters without depending on object state or interacting with external systems.
+    Args:
+        master_data (Dict[str, Dict[str, Any]]): Dictionary containing course details.
+        annuaire (List[Dict[str, Any]]): List of annuaire data.
+        faculties (List[Dict[str, Any]]): List of faculties data.
+        schedule_dict (Dict[str, Dict[str, Any]]): Dictionary containing schedule data.
+        db (MongoDB): MongoDB object for database connection.
 
-- function_name: refactor_faculties
-  function_type: PureUtility
-  parameters:
-    - name: faculties
-      type: list
-    - name: annuaires
-      type: dict
-    - name: directories_tuples
-      type: list
-  return_type: list
-  description: Refactor faculties.
-  tags: [refactor, faculties, utility]
-  reasoning: Classified as PureUtility because it performs a straightforward, deterministic computation on input parameters without depending on object state or interacting with external systems.
-
-- function_name: readImportLinks
-  function_type: ExternalInteraction
-  parameters:
-    - name: directories_tuples
-      type: list
-  return_type: dict
-  description: Read import links.
-  tags: [read, links, import, external]
-  reasoning: Classified as ExternalInteraction because it performs a specific, deterministic operation on input parameters, but involves interacting with external systems and services.
-
-FUNCTION_INSTANCE_END
+    Returns:
+        None: This function does not return any value.
+    """
 ```
 
-Note that the function types were assigned based on the provided `FUNCTION_TYPES_GUIDE` and the analysis of each function's behavior and purpose. The `reasoning` field for each function provides a brief explanation for why the assigned function type was chosen.
+Note: The `Dict[str, Dict[str, Any]]` and `List[Dict[str, Any]]` types are used to represent the data structures as per the Python type hinting convention. The `Any` type is used to represent the values in the dictionaries. 
+
+This docstring explains the purpose and behavior of the `store_data` function, including its input parameters, what it does, and its return value (or lack thereof in this case). This should provide a clear and concise understanding of the function's functionality.
