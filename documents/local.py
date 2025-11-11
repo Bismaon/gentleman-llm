@@ -1,10 +1,8 @@
 PERSONA = """
 You are a language engineer specialized in model-driven code concepts.
-You work with the Gentleman projectional editor, which treats every element of a model as a Concept.
-Your task is to classify each function in a codebase and all the instances, one function type instance per function, following the `FUNCTION_INSTANCE` schema provided.
-Your output should be a YAML file.
+Create the python doc for the store_data function.
 """
-
+# instances of func across multiple files
 RULES = """
 Follow these rules when interpreting source code:
 1. Each item is one function instance.
@@ -18,32 +16,27 @@ Follow these rules when interpreting source code:
 """
 
 FUNCTION_INSTANCE="""
-FUNCTION_INSTANCE_BEGIN
-────────────────────────────────────────
-function_name: <string>
-    # Exact name of the function as defined in code.
+function_name: ff0
 
-function_type: <string>
-    # Classification of the function from one of the types from `FUNCTION_TYPES_GUIDE`.
-
-parameters:
-    - name: <string>  # Parameter name as it appears in the function signature.
-      type: <string>  # Inferred Python type, or 'Any' if uncertain.
-
-return_type: <string>
-    # Inferred return Python type.
-
-description: <string>
-    # Short summary of what the function does, based on its code context.
-
-tags: [tag1, tag2, ...]
-    # Keywords capturing behavior, purpose, and/or domain of the function.
-
-reasoning: <string>
-    # Optional explanation for why the function_type was chosen.
-────────────────────────────────────────
-FUNCTION_INSTANCE_END
+function_type: ff1
 """
+# """
+# parameters:
+#     - name: <string>  # Parameter name as it appears in the function signature.
+#       type: <string>  # Inferred Python type, or 'Any' if uncertain.
+
+# return_type: <string>
+#     # Inferred return Python type.
+
+# description: <string>
+#     # Short summary of what the function does, based on its code context.
+
+# tags: [tag1, tag2, ...]
+#     # Keywords capturing behavior, purpose, and/or domain of the function.
+
+# reasoning: <string>
+#     # Optional explanation for why the function_type was chosen.
+# """
 
 # other:
 # nature: <string>
@@ -99,7 +92,6 @@ THINKING_STEPS = """
 
 FUNCTION_TYPES_GUIDE="""
 FUNCTION_TYPES_GUIDE_BEGIN
-────────────────────────────────────────
 - Constructor:
     - MustHave:
         - Defines or initializes object state
@@ -156,7 +148,6 @@ FUNCTION_TYPES_GUIDE_BEGIN
     - MustNotHave: 
         - Purely computational or formatting logic with no system interaction
         - Internal data transformation detached from external communication
-────────────────────────────────────────
 FUNCTION_TYPES_GUIDE_END
 """
 
@@ -164,9 +155,7 @@ HIERARCHY_NOTE = """
 Prompt precedence order (highest to lowest):
 1. PERSONA — sets overall role and context.
 2. FUNCTION_TYPES_GUIDE — the definitive classification for function_type labels.
-3. RULES — governs format and schema.
-4. DEPTH prompt — only controls *detail level*, not label meaning.
-6. FUNCTION_INSTANCE schema — output format only.
+3. FUNCTION_INSTANCE schema — output format only.
 !!Never invent function_type labels beyond `FUNCTION_TYPES_GUIDE`!!
 """
 
@@ -174,9 +163,10 @@ DEPTH_0 = """
 Classify each function only by its broad conceptual role.
 - Output strictly follows `FUNCTION_INSTANCE` schema.
 - Use `FUNCTION_TYPES_GUIDE` only.
-- Provide one-sentence reasoning.
+
 - Provide a brief description of what the function does in the codebase.
 - Provide relevant tags.
+- Provide one-sentence reasoning.
 - Extract parameters and return types.
 """
 

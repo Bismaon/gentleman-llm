@@ -1,6 +1,45 @@
 import ast
 import json
 import os
+import re
+
+CONTAINERS = {"list", "dict", "tuple", "set", "frozenset"}
+
+PRIMITIVES = {"int", "float", "bool", "str", "bytes", "none", "any", "object"} | CONTAINERS
+CUSTOM = {"DB"}
+NON_EXHAUSTIVE = {"date", "time", "datetime", "timedelta", "timezone","Path", "PurePath", "PathLike", "UUID", "Decimal", "Complex","Pattern", "Match", "Callable"}
+
+def generate_valid_types(depth=2):
+    """
+    Generate an exhaustive set of type expressions up to a given nesting depth.
+    """
+    base = PRIMITIVES | CUSTOM 
+    valid = set(base)
+
+    def expand(base_types, current_depth):
+        if current_depth > depth:
+            return set()
+
+        new_types = set()
+        for outer in CONTAINERS:
+            for inner in base_types:
+                if outer == "dict":
+                    for inner2 in base_types:
+                        new_types.add(f"dict[{inner},{inner2}]")
+                elif outer == "tuple":
+                    for inner2 in base_types:
+                        new_types.add(f"tuple[{inner},{inner2}]")
+                else:
+                    new_types.add(f"{outer}[{inner}]")
+
+        if current_depth < depth:
+            new_types |= expand(new_types, current_depth + 1)
+
+        return new_types
+
+    valid |= expand(base, 1)
+    return valid
+VALID_BASE_TYPES = generate_valid_types(depth=2) | CONTAINERS | NON_EXHAUSTIVE
 
 def list_files(directory: str) -> list[str]:
     """
@@ -111,40 +150,100 @@ def get_json(filename: str) -> dict:
         print(f"Error loading JSON: {e}")
         return {}
 
-
-
-
-
-def extract_function_source(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
-        source = f.read()
-    tree = ast.parse(source, filename=filepath)
-
-    functions = {}
-    for node in tree.body:
-        if isinstance(node, ast.FunctionDef):
-            start_line = node.lineno - 1
-            end_line = node.end_lineno
-            func_source = "\n".join(source.splitlines()[start_line:end_line])
-            functions[node.name] = func_source
-    return functions
-
-def find_functions(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
-    functions = extract_defined_functions(filepath)
-    return content,functions
-
-def extract_defined_functions(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
-        tree = ast.parse(f.read(), filename=filepath)
+def extract_functions(filepath:str)->list[dict]:
+    code = read_file(filepath)
+    tree = ast.parse(code, filename=filepath)
 
     functions = []
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
-            # doc = ast.get_docstring(node)
+            func_source = ast.get_source_segment(code, node)
+            param_names = [param.arg for param in node.args.args]
+            ast.get_source_segment(code, node)
             functions.append({
                 "name": node.name,
-                # "doc": doc or "",
+                "parameters": param_names,
+                "source": func_source,
+                "start_line": node.lineno,
+                "end_line": node.end_lineno,
+                "types":[],
+                "description":"",
+                "tags":[],
             })
     return functions
+
+def validate_types(llm_answer: str) -> list[str]|Exception:
+    try:
+        value = ast.literal_eval(llm_answer.strip())
+        if not isinstance(value, list):
+            raise ValueError("Expected a list of type names.")
+        sanitized = []
+        
+        for v in value:
+            try:
+                t = sanitize_and_validate(v)
+                sanitized.append(t)
+            except Exception as s_v_e:
+                raise s_v_e
+        return sanitized 
+    except Exception as e:
+        print(f"Error validating types: {e}")
+        return []
+
+def sanitize_and_validate(t: str) -> str:
+    if not isinstance(t, str):
+        raise Exception(f"Type name must be a string.\n Type: {t}")
+
+    # Remove  "x:int" or "x - str"
+    if ":" in t:
+        t = t.split(":")[-1].strip()
+    elif "-" in t:
+        parts = t.split("-")
+        if len(parts[-1].strip()) > 0:
+            t = parts[-1].strip()
+
+    if any(item in t for item in ["(" ,")","[[", "{", "}"]):
+        raise Exception(f"Invalid characters in type name.\n Type: {t}")
+    
+    # remove whitespace
+    t = re.sub(r"\s+", "", t)
+
+    if not is_valid_type(t):
+        raise Exception(f"The given type is not a valid python type.\n Type: {t}")
+    return t
+
+def is_valid_type(expr: str) -> bool:
+    return expr in VALID_BASE_TYPES 
+
+def next_available_filename(base_name: str) -> str:
+    """
+    Given a base_name like 'filename_func_def',
+    returns a file name like 'filename_func_def_1.txt'
+    or increments until a free name is found.
+    """
+    i = 1
+    while True:
+        candidate = f"{base_name}_{i}.txt"
+        if not os.path.exists(candidate):
+            return candidate
+        i += 1
+
+def write_function_definitions(filepath: str, functions: list[dict]) -> None:
+    base_name = os.path.splitext(os.path.basename(filepath))[0]
+    base_output_name = f"results/{base_name}_func_def"
+    output_file = next_available_filename(base_output_name)
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        for i, func in enumerate(functions, start=1):
+            f.write(f"--- Function {i}: {func['name']} - {func["start_line"]}:{func["end_line"]}---")
+            f.write(f"\n# Source:\n{func["source"]}")
+            params = "("
+            for param, p_type in zip(func['parameters'], func['types']):
+                params += f"{param}: {p_type},"
+            params+= ")"
+            f.write(f"\n\n# Parameters:\n{params}")
+            f.write(f"\n# Description:\n{func['description']}")
+            f.write(f"\n# Tags:\n{', '.join(func['tags'])}")
+            f.write("\n\n")
+
+    print(f"Wrote {len(functions)} function definitions to {output_file}")

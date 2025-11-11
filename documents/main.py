@@ -1,7 +1,8 @@
+from time import sleep
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-from util import find_functions, get_json, list_files, read_file, write_file
+from util import extract_functions, get_json, list_files, read_file, validate_types, write_file, write_function_definitions
 from local import (
     FUNCTION_INSTANCE,
     HIERARCHY_NOTE,
@@ -18,81 +19,77 @@ models = [
     "meta-llama/Llama-3.1-8B-Instruct",
 ]
 
-
-def analyze_file_with_llm(
-    filepath: str,
-    d_i: int = 0,
-    model: str = "meta-llama/Llama-3.1-8B-Instruct",
-) -> str:
-    """
-    Reads a file and sends its content to the LLM for analysis.
-
-    Parameters
-    ----------
-        filepath : str
-            Path to the file tp analyze.
-        model : str
-            Model to use (default:  Llama 3.1 8B Instruct).
-
-    Returns
-    -------
-    str
-        The LLM response text.
-    """
-    depth_index = d_i
+def ask(model:str, user_query:str, system:list[str], tries:int=0)->str:
+    messages = []
+    for system_query in system:
+        messages.append({"role": "system", "content": system_query})
+    messages.append({"role": "user", "content": user_query})
+    
     try:
-        content, functions = find_functions(filepath)
-    except FileNotFoundError:
-        return f"File not found: {filepath}"
+        response = client.chat.completions.create(model=model, messages=messages)
     except Exception as e:
-        return f"Error reading file {filepath}: {e}"
-    pass
-    concept_res = get_concept(
-        model,
-        depth_index,
-        content,
-        functions,
-    )
-    # projection_res = get_projection()
-    return concept_res.choices[0].message.content
+        err = str(e).lower()
+        if "exceeded" in err:
+            wait = 2 ** tries
+            print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
+            sleep(wait)
+            if tries >=5:
+                return e
+            return ask(model, user_query, system, tries+1)
+        elif "timeout" in err:
+            return TimeoutError("Request timed out.")
+        else:
+            return e
+        
+    answer = response.choices[0].message.content
+    if answer is None:
+        return SystemError("No answer from the model.")
+    return answer
+    
 
+def define_functions(function_info:dict, model:str):
+    system = [
+    "You are a code analysis assistant.",
+    "You will be given a Python function definition and a list of its parameters.",
+    "If a parameter's type is a database object like `MongoDB`, write its type as `DB`.",
+    "If a parameter's type is unclear or is dependency, use `any` as its type.",
+    "Respond ONLY with a Python list of type names."
+    ]
 
-def get_concept(
-    model,
-    depth_index,
-    content,
-    functions,
-):
-    return client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": PERSONA},
-            {"role": "system", "content": RULES},
-            {"role": "system", "content": FUNCTION_INSTANCE},
-            # {"role": "system", "content": THINKING_STEPS},
-            {"role": "system", "content": HIERARCHY_NOTE},
-            {"role": "system", "content": FUNCTION_TYPES_GUIDE},
-            {"role": "user", "content": DEPTHS[depth_index]},
-            {
-                "role": "user",
-                "content": f"Classify every function {functions} listed in this file:\n\n{content}",
-            },
-        ],
-    )
+    name = function_info['name']
+    param_names = function_info['parameters']
+    code = function_info['source']
+    user_query = f"""
+    Function:
+    {code}
 
+    Parameters:
+    {param_names}
 
-def pretty_LLM_flow(model_in_use, list_of_files, i, analysis_output_path):
-    filepath = f"code/{list_of_files[2]}"
-    print(
-            f"Analyzing file: {list_of_files[2]} with model {model_in_use} at depth {i}"
-        )
-    response = analyze_file_with_llm(
-            filepath,
-            d_i=i,
-            model=model_in_use,
-        )
-    print(f"Writing results to {analysis_output_path}")
-    write_file(analysis_output_path, response)
+    Return exactly one inferred type per parameter in a Python list, nothing else.
+    """
+    param_len = len(param_names)
+    parsed_types = []
+    while len(parsed_types) != param_len:
+        
+        try:
+            answer = ask(model, user_query, system)
+
+            parsed = validate_types(answer)
+            if isinstance(parsed, Exception):
+                print(f"Error parsing LLM output: {parsed}\nRetrying...\n")
+                continue
+
+            parsed_types = parsed
+            print(f"Parsed Types: {parsed_types} for {param_names}\n")
+
+        except Exception as e:
+            return e
+        if len(parsed_types) != param_len:
+            print("Retrying type definition...\n")
+    
+    
+    return parsed_types
 
 
 
@@ -109,16 +106,22 @@ if __name__ == "__main__":
         base_url="https://router.huggingface.co/v1",
         api_key=os.getenv("HF_TOKEN"),
     )
-
-    list_of_files = list_files("code")
+    base = "code"
+    list_of_files = list_files(base)
     for file in list_of_files:
-        filepath = f"code/{file}"
+        filepath = f"{base}/{file}"
         _ = read_file(filepath)
         print(f"--- {file} ---")
-        _, functions = find_functions(filepath)
-        print(f"Functions found in {filepath}: {functions}")
-        print()
-
-    for num_tries in range(10):
-        analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{d_i}_try_{num_tries}.txt"
-        pretty_LLM_flow(model_in_use, list_of_files, d_i, analysis_output_path)
+        functions = extract_functions(filepath)
+        for func in functions:
+            answer_types = define_functions(func, model_in_use)
+            if isinstance(answer_types, Exception):
+                print(f"Error defining types for function {func['name']}: {answer_types}\n")
+            else:
+                func['types'] = answer_types
+            print(f"Function: {func['name']}\nDefined Types:\n{func["types"]}\n")
+        write_function_definitions(filepath, functions)
+    
+    # for num_tries in range(3):
+    #     analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{d_i}_try_{num_tries}.txt"
+    #     pretty_LLM_flow(model_in_use, list_of_files, d_i, analysis_output_path)
