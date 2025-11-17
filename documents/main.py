@@ -2,7 +2,7 @@ from time import sleep
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-from util import extract_functions, get_json, list_files, read_file, validate_types, write_file, write_function_definitions
+from util import extract_functions, get_json, in_range, list_files, read_file, validate_tags, validate_types, write_file, write_function_definitions
 from local import (
     FUNCTION_INSTANCE,
     HIERARCHY_NOTE,
@@ -19,10 +19,15 @@ models = [
     "meta-llama/Llama-3.1-8B-Instruct",
 ]
 
-def ask(model:str, user_query:str, system:list[str], tries:int=0)->str:
+def ask(model:str, user_query:str, system:list[str], tries:int=0, error:str|None=None, ex_tries:int=0)->str|Exception:
     messages = []
     for system_query in system:
         messages.append({"role": "system", "content": system_query})
+    if error:
+        messages.append({
+            "role": "system",
+            "content": f"The previous attempt failed with this error:\n{error}\n"
+        })
     messages.append({"role": "user", "content": user_query})
     
     try:
@@ -30,98 +35,166 @@ def ask(model:str, user_query:str, system:list[str], tries:int=0)->str:
     except Exception as e:
         err = str(e).lower()
         if "exceeded" in err:
-            wait = 2 ** tries
+            ex_tries+=1
+            wait = 2 ** (ex_tries+2)
             print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
             sleep(wait)
-            if tries >=5:
-                return e
-            return ask(model, user_query, system, tries+1)
+            if ex_tries >=5:
+                raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
+            return ask(model, user_query, system, tries, error, ex_tries)
         elif "timeout" in err:
-            return TimeoutError("Request timed out.")
+            raise TimeoutError("Request timed out.") from e
         else:
-            return e
+            raise e
+    
         
     answer = response.choices[0].message.content
     if answer is None:
-        return SystemError("No answer from the model.")
+        raise SystemError("No answer from the model.")
     return answer
     
 
-def define_functions(function_info:dict, model:str):
+def define_param_types(function_info:dict, content:str, model:str):
     system = [
-    "You are a code analysis assistant.",
-    "You will be given a Python function definition and a list of its parameters.",
-    "If a parameter's type is a database object like `MongoDB`, write its type as `DB`.",
-    "If a parameter's type is unclear or is dependency, use `any` as its type.",
-    "Respond ONLY with a Python list of type names."
+        "You are a code analysis assistant.",
+        "You will be given a Python function source and a list of its parameters.",
+        "If a parameter's type is unclear or is from a dependency, use `any` as its type.",
+        "Respond ONLY with a Python list of type names."
     ]
 
-    name = function_info['name']
-    param_names = function_info['parameters']
+    param_names = function_info['parameters'].keys()
     code = function_info['source']
     user_query = f"""
-    Function:
+    Function Source:
     {code}
 
     Parameters:
     {param_names}
-
-    Return exactly one inferred type per parameter in a Python list, nothing else.
     """
     param_len = len(param_names)
     parsed_types = []
+    tries = 0
+    last_error = None
     while len(parsed_types) != param_len:
-        
         try:
-            answer = ask(model, user_query, system)
-
-            parsed = validate_types(answer)
-            if isinstance(parsed, Exception):
-                print(f"Error parsing LLM output: {parsed}\nRetrying...\n")
-                continue
-
-            parsed_types = parsed
-            print(f"Parsed Types: {parsed_types} for {param_names}\n")
-
+            answer = ask(model, user_query, system, tries, error=last_error)
+            parsed_types = validate_types(answer)
+            print(f"Parsed Types for {param_names} atfer {tries} tries:\n{parsed_types}\n")
         except Exception as e:
-            return e
-        if len(parsed_types) != param_len:
-            print("Retrying type definition...\n")
-    
-    
+            print(f"Attempt {tries} failed: {e}")
+            last_error = str(e)
+            tries += 1
+            if tries >= 5:
+                raise RuntimeError(f"Failed to define parameter types after {tries} tries: {e}")
+            continue
     return parsed_types
 
+def define_tags(function_info:dict, content:str, model:str, max_tags:int=5 )->list[str]|Exception:
+    system = [
+        "You are a code analysis assistant.",
+        "You will be given a Python file, a function source and its description.",
+        f"Extract up to {max_tags} relevant tags that describe ONLY the function source's purpose, behavior, and role.",
+        "Respond ONLY with a Python list of tags string."
+    ]
 
+    name = function_info['name']
+    code = function_info['source']
+    desc = function_info['description']
+    user_query = f"""
+    File:
+    {content}
+    
+    Function Source:
+    {code}
+
+    Description:
+    {desc}
+    """
+    parsed_tags = []
+    tries = 0
+    last_error = None
+    while len(parsed_tags) == 0:
+        try:
+            answer = ask(model, user_query, system, tries, error=last_error)
+            parsed_tags = validate_tags(answer)
+            print(f"Parsed Tags for {name} after {tries} tries:\n{parsed_tags}\n")
+
+        except Exception as e:
+            print(f"Attempt {tries} failed: {e}")
+            last_error = str(e)
+            tries += 1
+            if tries >= 5:
+                raise RuntimeError(f"Failed to define tags after {tries} tries: {e}")
+            continue
+        
+    return parsed_tags
+
+def define_description(function_info:dict, content:str, model:str, min_len:int=100, max_len:int=250)->list[str]|Exception:
+    system = [
+        "You are a code analysis assistant.",
+        "You will be given a Python file, a function source, and its parameters.",
+        f"Generate a concise description ONLY of the function source, on its role, purpose, and behavior in the file, between {min_len} and {max_len} characters.",
+        "Respond ONLY with the description string."
+    ]
+
+    name = function_info['name']
+    params = function_info['parameters']
+    code = function_info['source']
+    user_query = f"""
+    File:
+    {content}
+    
+    Function:
+    {code}
+
+    Parameters and Types:
+    {params}
+    """
+    parsed_desc = ""
+    tries = 0
+    last_error = None
+    while not in_range(len(parsed_desc), min_len, max_len):
+        try:
+            answer = ask(model, user_query, system, tries, error=last_error)
+
+            if not in_range(len(answer), min_len, max_len):
+                last_error = f"Description length {len(answer)} out of bounds."
+                tries += 1
+                continue
+            
+            parsed_desc = answer
+            print(f"Parsed Description for {name} after {tries} tries:\n{parsed_desc}\n")
+
+        except Exception as e:
+            print(f"Attempt {tries} failed: {e}")
+            last_error = str(e)
+            tries += 1
+            if tries >= 5:
+                raise RuntimeError(f"Failed to define description after {tries} tries: {e}")
+    return parsed_desc
 
 if __name__ == "__main__":
     load_dotenv()
 
     model_in_use = models[2]
-    show_reasoning = True
-    d_i = 0  # depth index
-    # concept_schema = get_json("formats/concept_format.json")
-    # projection_schema = get_json("formats/projection_format.json")
-
     client = OpenAI(
         base_url="https://router.huggingface.co/v1",
         api_key=os.getenv("HF_TOKEN"),
     )
     base = "code"
     list_of_files = list_files(base)
+    
     for file in list_of_files:
         filepath = f"{base}/{file}"
-        _ = read_file(filepath)
         print(f"--- {file} ---")
         functions = extract_functions(filepath)
+        content = read_file(filepath)
+        new_funcs = [{k: v for k, v in f.items() if k != "source"} for f in functions]
+
+        # print(new_funcs)
         for func in functions:
-            answer_types = define_functions(func, model_in_use)
-            if isinstance(answer_types, Exception):
-                print(f"Error defining types for function {func['name']}: {answer_types}\n")
-            else:
-                func['types'] = answer_types
-            print(f"Function: {func['name']}\nDefined Types:\n{func["types"]}\n")
+            answer_types = define_param_types(func, content, model_in_use)
+            func["parameters"] = dict(zip(func['parameters'].keys(), answer_types))
+            func["tags"] = define_tags(func, content, model_in_use)
+            func["description"] = define_description(func, content, model_in_use)
         write_function_definitions(filepath, functions)
-    
-    # for num_tries in range(3):
-    #     analysis_output_path = f"results/analysis_{list_of_files[2]}_depth_{d_i}_try_{num_tries}.txt"
-    #     pretty_LLM_flow(model_in_use, list_of_files, d_i, analysis_output_path)

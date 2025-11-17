@@ -1,0 +1,118 @@
+--- Function 1: parse - 50:165---
+# Source:
+def parse(source_file_path, destination_path=None):
+
+    # Test if the one file_path is given, and if it exist
+    try:
+        if not os.path.isfile(source_file_path):
+            raise ValueError("The file: " + source_file_path + "\ndoesn't exist")
+
+        with open(source_file_path, "r", encoding="utf-8") as f:
+            while f.read(1) != "<":
+                pass  # remove broken none-car leading the file
+            f.seek(f.tell() - 1)
+            file = f.readlines()
+            if len(file) > 0 and file[-1].isspace():
+                file.pop()
+
+    except Exception as e:
+        logger.error(f"Fatal : {str(e)}")
+        sys.exit(1)
+
+    global i
+    i = 0
+
+    set_of_program_ids = set()  # meant for id verification
+    programs = []  # Is the big json object
+
+    while i < len(file):
+
+        line = file[i]
+        flag = line[0:5]
+
+        match flag:
+            case "<GET>":
+                line = line.strip()
+                id = line[5:14]
+
+                # ---------id verification----------------
+                is_id_error = False
+                if not re.match(program_id_pattern, id):
+                    logger.error(
+                        f"Error {i}: The program id: '{id}' do not match the given pattern: {program_id_pattern}"
+                    )
+                    is_id_error = True
+                elif id in set_of_program_ids:
+                    logger.error(
+                        f"Error {i}: The program id "
+                        + id
+                        + " has a duplicate, so this occurence is ignored"
+                    )
+                    is_id_error = True
+                else:
+                    set_of_program_ids.add(id)
+
+                # if there is an id_error, skip to the next program
+                if is_id_error:
+                    i += 1
+                    while not re.search(r"<GET>", file[i]) and i < len(file) != "<GET>":
+                        i += 1
+                    continue
+
+                # --------------------------------------
+
+                program = {"_id": id.replace("-", "")}
+                programs.append(program)
+                program["name"] = line[15:].strip()
+                program["segments"] = []
+
+            case "<TTG>":
+                title = line[5:].strip()
+                permitted_title = ["Objectif(s)", "Règlement"]
+                if title not in permitted_title:
+                    logger.error(
+                        f"Fatal {i}: The title name '{title}' is not in the permitted list '{permitted_title}'"
+                    )
+                    logger.error(f"Fatal error parsing stopped")
+                    sys.exit(1)
+                i += 1
+                line = file[i]
+                flag = line[0:5]
+                if flag != "<DTG>":
+                    logger.error(
+                        f"Fatel: A <TTG> is not followed by <DTG> at line {i} of file {source_file_path}"
+                    )
+                    sys.exit(1)
+
+                program[title] = extract_text_flag(file, source_file_path)
+
+            case "<GED>":
+                program["structure"] = extract_text_flag(file, source_file_path)
+                program["orientations"] = extract_orientations(
+                    program["structure"]
+                )  # 1er cyc
+                program["cheminements"] = extract_cheminements(
+                    program["structure"]
+                )  # 1er cyc, des fois cyc sup
+                program["options"] = extract_options(program["structure"])  # cyc sup
+                program["modalites"] = extract_modalites(
+                    program["structure"]
+                )  # cyc sup
+
+            case "<ERT>":
+                program["segments"].append(extract_one_segment(file, source_file_path))
+
+            case _:
+                if flag in ["<GTT>"]:
+                    pass
+                else:
+                    logger.warning(f"line {i} not handled:{line}")
+        i += 1
+
+    # if their is a destination_path, write the .json file
+    if destination_path is not None:
+        json_data = json.dumps(programs)
+        with open(destination_path, "w") as f:
+            f.write(json_data)
+
+    return programs
