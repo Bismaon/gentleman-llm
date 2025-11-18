@@ -2,15 +2,18 @@ from time import sleep
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-from util import extract_functions, get_json, in_range, list_files, read_file, validate_tags, validate_types, write_file, write_function_definitions
+from util import extract_information, get_json, in_list, in_range, list_files, read_file, time_step, valid_category, validate_tags, validate_type, validate_types, write_file, write_function_definitions
 from local import (
     FUNCTION_INSTANCE,
+    FUNCTION_TYPES_LIST,
     HIERARCHY_NOTE,
     FUNCTION_TYPES_GUIDE,
     THINKING_STEPS,
     PERSONA,
     DEPTHS,
     RULES,
+    MAX_RETRY,
+    MAX_EX_RETRY
 )
 
 models = [
@@ -36,10 +39,10 @@ def ask(model:str, user_query:str, system:list[str], tries:int=0, error:str|None
         err = str(e).lower()
         if "exceeded" in err:
             ex_tries+=1
-            wait = 2 ** (ex_tries+2)
+            wait = 2 ** (ex_tries+3)
             print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
             sleep(wait)
-            if ex_tries >=5:
+            if ex_tries >= MAX_EX_RETRY:
                 raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
             return ask(model, user_query, system, tries, error, ex_tries)
         elif "timeout" in err:
@@ -54,7 +57,7 @@ def ask(model:str, user_query:str, system:list[str], tries:int=0, error:str|None
     return answer
     
 
-def define_param_types(function_info:dict, content:str, model:str):
+def define_param_types(function_info:dict, model:str, imports):
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source and a list of its parameters.",
@@ -78,18 +81,18 @@ def define_param_types(function_info:dict, content:str, model:str):
     while len(parsed_types) != param_len:
         try:
             answer = ask(model, user_query, system, tries, error=last_error)
-            parsed_types = validate_types(answer)
-            print(f"Parsed Types for {param_names} atfer {tries} tries:\n{parsed_types}\n")
+            parsed_types = validate_types(answer, imports)
+            print(f"Parsed Types for {param_names} after {tries} tries:\n{parsed_types}\n")
         except Exception as e:
             print(f"Attempt {tries} failed: {e}")
             last_error = str(e)
             tries += 1
-            if tries >= 5:
+            if tries >= MAX_RETRY:
                 raise RuntimeError(f"Failed to define parameter types after {tries} tries: {e}")
             continue
     return parsed_types
 
-def define_tags(function_info:dict, content:str, model:str, max_tags:int=5 )->list[str]|Exception:
+def define_tags(function_info:dict, content:str, model:str, max_tags:int=5)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python file, a function source and its description.",
@@ -123,7 +126,7 @@ def define_tags(function_info:dict, content:str, model:str, max_tags:int=5 )->li
             print(f"Attempt {tries} failed: {e}")
             last_error = str(e)
             tries += 1
-            if tries >= 5:
+            if tries >= MAX_RETRY:
                 raise RuntimeError(f"Failed to define tags after {tries} tries: {e}")
             continue
         
@@ -169,9 +172,114 @@ def define_description(function_info:dict, content:str, model:str, min_len:int=1
             print(f"Attempt {tries} failed: {e}")
             last_error = str(e)
             tries += 1
-            if tries >= 5:
+            if tries >= MAX_RETRY:
                 raise RuntimeError(f"Failed to define description after {tries} tries: {e}")
     return parsed_desc
+
+def define_return_type(function_info:dict, model:str, imports):
+    system = [
+        "You are a code analysis assistant.",
+        "You will be given a Python function source, a list of its parameters and their types, and its return value.",
+        "If a return's type is unclear or is from a dependency, use `any` as its type.",
+        "Respond ONLY with a the return type of the function."
+    ]
+
+    params = function_info['parameters'].keys()
+    code = function_info['source']
+    if not function_info["return"]:
+        return_value = "None"
+    else:
+        return_value, return_type = next(iter(function_info["return"].items()))
+        if (return_type!=""):
+            return return_type
+
+    user_query = f"""
+    Function Source:
+    {code}
+
+    Parameters and their types:
+    {params}
+
+    Return value:
+    {return_value}
+    """
+    return_type = ""
+    tries = 0
+    last_error = None
+    while return_type=="":
+        try:
+            answer = ask(model, user_query, system, tries, error=last_error)
+            return_type = validate_type(answer, imports)
+            print(f"Parsed Type for {return_value} atfer {tries} tries:\n{return_type}\n")
+        except Exception as e:
+            print(f"Attempt {tries} failed: {e}")
+            last_error = str(e)
+            tries += 1
+            if tries >= MAX_RETRY:
+                raise RuntimeError(f"Failed to define return type after {tries} tries: {e}")
+            continue
+    return return_type
+
+
+def define_category(function_info:dict, content:str, model:str)->str|Exception:
+    system = [
+        "You are a code analysis assistant.",
+        "You will be given a Python function source, its description, tags, parameters, and return value.",
+        "Using FUNCTION_TYPES_GUIDE, determine which function category best describes the function.",
+        "Respond ONLY with a single string: the chosen function type.",
+        "Valid categories are the ones listed in FUNCTION_TYPES_GUIDE."
+    ]
+
+
+    name = function_info['name']
+    params = function_info['parameters']
+    code = function_info['source']
+    description = function_info['description']
+    tags = function_info['tags']
+    return_ = function_info['return']
+    user_query = f"""
+    FUNCTION_TYPES_GUIDE:
+    {FUNCTION_TYPES_GUIDE}
+
+    Function Source:
+    {code}
+
+    Description:
+    {description}
+
+    Tags:
+    {tags}
+
+    Parameters and Types:
+    {params}
+
+    Return Value and type:
+    {return_}
+    """
+
+    category = ""
+    tries = 0
+    last_error = None
+    while not in_list(category, FUNCTION_TYPES_LIST):
+        try:
+            answer = ask(model, user_query, system, tries, error=last_error)
+            print(f"Category answer: {answer}")
+
+            if not valid_category(answer, FUNCTION_TYPES_LIST):
+                last_error = f"Category is not a valid function category: {category}."
+                tries += 1
+                continue
+            
+            category = answer
+            print(f"Parsed category for {name} after {tries} tries:\n{category}\n")
+
+        except Exception as e:
+            print(f"Attempt {tries} failed: {e}")
+            last_error = str(e)
+            tries += 1
+            if tries >= MAX_RETRY:
+                raise RuntimeError(f"Failed to define category after {tries} tries: {e}")
+    return category
 
 if __name__ == "__main__":
     load_dotenv()
@@ -183,18 +291,67 @@ if __name__ == "__main__":
     )
     base = "code"
     list_of_files = list_files(base)
-    
+
     for file in list_of_files:
         filepath = f"{base}/{file}"
         print(f"--- {file} ---")
-        functions = extract_functions(filepath)
+        functions, imports = time_step(
+            "Extract information",
+            extract_information,
+            filepath
+        )
         content = read_file(filepath)
-        new_funcs = [{k: v for k, v in f.items() if k != "source"} for f in functions]
-
-        # print(new_funcs)
+        
         for func in functions:
-            answer_types = define_param_types(func, content, model_in_use)
+            # Parameter Types
+            answer_types = time_step(
+                f"{func['name']} - Param Types",
+                define_param_types,
+                func,
+                model_in_use
+            )
             func["parameters"] = dict(zip(func['parameters'].keys(), answer_types))
-            func["tags"] = define_tags(func, content, model_in_use)
-            func["description"] = define_description(func, content, model_in_use)
-        write_function_definitions(filepath, functions)
+
+            # Tags
+            func["tags"] = time_step(
+                f"{func['name']} - Tags",
+                define_tags,
+                func,
+                content,
+                model_in_use
+            )
+
+            # Description
+            func["description"] = time_step(
+                f"{func['name']} - Description",
+                define_description,
+                func,
+                content,
+                model_in_use
+            )
+
+            # Return Type
+            answer_return = time_step(
+                f"{func['name']} - Return Type",
+                define_return_type,
+                func,
+                model_in_use
+            )
+            func["return"] =dict(zip(func['return'].keys(), [answer_return]))
+
+            # Category
+            func["category"] = time_step(
+                f"{func['name']} - Category",
+                define_category,
+                func,
+                content,
+                model_in_use
+            )
+
+        # Write output timing
+        time_step(
+            f"{file} - Writing Function Definitions",
+            write_function_definitions,
+            filepath,
+            functions
+        )
