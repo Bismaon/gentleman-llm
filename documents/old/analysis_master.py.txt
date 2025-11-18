@@ -1,0 +1,44 @@
+Based on the provided code, here's a classification of each function into one of the categories:
+
+1. **Constructors/initializers**:
+   - `main`: factory function, initializes the logging level, sets up directories, and calls other functions.
+   - `store_data`: initializes the MongoDB connection and stores data in the database.
+   - `log_insertion_details`: initializes the logger and logs insertion details.
+
+2. **Getters/Setters/Properties**:
+   - `find_in_sorted_list`: getter function, returns the index of an element in a sorted list.
+
+3. **Pure utilities**:
+   - `refactor_faculties`: pure utility function, transforms faculties data according to the specified format.
+   - `readImportLinks`: pure utility function, reads import links from files and returns a dictionary.
+
+4. **Recursion / DP**:
+   - `refactor_faculties`: uses recursion to transform faculties data.
+   - `readImportLinks`: uses recursion to read import links from files.
+
+5. **Concurrency/async**:
+   - None
+
+6. **Tests**:
+   - `test_` is not a prefix of any function name, so no tests are found.
+
+7. **I/O functions**:
+   - `xlsx2csv.xlsx2csv`: interacts with files, converts xlsx to csv.
+   - `os.path.join`: interacts with directories, joins path components.
+   - `open`: interacts with files, reads or writes file content.
+   - `json.load`: interacts with files, loads JSON data.
+   - `argparse`: interacts with command-line arguments, parses arguments.
+   - `MongoDB`: interacts with a database, stores and retrieves data.
+
+8. **Controllers**:
+   - `main`: high fan-out function, calls other functions and composes their results.
+
+9. **Data access / repository**:
+   - `store_data`: interacts with a database, stores data in the database.
+   - `log_insertion_details`: interacts with a database, logs insertion details.
+
+10. **API endpoints / handlers / CLIs**:
+    - `main`: entry point, accepts command-line arguments and calls other functions.
+
+11. **Event/callback/listener**:
+    - None

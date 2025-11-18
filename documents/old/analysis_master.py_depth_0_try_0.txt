@@ -1,0 +1,52 @@
+```python
+def store_data(
+    master_data: dict, 
+    annuaire: list, 
+    faculties: list, 
+    schedule_dict: dict, 
+    db: MongoDB
+) -> None:
+    """
+    Store the data in the database.
+
+    Args:
+        master_data (dict): Dictionary containing the course details.
+        annuaire (list): List of annuaire data.
+        faculties (list): List of faculty data.
+        schedule_dict (dict): Dictionary containing schedule data.
+        db (MongoDB): MongoDB object for database connection.
+    """
+    # Drop existing collections
+    db.drop()
+
+    # Insert master_data into 'courses' collection
+    db.insert_many([course_detail for course_detail in master_data.values()])
+
+    # Insert annuaire into 'programs' collection
+    db.set_collection("programs")
+    db.insert_many(annuaire)
+
+    # Insert faculties into 'faculties' collection
+    db.set_collection("faculties")
+    db.insert_many(faculties)
+
+    # Insert schedule_dict into 'schedules' collection
+    schedules = [detail for detail in schedule_dict.values()]
+    db.set_collection("schedules")
+    db.insert_many(schedules)
+```
+
+This function takes in the following parameters:
+
+*   `master_data`: A dictionary containing course details.
+*   `annuaire`: A list of annuaire data.
+*   `faculties`: A list of faculty data.
+*   `schedule_dict`: A dictionary containing schedule data.
+*   `db`: A MongoDB object for database connection.
+
+The function drops any existing collections in the database and then inserts the provided data into the respective collections:
+
+*   `master_data` is inserted into the 'courses' collection.
+*   `annuaire` is inserted into the 'programs' collection.
+*   `faculties` is inserted into the 'faculties' collection.
+*   `schedule_dict` is inserted into the 'schedules' collection.

@@ -1,0 +1,38 @@
+Here is the Python doc for the `store_data` function:
+
+```python
+def store_data(
+    master_data: Dict[str, Dict[str, Any]],
+    annuaire: List[Dict[str, Any]],
+    faculties: List[Dict[str, Any]],
+    schedule_dict: Dict[str, Dict[str, Any]],
+    db: MongoDB,
+) -> None:
+    """
+    Store the data in the database.
+
+    This function takes in four main data structures:
+    - master_data: A dictionary containing course details.
+    - annuaire: A list of annuaire data.
+    - faculties: A list of faculties data.
+    - schedule_dict: A dictionary containing schedule data.
+    - db: A MongoDB object for database connection.
+
+    The function first drops the existing data in the database and then inserts the new data.
+    It differentiates between four collections in the database: "courses", "programs", "faculties", and "schedules".
+
+    Args:
+        master_data (Dict[str, Dict[str, Any]]): Dictionary containing course details.
+        annuaire (List[Dict[str, Any]]): List of annuaire data.
+        faculties (List[Dict[str, Any]]): List of faculties data.
+        schedule_dict (Dict[str, Dict[str, Any]]): Dictionary containing schedule data.
+        db (MongoDB): MongoDB object for database connection.
+
+    Returns:
+        None: This function does not return any value.
+    """
+```
+
+Note: The `Dict[str, Dict[str, Any]]` and `List[Dict[str, Any]]` types are used to represent the data structures as per the Python type hinting convention. The `Any` type is used to represent the values in the dictionaries. 
+
+This docstring explains the purpose and behavior of the `store_data` function, including its input parameters, what it does, and its return value (or lack thereof in this case). This should provide a clear and concise understanding of the function's functionality.

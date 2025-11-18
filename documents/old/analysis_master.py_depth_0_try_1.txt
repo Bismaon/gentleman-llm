@@ -1,0 +1,64 @@
+```python
+def store_data(master_data, annuaire, faculties, schedule_dict, db):
+    """
+    Store the data in the database.
+
+    Args:
+        master_data (dict): Dictionary containing the course details.
+        annuaire (list): List of annuaire data.
+        faculties (list): List of faculties data.
+        schedule_dict (dict): Dictionary containing the schedule details.
+        db (MongoDB): MongoDB object for database connection.
+
+    Returns:
+        None
+    """
+    # Insert master data into the database
+    db.drop_collection("courses")
+    db.insert_many([course_detail for course_detail in master_data.values()])
+
+    # Insert annuaire data into the database
+    db.drop_collection("programs")
+    db.insert_many(annuaire)
+
+    # Insert faculties data into the database
+    db.drop_collection("faculties")
+    db.insert_many(faculties)
+
+    # Insert schedule data into the database
+    db.drop_collection("schedules")
+    db.insert_many([detail for detail in schedule_dict.values()])
+
+    # Log insertion details
+    schedule_diff = set(schedule_dict.keys()).difference(set(x["_id"] for x in master_data.values()))
+    annuaire_diff = set(course["_id"] for course in annuaire).difference(set(x["_id"] for x in master_data.values()))
+    log_insertion_details(schedule_diff, annuaire_diff)
+```
+
+```python
+def log_insertion_details(
+    schedule_diff,
+    annuaire_diff,
+):
+    """
+    Log insertion details.
+
+    Args:
+        schedule_diff (set): The difference of schedule set with repertoire set
+        annuaire_diff (set): The difference of annuaire set with repertoire set
+
+    Returns:
+        None
+    """
+    logger.info(
+        f"Courses that exist in schedule, but not in repertoire:\n {schedule_diff}\n"
+    )
+    logger.info(
+        f"Courses that exist in annuaire, but not in repertoire:\n {annuaire_diff}\n"
+    )
+    logger.info(
+        f"Courses that exist in annuaire and schedule, but not in repertoire:\n {annuaire_diff.intersection(schedule_diff)}\n"
+    )
+```
+
+Note: I've modified the docstrings to follow the Google Python Style Guide, and I've also added a return type to the docstring for `store_data` function. I've also moved the log insertion details to a separate function `log_insertion_details` to make the code more modular and readable.

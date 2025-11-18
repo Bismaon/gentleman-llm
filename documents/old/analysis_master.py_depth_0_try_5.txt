@@ -1,0 +1,28 @@
+```python
+def store_data(master_data, annuaire, faculties, schedule_dict, db):
+    """
+    Store the data in the database.
+
+    Args:
+        master_data (dict): Dictionary containing the course details.
+        annuaire (list): List of annuaire data.
+        faculties (dict): Dictionary of faculties data.
+        schedule_dict (dict): Dictionary of schedule data.
+        db (MongoDB): MongoDB object for database connection.
+    """
+    db.drop()
+    db.insert_many([course_detail for course_detail in master_data.values()])
+
+    db.set_collection("programs")
+    db.drop()
+    db.insert_many(annuaire)
+
+    db.set_collection("faculties")
+    db.drop()
+    db.insert_many(faculties)
+
+    schedules = [detail for detail in schedule_dict.values()]
+    db.set_collection("schedules")
+    db.drop()
+    db.insert_many(schedules)
+```

@@ -1,0 +1,187 @@
+```json
+[
+  {
+    "name": "main",
+    "nature": "concrete",
+    "attributes": [
+      {
+        "name": "root",
+        "type": "str"
+      },
+      {
+        "name": "import_links_directory",
+        "type": "str"
+      },
+      {
+        "name": "schedule_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "schedule_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "annuaire_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "annuaire_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "repertoire_raw_directory",
+        "type": "str"
+      },
+      {
+        "name": "repertoire_parsed_directory",
+        "type": "str"
+      },
+      {
+        "name": "hierarchy_path",
+        "type": "str"
+      },
+      {
+        "name": "debug",
+        "type": "bool"
+      }
+    ],
+    "properties": {
+      "return_type": "None"
+    },
+    "description": "Main function to parse the raw data and populate the database",
+    "tags": [
+      "main",
+      "parser",
+      "database"
+    ],
+    "reasoning": null
+  },
+  {
+    "name": "store_data",
+    "nature": "concrete",
+    "attributes": [
+      {
+        "name": "master_data",
+        "type": "dict"
+      },
+      {
+        "name": "annuaire",
+        "type": "list"
+      },
+      {
+        "name": "faculties",
+        "type": "list"
+      },
+      {
+        "name": "schedule_dict",
+        "type": "dict"
+      },
+      {
+        "name": "db",
+        "type": "MongoDB"
+      }
+    ],
+    "properties": {
+      "return_type": "None"
+    },
+    "description": "Store the data in the database",
+    "tags": [
+      "database",
+      "storage"
+    ],
+    "reasoning": null
+  },
+  {
+    "name": "log_insertion_details",
+    "nature": "concrete",
+    "attributes": [
+      {
+        "name": "schedule_diff",
+        "type": "set"
+      },
+      {
+        "name": "annuaire_diff",
+        "type": "set"
+      }
+    ],
+    "properties": {
+      "return_type": "None"
+    },
+    "description": "Log insertion details",
+    "tags": [
+      "log",
+      "insertion"
+    ],
+    "reasoning": null
+  },
+  {
+    "name": "find_in_sorted_list",
+    "nature": "concrete",
+    "attributes": [
+      {
+        "name": "elem",
+        "type": "str"
+      },
+      {
+        "name": "sorted_list",
+        "type": "list"
+      }
+    ],
+    "properties": {
+      "return_type": "int"
+    },
+    "description": "Locate the leftmost value exactly equal to x",
+    "tags": [
+      "search",
+      "sorted"
+    ],
+    "reasoning": null
+  },
+  {
+    "name": "refactor_faculties",
+    "nature": "concrete",
+    "attributes": [
+      {
+        "name": "faculties",
+        "type": "list"
+      },
+      {
+        "name": "annuaires",
+        "type": "dict"
+      },
+      {
+        "name": "directories_tuples",
+        "type": "list"
+      }
+    ],
+    "properties": {
+      "return_type": "list"
+    },
+    "description": "Refactor faculties",
+    "tags": [
+      "refactor",
+      "faculties"
+    ],
+    "reasoning": null
+  },
+  {
+    "name": "readImportLinks",
+    "nature": "concrete",
+    "attributes": [
+      {
+        "name": "directories_tuples",
+        "type": "list"
+      }
+    ],
+    "properties": {
+      "return_type": "dict"
+    },
+    "description": "Read import links",
+    "tags": [
+      "read",
+      "import"
+    ],
+    "reasoning": null
+  }
+]
+```
