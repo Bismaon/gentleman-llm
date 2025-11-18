@@ -213,11 +213,13 @@ def get_json(filename: str) -> dict:
 def list_imports(node, imports: list[str]):
     if isinstance(node, ast.Import):
         for alias in node.names:
-            imports.append(alias.name)
+            sanitized_name = sanitize(alias.name)
+            imports.append(sanitized_name)
 
     elif isinstance(node, ast.ImportFrom):
         for alias in node.names:
-            imports.append(alias.name)
+            sanitized_name = sanitize(alias.name)
+            imports.append(sanitized_name)
 
 def list_functions(code, functions, node):
     if isinstance(node, ast.FunctionDef):
@@ -347,6 +349,14 @@ def validate_type(llm_answer: str, imports: set[str]) -> str|Exception:
     return sanitized
 
 def sanitize_and_validate(t: str, imports: set[str]) -> str:
+    t = sanitize(t)
+
+    if not is_valid_type(t, imports):
+        raise ValueError(f"Unknown or unsupported type name: '{t}'")
+    
+    return t
+
+def sanitize(t):
     if not isinstance(t, str):
         raise TypeError(f"Type name must be a string.\n Type: {t}")
 
@@ -365,10 +375,6 @@ def sanitize_and_validate(t: str, imports: set[str]) -> str:
 
     if any(ch in t for ch in ["(" ,")","[[", "{", "}"]):
         raise ValueError(f"Invalid characters in type name: '{t}'")
-
-    if not is_valid_type(t, imports):
-        raise ValueError(f"Unknown or unsupported type name: '{t}'")
-    
     return t
 
 def is_valid_type(expr: str, imports:set[str]) -> bool:

@@ -22,7 +22,7 @@ models = [
     "meta-llama/Llama-3.1-8B-Instruct",
 ]
 
-def ask(model:str, user_query:str, system:list[str], tries:int=0, error:str|None=None, ex_tries:int=0)->str|Exception:
+def ask(model:str, user_query:str, system:list[str], error:str|None=None)->str|Exception:
     messages = []
     for system_query in system:
         messages.append({"role": "system", "content": system_query})
@@ -36,19 +36,7 @@ def ask(model:str, user_query:str, system:list[str], tries:int=0, error:str|None
     try:
         response = client.chat.completions.create(model=model, messages=messages)
     except Exception as e:
-        err = str(e).lower()
-        if "exceeded" in err:
-            ex_tries+=1
-            wait = 2 ** (ex_tries+3)
-            print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
-            sleep(wait)
-            if ex_tries >= MAX_EX_RETRY:
-                raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
-            return ask(model, user_query, system, tries, error, ex_tries)
-        elif "timeout" in err:
-            raise TimeoutError("Request timed out.") from e
-        else:
-            raise e
+        raise e
     
         
     answer = response.choices[0].message.content
@@ -57,15 +45,16 @@ def ask(model:str, user_query:str, system:list[str], tries:int=0, error:str|None
     return answer
     
 
-def define_param_types(function_info:dict, model:str, imports):
+def define_param_types(function_info:dict, model:str, imports, ex_tries=0)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source and a list of its parameters.",
+        "Define each parameter's type.",
         "If a parameter's type is unclear or is from a dependency, use `any` as its type.",
-        "Respond ONLY with a Python list of type names."
+        "Respond ONLY with a Python list of types."
     ]
 
-    param_names = function_info['parameters'].keys()
+    param_names = list(function_info['parameters'].keys())
     code = function_info['source']
     user_query = f"""
     Function Source:
@@ -80,19 +69,23 @@ def define_param_types(function_info:dict, model:str, imports):
     last_error = None
     while len(parsed_types) != param_len:
         try:
-            answer = ask(model, user_query, system, tries, error=last_error)
+            answer = ask(model, user_query, system, error=last_error)
             parsed_types = validate_types(answer, imports)
             print(f"Parsed Types for {param_names} after {tries} tries:\n{parsed_types}\n")
         except Exception as e:
-            print(f"Attempt {tries} failed: {e}")
-            last_error = str(e)
-            tries += 1
-            if tries >= MAX_RETRY:
-                raise RuntimeError(f"Failed to define parameter types after {tries} tries: {e}")
+            err = str(e).lower()
+            if "exceeded" in err:
+                ex_tries = exceed_credits_handle(e,ex_tries)
+            else:
+                last_error = str(e)
+                print(f"Attempt {tries} failed: {e}")
+                tries += 1
+                if tries >= MAX_RETRY:
+                    raise RuntimeError(f"Failed to define parameter types after {tries} tries: {e}")
             continue
     return parsed_types
 
-def define_tags(function_info:dict, content:str, model:str, max_tags:int=5)->list[str]|Exception:
+def define_tags(function_info:dict, content:str, model:str, max_tags:int=5, ex_tries=0)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python file, a function source and its description.",
@@ -118,21 +111,25 @@ def define_tags(function_info:dict, content:str, model:str, max_tags:int=5)->lis
     last_error = None
     while len(parsed_tags) == 0:
         try:
-            answer = ask(model, user_query, system, tries, error=last_error)
+            answer = ask(model, user_query, system, error=last_error)
             parsed_tags = validate_tags(answer)
             print(f"Parsed Tags for {name} after {tries} tries:\n{parsed_tags}\n")
 
         except Exception as e:
-            print(f"Attempt {tries} failed: {e}")
-            last_error = str(e)
-            tries += 1
-            if tries >= MAX_RETRY:
-                raise RuntimeError(f"Failed to define tags after {tries} tries: {e}")
+            err = str(e).lower()
+            if "exceeded" in err:
+                ex_tries = exceed_credits_handle(e,ex_tries)
+            else:
+                last_error = str(e)
+                print(f"Attempt {tries} failed: {e}")
+                tries += 1
+                if tries >= MAX_RETRY:
+                    raise RuntimeError(f"Failed to define tags after {tries} tries: {e}")
             continue
         
     return parsed_tags
 
-def define_description(function_info:dict, content:str, model:str, min_len:int=100, max_len:int=250)->list[str]|Exception:
+def define_description(function_info:dict, content:str, model:str, min_len:int=100, max_len:int=250, ex_tries=0)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python file, a function source, and its parameters.",
@@ -158,7 +155,7 @@ def define_description(function_info:dict, content:str, model:str, min_len:int=1
     last_error = None
     while not in_range(len(parsed_desc), min_len, max_len):
         try:
-            answer = ask(model, user_query, system, tries, error=last_error)
+            answer = ask(model, user_query, system, error=last_error)
 
             if not in_range(len(answer), min_len, max_len):
                 last_error = f"Description length {len(answer)} out of bounds."
@@ -169,14 +166,19 @@ def define_description(function_info:dict, content:str, model:str, min_len:int=1
             print(f"Parsed Description for {name} after {tries} tries:\n{parsed_desc}\n")
 
         except Exception as e:
-            print(f"Attempt {tries} failed: {e}")
-            last_error = str(e)
-            tries += 1
-            if tries >= MAX_RETRY:
-                raise RuntimeError(f"Failed to define description after {tries} tries: {e}")
+            err = str(e).lower()
+            if "exceeded" in err:
+                ex_tries = exceed_credits_handle(e,ex_tries)
+            else:
+                last_error = str(e)
+                print(f"Attempt {tries} failed: {e}")
+                tries += 1
+                if tries >= MAX_RETRY:
+                    raise RuntimeError(f"Failed to define description after {tries} tries: {e}")
+            continue
     return parsed_desc
 
-def define_return_type(function_info:dict, model:str, imports):
+def define_return_type(function_info:dict, model:str, imports:list, ex_tries=0)->str|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source, a list of its parameters and their types, and its return value.",
@@ -208,20 +210,23 @@ def define_return_type(function_info:dict, model:str, imports):
     last_error = None
     while return_type=="":
         try:
-            answer = ask(model, user_query, system, tries, error=last_error)
+            answer = ask(model, user_query, system, error=last_error)
             return_type = validate_type(answer, imports)
             print(f"Parsed Type for {return_value} atfer {tries} tries:\n{return_type}\n")
         except Exception as e:
-            print(f"Attempt {tries} failed: {e}")
-            last_error = str(e)
-            tries += 1
-            if tries >= MAX_RETRY:
-                raise RuntimeError(f"Failed to define return type after {tries} tries: {e}")
+            err = str(e).lower()
+            if "exceeded" in err:
+                ex_tries = exceed_credits_handle(e,ex_tries)
+            else:
+                last_error = str(e)
+                print(f"Attempt {tries} failed: {e}")
+                tries += 1
+                if tries >= MAX_RETRY:
+                    raise RuntimeError(f"Failed to define return type after {tries} tries: {e}")
             continue
     return return_type
 
-
-def define_category(function_info:dict, content:str, model:str)->str|Exception:
+def define_category(function_info:dict, content:str, model:str, ex_tries=0)->str|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source, its description, tags, parameters, and return value.",
@@ -262,8 +267,7 @@ def define_category(function_info:dict, content:str, model:str)->str|Exception:
     last_error = None
     while not in_list(category, FUNCTION_TYPES_LIST):
         try:
-            answer = ask(model, user_query, system, tries, error=last_error)
-            print(f"Category answer: {answer}")
+            answer = ask(model, user_query, system, error=last_error)
 
             if not valid_category(answer, FUNCTION_TYPES_LIST):
                 last_error = f"Category is not a valid function category: {category}."
@@ -274,12 +278,26 @@ def define_category(function_info:dict, content:str, model:str)->str|Exception:
             print(f"Parsed category for {name} after {tries} tries:\n{category}\n")
 
         except Exception as e:
-            print(f"Attempt {tries} failed: {e}")
-            last_error = str(e)
-            tries += 1
-            if tries >= MAX_RETRY:
-                raise RuntimeError(f"Failed to define category after {tries} tries: {e}")
+            err = str(e).lower()
+            if "exceeded" in err:
+                ex_tries = exceed_credits_handle(e,ex_tries)
+            else:
+                last_error = str(e)
+                print(f"Attempt {tries} failed: {e}")
+                tries += 1
+                if ex_tries >= MAX_RETRY:
+                    raise RuntimeError(f"Failed to define category after {ex_tries} tries: {e}")
+            continue
     return category
+
+def exceed_credits_handle(e, ex_tries):
+    ex_tries+=1
+    if ex_tries >= MAX_EX_RETRY:
+        raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
+    wait = 2 ** (ex_tries+3)
+    print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
+    sleep(wait)
+    return ex_tries
 
 if __name__ == "__main__":
     load_dotenv()
@@ -291,7 +309,7 @@ if __name__ == "__main__":
     )
     base = "code"
     list_of_files = list_files(base)
-
+    list_of_files = [list_of_files[f] for f in range(2,len(list_of_files)-1)] #Testing
     for file in list_of_files:
         filepath = f"{base}/{file}"
         print(f"--- {file} ---")
@@ -308,7 +326,8 @@ if __name__ == "__main__":
                 f"{func['name']} - Param Types",
                 define_param_types,
                 func,
-                model_in_use
+                model_in_use,
+                imports
             )
             func["parameters"] = dict(zip(func['parameters'].keys(), answer_types))
 
@@ -335,7 +354,8 @@ if __name__ == "__main__":
                 f"{func['name']} - Return Type",
                 define_return_type,
                 func,
-                model_in_use
+                model_in_use,
+                imports
             )
             func["return"] =dict(zip(func['return'].keys(), [answer_return]))
 

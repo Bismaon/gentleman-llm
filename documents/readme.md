@@ -21,7 +21,9 @@ python main.py
 all
 ```bash
 cd documents
+python -m venv .venv
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 .venv/Scripts/activate.ps1
+pip install -r requirements.txt
 python main.py
 ```
