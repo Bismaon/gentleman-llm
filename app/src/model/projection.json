@@ -1,0 +1,33 @@
+{
+    "type": "projection",
+    "projection": [
+        {
+            "concept": {
+                "name": "file"
+            },
+            "tags": ["file"],
+            "type": "container",
+            "container": {
+                "content": [
+                    {
+                        "type": "static",
+                        "static": {
+                            "type": "text",
+                            "content": "File"
+                        }
+                    }
+                ],
+                "style": {
+                    "css": [
+                        "code-file"
+                    ]
+                },
+                "layout": {
+                    "type": "flex",
+                    "orientation": "column",
+                    "wrappable": false
+                }
+            }
+        }
+    ]
+}

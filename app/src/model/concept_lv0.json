@@ -1,0 +1,158 @@
+{
+    "concept": [
+        {
+            "name": "file",
+            "nature": "concrete",
+            "root": true,
+            "attributes": [
+                {
+                    "name": "name",
+                    "target": {
+                        "name": "string"
+                    },
+                    "required": false
+                },
+                {
+                    "name": "functions",
+                    "target": {
+                        "name": "set",
+                        "accept": [
+                            {
+                                "name": "function"
+                            }
+                        ]
+                    },
+                    "required": false
+                }
+            ]
+        },
+        {
+            "name": "function",
+            "nature": "concrete",
+            "attributes": [
+                {
+                    "name": "name",
+                    "target": {
+                        "name": "string"
+                    }
+                },
+                {
+                    "name": "description",
+                    "target": {
+                        "name": "string"
+                    }
+                },
+                {
+                    "name": "category",
+                    "target": {
+                        "name": "string"
+                    }
+                },
+                {
+                    "name": "return",
+                    "target": {
+                        "name": "return_value"
+                    }
+                },
+                {
+                    "name": "param_names",
+                    "target": {
+                        "name": "set",
+                        "accept": [
+                            {
+                                "name": "parameter"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "source",
+                    "target": {
+                        "name": "source"
+                    }
+                },
+                {
+                    "name": "called_by",
+                    "target": {
+                        "name": "set",
+                        "accept": [
+                            {
+                                "name": "string"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "calls",
+                    "target": {
+                        "name": "set",
+                        "accept": [
+                            {
+                                "name": "string"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "tags",
+                    "target": {
+                        "name": "set",
+                        "accept": [
+                            {
+                                "name": "string"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "parameter",
+            "nature": "concrete",
+            "attributes": [
+                {
+                    "name": "name",
+                    "target": {
+                        "name": "string"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "return_value",
+            "nature": "concrete",
+            "attributes": [
+                {
+                    "name": "name",
+                    "target": {
+                        "name": "string"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "source",
+            "nature": "concrete",
+            "attributes": [
+                {
+                    "name": "code",
+                    "target": {
+                        "name": "string"
+                    }
+                },
+                {
+                    "name": "start_line",
+                    "target": {
+                        "name": "number"
+                    }
+                },
+                {
+                    "name": "end_line",
+                    "target": {
+                        "name": "number"
+                    }
+                }
+            ]
+        }
+    ]
+}
