@@ -2,16 +2,10 @@ from time import sleep
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-from util import extract_information, get_json, in_list, in_range, list_files, read_file, time_step, valid_category, validate_tags, validate_type, validate_types, write_file, write_function_definitions
+from util import extract_information, get_json, in_list, in_range, list_files, read_file, time_step, valid_category, validate_tags, validate_type, validate_types, write_file, write_function_definitions, write_valid_types
 from local import (
-    FUNCTION_INSTANCE,
     FUNCTION_TYPES_LIST,
-    HIERARCHY_NOTE,
     FUNCTION_TYPES_GUIDE,
-    THINKING_STEPS,
-    PERSONA,
-    DEPTHS,
-    RULES,
     MAX_RETRY,
     MAX_EX_RETRY
 )
@@ -309,7 +303,7 @@ if __name__ == "__main__":
     )
     base = "code"
     list_of_files = list_files(base)
-    list_of_files = [list_of_files[f] for f in range(2,len(list_of_files)-1)] #Testing
+    # list_of_files = [list_of_files[f] for f in range(2,len(list_of_files)-1)] #Testing
     for file in list_of_files:
         filepath = f"{base}/{file}"
         print(f"--- {file} ---")
@@ -318,6 +312,8 @@ if __name__ == "__main__":
             extract_information,
             filepath
         )
+        write_valid_types(imports)
+        continue
         content = read_file(filepath)
         
         for func in functions:

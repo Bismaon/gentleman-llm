@@ -18,20 +18,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-def time_step(label: str, func, *args, **kwargs):
-    start = time.perf_counter()
-    try:
-        result = func(*args, **kwargs)
-        end = time.perf_counter()
-        logger.info(f"[TIME] {label}: {end - start:.3f} seconds")
-        return result
-    except Exception as e:
-        end = time.perf_counter()
-        logger.error(
-            f"[TIME ERROR] {label} failed after {end - start:.3f} seconds "
-            f"with exception: {e}"
-        )
-        raise
+
 
 def generate_valid_types(depth=1):
     """
@@ -60,6 +47,21 @@ def generate_valid_types(depth=1):
 
     valid |= expand(base, 1)
     return valid
+
+def write_valid_types(plus, output_path="results/valid_types"):
+    """
+    Writes all valid types (VALID_BASE_TYPES) to a file, sorted alphabetically.
+    """
+    try:
+        out = next_available_filename(output_path)
+        with open(out, "w", encoding="utf-8") as f:
+            for t in list(VALID_BASE_TYPES):
+                f.write(f"{t}\n")
+            for t in list(plus):
+                f.write(f"{t}\n")
+        print(f"[OK] Valid types written to {out}")
+    except Exception as e:
+        print(f"[ERROR] Cannot write valid types: {e}")
 VALID_BASE_TYPES = PRIMITIVES | NON_EXHAUSTIVE | generate_valid_types()
 
 def list_files(directory: str) -> list[str]:
@@ -147,12 +149,22 @@ def next_available_filename(base_name: str) -> str:
     returns a file name like 'filename_func_def_1.txt'
     or increments until a free name is found.
     """
-    i = 1
-    while True:
-        candidate = f"{base_name}_{i}.txt"
-        if not os.path.exists(candidate):
-            return candidate
-        i += 1
+    directory = os.path.dirname(base_name) or "."
+    filename_root = os.path.basename(base_name)
+
+    pattern = re.compile(rf"^{re.escape(filename_root)}_(\d+)\.txt$")
+
+    existing_versions = []
+
+    for file in os.listdir(directory):
+        match = pattern.match(file)
+        if match:
+            version = int(match.group(1))
+            existing_versions.append(version)
+
+    next_version = max(existing_versions, default=0) + 1
+
+    return os.path.join(directory, f"{filename_root}_{next_version}.txt")
 
 def write_function_definitions(filepath: str, functions: list[dict]) -> None:
     base_name = os.path.splitext(os.path.basename(filepath))[0]
@@ -392,6 +404,15 @@ def validate_tags(llm_answer: str) -> list[str]|Exception:
         
     return value 
 
+def valid_category(answer_LLM:str, function_types):
+    ans = answer_LLM.strip()
+    ans = ans.replace('"','').replace("'","")
+    if not in_list(ans, function_types):
+        raise ValueError(f"Invalid category: {ans}")
+    else:
+        return True
+
+
 def in_range(value:int, min_val:int, max_val:int)->bool:
     return min_val <= value <= max_val
 
@@ -409,10 +430,17 @@ def in_list(value,list_str):
 
     return False
 
-def valid_category(answer_LLM:str, function_types):
-    ans = answer_LLM.strip()
-    ans = ans.replace('"','').replace("'","")
-    if not in_list(ans, function_types):
-        raise ValueError(f"Invalid category: {ans}")
-    else:
-        return True
+def time_step(label: str, func, *args, **kwargs):
+    start = time.perf_counter()
+    try:
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+        logger.info(f"[TIME] {label}: {end - start:.3f} seconds")
+        return result
+    except Exception as e:
+        end = time.perf_counter()
+        logger.error(
+            f"[TIME ERROR] {label} failed after {end - start:.3f} seconds "
+            f"with exception: {e}"
+        )
+        raise
