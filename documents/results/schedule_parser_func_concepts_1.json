@@ -1,0 +1,72 @@
+[
+    {
+        "name": "parse",
+        "parameters": [
+            [
+                "file_path",
+                "str"
+            ],
+            [
+                "destination_path",
+                "str"
+            ]
+        ],
+        "source": "def parse(file_path: str, destination_path=None):\n    print(f\"Parsing {file_path}\")\n    semester = file_path.split(\"_\")[1]\n    file_date = date.fromisoformat(file_path.split(\"_\")[2].rsplit(\".\", 1)[0])\n    if file_path[0] != \"/\":\n        file_path = os.path.join(os.getcwd(), file_path)\n    with open(file_path, \"r\", encoding=\"utf-8\") as csvfile:\n        reader = csv.DictReader(csvfile, delimiter=\";\")\n        master_data = main(semester, reader, file_date)\n\n    if destination_path is not None:\n        pass\n\n    return (file_date, master_data)",
+        "start_line": 12,
+        "end_line": 25,
+        "called_by": [],
+        "calls": [
+            "main"
+        ],
+        "description": "This function parses a CSV file containing course schedules and returns a structured dictionary representing the courses. It extracts relevant information such as course names, sections, teachers, dates, times, and locations.",
+        "tags": [
+            "CSV Parser",
+            "File Processor",
+            "Schedule Extractor",
+            "Data Transformer",
+            "Semester Parser"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "main",
+        "parameters": [
+            [
+                "semester",
+                "str"
+            ],
+            [
+                "reader",
+                "any"
+            ],
+            [
+                "file_date",
+                "datetime"
+            ]
+        ],
+        "source": "def main(semester, reader, file_date):\n\n    master_data = dict()\n\n    for row in reader:\n        faculty_id = row[\"Faculté\"]\n        faculty_name = row[\"Faculté DL\"]\n        department_id = row[\"Comp. Univ.\"]\n        department_name = row[\"Comp DL\"]\n        cycle = row[\"Cheminement\"]\n\n        code = row[\"Mat.\"]\n        number = row[\"Num. rép.\"]\n        sigle = (code + number).upper()\n        section = row[\"Sect.\"]\n        volet = row[\"Volet\"]\n        name = row[\"Titre\"]\n        capacity = row[\"Inscr. Max\"]\n        number_inscription = row[\"Inscr.\"]\n        teachers = [\n            teacher.strip()\n            for teacher in [\n                row[\"Nom enseignant 1\"]\n                + row[\"Nom enseignant 2\"]\n                + row[\"Nom enseignant 3\"]\n            ]\n            if teacher.strip() != \"\"\n        ]\n\n        mode = row[\"Mode\"]\n        statut = row[\"Statut\"]\n\n        days = row[\"Jour\"].split()\n        start_time = row[\"De\"]\n        end_time = row[\"A\"]\n        start_date = row[\"Du\"]\n        end_date = row[\"Au\"]\n\n        campus = row[\"Campus\"]\n        place = row[\"Emplacement\"]\n        pavillon_id = row[\"Imm.\"]\n        pavillon_name = row[\"Imm DL\"]\n        room = row[\"Salle\"]\n\n        _id = semester + sigle\n\n        if statut != \"Actif\":\n            continue\n\n        master_data.setdefault(\n            _id,\n            {\n                \"_id\": _id,\n                \"sigle\": sigle,\n                \"fetch_date\": date.isoformat(file_date),\n                \"semester\": semester,\n                \"name\": name,\n                \"sections\": dict(),\n            },\n        )[\"sections\"].setdefault(\n            section,\n            {\n                \"number_inscription\": number_inscription,\n                \"teachers\": teachers,\n                \"capacity\": capacity,\n                \"volets\": dict(),\n            },\n        )[\n            \"volets\"\n        ].setdefault(\n            volet,\n            {\n                \"activities\": list(),\n            },\n        )[\n            \"activities\"\n        ].append(\n            {\n                \"days\": days,\n                \"start_time\": start_time,\n                \"end_time\": end_time,\n                \"start_date\": start_date,\n                \"end_date\": end_date,\n                \"campus\": campus,\n                \"place\": place,\n                \"pavillon_name\": pavillon_name,\n                \"room\": room,\n                \"mode\": mode,\n            }\n        )\n    # now retransforme the structure to be arrays of object\n    for course in master_data.values():\n\n        for section_key, section_dict in course[\"sections\"].items():\n            new_volet = [\n                volet_dict | {\"name\": volet_key}\n                for volet_key, volet_dict in section_dict[\"volets\"].items()\n            ]\n            course[\"sections\"][section_key] = section_dict | {\"volets\": new_volet}\n        course[\"sections\"] = [\n            section_detail | {\"name\": section_key}\n            for section_key, section_detail in course[\"sections\"].items()\n        ]\n\n    return master_data",
+        "start_line": 28,
+        "end_line": 132,
+        "called_by": [
+            "parse"
+        ],
+        "calls": [],
+        "description": "The function `main(semester, reader, file_date)` is responsible for parsing a semester's schedule data from a CSV file into a structured dictionary format.",
+        "tags": [
+            "Course Parser",
+            "CSV Processor",
+            "Data Transformer",
+            "Academic Scheduling",
+            "JSON Structurer"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "master_data",
+            "dict"
+        ]
+    }
+]

@@ -1,0 +1,344 @@
+[
+    {
+        "name": "parse",
+        "parameters": [
+            [
+                "source_file_path",
+                "str"
+            ],
+            [
+                "destination_path",
+                "str"
+            ]
+        ],
+        "source": "def parse(source_file_path, destination_path=None):\n\n    # Test if the one file_path is given, and if it exist\n    try:\n        if not os.path.isfile(source_file_path):\n            raise ValueError(\"The file: \" + source_file_path + \"\\ndoesn't exist\")\n\n        with open(source_file_path, \"r\", encoding=\"utf-8\") as f:\n            while f.read(1) != \"<\":\n                pass  # remove broken none-car leading the file\n            f.seek(f.tell() - 1)\n            file = f.readlines()\n            if len(file) > 0 and file[-1].isspace():\n                file.pop()\n\n    except Exception as e:\n        logger.error(f\"Fatal : {str(e)}\")\n        sys.exit(1)\n\n    global i\n    i = 0\n\n    set_of_program_ids = set()  # meant for id verification\n    programs = []  # Is the big json object\n\n    while i < len(file):\n\n        line = file[i]\n        flag = line[0:5]\n\n        match flag:\n            case \"<GET>\":\n                line = line.strip()\n                id = line[5:14]\n\n                # ---------id verification----------------\n                is_id_error = False\n                if not re.match(program_id_pattern, id):\n                    logger.error(\n                        f\"Error {i}: The program id: '{id}' do not match the given pattern: {program_id_pattern}\"\n                    )\n                    is_id_error = True\n                elif id in set_of_program_ids:\n                    logger.error(\n                        f\"Error {i}: The program id \"\n                        + id\n                        + \" has a duplicate, so this occurence is ignored\"\n                    )\n                    is_id_error = True\n                else:\n                    set_of_program_ids.add(id)\n\n                # if there is an id_error, skip to the next program\n                if is_id_error:\n                    i += 1\n                    while not re.search(r\"<GET>\", file[i]) and i < len(file) != \"<GET>\":\n                        i += 1\n                    continue\n\n                # --------------------------------------\n\n                program = {\"_id\": id.replace(\"-\", \"\")}\n                programs.append(program)\n                program[\"name\"] = line[15:].strip()\n                program[\"segments\"] = []\n\n            case \"<TTG>\":\n                title = line[5:].strip()\n                permitted_title = [\"Objectif(s)\", \"Règlement\"]\n                if title not in permitted_title:\n                    logger.error(\n                        f\"Fatal {i}: The title name '{title}' is not in the permitted list '{permitted_title}'\"\n                    )\n                    logger.error(f\"Fatal error parsing stopped\")\n                    sys.exit(1)\n                i += 1\n                line = file[i]\n                flag = line[0:5]\n                if flag != \"<DTG>\":\n                    logger.error(\n                        f\"Fatel: A <TTG> is not followed by <DTG> at line {i} of file {source_file_path}\"\n                    )\n                    sys.exit(1)\n\n                program[title] = extract_text_flag(file, source_file_path)\n\n            case \"<GED>\":\n                program[\"structure\"] = extract_text_flag(file, source_file_path)\n                program[\"orientations\"] = extract_orientations(\n                    program[\"structure\"]\n                )  # 1er cyc\n                program[\"cheminements\"] = extract_cheminements(\n                    program[\"structure\"]\n                )  # 1er cyc, des fois cyc sup\n                program[\"options\"] = extract_options(program[\"structure\"])  # cyc sup\n                program[\"modalites\"] = extract_modalites(\n                    program[\"structure\"]\n                )  # cyc sup\n\n            case \"<ERT>\":\n                program[\"segments\"].append(extract_one_segment(file, source_file_path))\n\n            case _:\n                if flag in [\"<GTT>\"]:\n                    pass\n                else:\n                    logger.warning(f\"line {i} not handled:{line}\")\n        i += 1\n\n    # if their is a destination_path, write the .json file\n    if destination_path is not None:\n        json_data = json.dumps(programs)\n        with open(destination_path, \"w\") as f:\n            f.write(json_data)\n\n    return programs",
+        "start_line": 50,
+        "end_line": 165,
+        "called_by": [],
+        "calls": [
+            "extract_cheminements",
+            "extract_modalites",
+            "extract_one_segment",
+            "extract_options",
+            "extract_orientations",
+            "extract_text_flag"
+        ],
+        "description": "This function parses a file containing a structured text and serializes the extracted information into a JSON string file. It takes two parameters: source_file_path and destination_path.",
+        "tags": [
+            "Program Parser",
+            "JSON Serializer",
+            "File Reader",
+            "Data Extractor",
+            "JSON Writer"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_text_flag",
+        "parameters": [
+            [
+                "file",
+                "list"
+            ],
+            [
+                "source_file_path",
+                "str"
+            ]
+        ],
+        "source": "def extract_text_flag(file, source_file_path):\n    global i\n\n    text = [file[i][5:]]\n\n    # test = the next line is not out of file, and no flag <GET>\n    while i + 1 < len(file) and not re.match(flag_pattern, file[i + 1][0:5]):\n        text.append(file[i + 1])\n        i += 1\n\n    return \"\".join(text).strip()",
+        "start_line": 170,
+        "end_line": 180,
+        "called_by": [
+            "extract_one_bloc",
+            "extract_one_segment",
+            "parse"
+        ],
+        "calls": [],
+        "description": "This function extracts text from a file following a specific flag, until it reaches another flag. It takes a file and source file path as parameters, and returns the extracted text as a string.",
+        "tags": [
+            "Text Extraction",
+            "Flag Parsing",
+            "Line Iteration",
+            "File Reading",
+            "Data Processing"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_orientations_cheminements_options",
+        "parameters": [
+            [
+                "text",
+                "str"
+            ],
+            [
+                "general_pattern",
+                "str"
+            ],
+            [
+                "start_pattern",
+                "str"
+            ],
+            [
+                "end_pattern",
+                "str"
+            ]
+        ],
+        "source": "def extract_orientations_cheminements_options(\n    text, general_pattern, start_pattern, end_pattern\n):\n    result_list = list()\n\n    matches = re.findall(general_pattern, text)\n    for match in matches:\n        match_text = re.sub(\n            start_pattern, \"\", match\n        )  # we delete the \"orientation\" key word\n\n        title = (\n            match_text.split(\"(segment\")[0]\n            .split(\"(Segment\")[0]\n            .split(\"comprend\")[0]\n            .split(\":\")[0]\n            .split(\".\")[0]\n            .strip()\n        )\n        if title.endswith(\",\"):\n            title = title[:-1]\n        if title == \"\":\n            continue\n\n        result = {\"title\": title}\n\n        result_exists = any(\n            previous_result[\"title\"] == title for previous_result in result_list\n        )\n        if result_exists:  # sometimes orientations are repeated in the description\n            continue\n\n        result_list.append(result)\n\n        segments_matches = re.findall(end_pattern, match_text)\n        segments_match = segments_matches[\n            0\n        ]  # there should be only one segments choice per orientation\n        segments_numbers = re.findall(rf\"\\d\\d\", segments_match)\n        result[\"associated_segments\"] = segments_numbers\n\n    return result_list",
+        "start_line": 183,
+        "end_line": 224,
+        "called_by": [
+            "extract_cheminements",
+            "extract_options",
+            "extract_orientations"
+        ],
+        "calls": [],
+        "description": "This function extracts and processes orientations, cheminements, and options from a given text. It uses regular expression patterns to identify and extract relevant information, and returns a list of objects containing the extracted data.",
+        "tags": [
+            "Text Parsing",
+            "JSON Serialization",
+            "Regular Expression Matching",
+            "Data Extraction",
+            "Object Structuring"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_orientations",
+        "parameters": [
+            [
+                "text",
+                "str"
+            ]
+        ],
+        "source": "def extract_orientations(text):\n    orientations_list = extract_orientations_cheminements_options(\n        text,\n        orientation_pattern,\n        orientation_start_pattern,\n        orientation_option_end_pattern,\n    )\n    if len(orientations_list) == 0:\n        orientation_default = {\"title\": \"Générale\"}\n        orientation_default[\"associated_segments\"] = []\n        orientations_list.append(orientation_default)\n    return orientations_list",
+        "start_line": 227,
+        "end_line": 238,
+        "called_by": [
+            "parse"
+        ],
+        "calls": [
+            "extract_orientations_cheminements_options"
+        ],
+        "description": "This function extracts orientations from a given text, returning a list of dictionaries containing the orientation title and associated segments. If no orientations are found, a default \"Générale\" orientation is added to the list.",
+        "tags": [
+            "parse_annuaire_data",
+            "extract_organizational_data",
+            "extraction",
+            "data_parsing"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_cheminements",
+        "parameters": [
+            [
+                "text",
+                "str"
+            ]
+        ],
+        "source": "def extract_cheminements(text):\n    cheminements_list = extract_orientations_cheminements_options(\n        text,\n        cheminement_pattern,\n        cheminement_start_pattern,\n        orientation_option_end_pattern,\n    )\n    cheminements_matches = re.findall(short_cheminement_pattern, text)\n    # cheminements_list.append(\"régulier\")\n    for cheminement_match in cheminements_matches:\n        cheminement = {\"title\": cheminement_match}\n        cheminement[\"associated_segments\"] = []\n\n        cheminement_exists = any(\n            previous_cheminement[\"title\"] == cheminement_match\n            for previous_cheminement in cheminements_list\n        )\n        if cheminement_exists:  # sometimes orientations are repeated in the description\n            continue\n\n        cheminements_list.append(cheminement)\n\n    cheminement_default_exists = any(\n        previous_cheminement[\"title\"].lower() == \"régulier\"\n        for previous_cheminement in cheminements_list\n    )\n    if len(cheminements_list) == 0 or not cheminement_default_exists:\n        cheminement_default = {\"title\": \"Régulier\"}\n        cheminement_default[\"associated_segments\"] = []\n        cheminements_list.append(cheminement_default)\n\n    return cheminements_list",
+        "start_line": 241,
+        "end_line": 272,
+        "called_by": [
+            "parse"
+        ],
+        "calls": [
+            "extract_orientations_cheminements_options"
+        ],
+        "description": "This function extracts cheminements from a given text and returns a list of cheminements dictionaries.",
+        "tags": [
+            "Program Parser",
+            "Text Analysis",
+            "Regular Expressions",
+            "Data Extraction",
+            "JSON Serialization"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_options",
+        "parameters": [
+            [
+                "text",
+                "str"
+            ]
+        ],
+        "source": "def extract_options(text):\n    options_list = extract_orientations_cheminements_options(\n        text, option_pattern, option_start_pattern, orientation_option_end_pattern\n    )\n    if len(options_list) == 0:\n        option_default = {\"title\": \"Générale\"}\n        option_default[\"associated_segments\"] = []\n        options_list.append(option_default)\n    return options_list",
+        "start_line": 275,
+        "end_line": 283,
+        "called_by": [
+            "parse"
+        ],
+        "calls": [
+            "extract_orientations_cheminements_options"
+        ],
+        "description": "This function extracts options from a given text. It uses regular expressions to match the pattern of an option and then extracts the associated segments. If no options are found in the text, it returns a default option with a title of \"Générale\".",
+        "tags": [
+            "Extract Options",
+            "Text Processing",
+            "Data Normalization",
+            "Regular Expression",
+            "Segment Extraction"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_modalites",
+        "parameters": [
+            [
+                "text",
+                "str"
+            ]
+        ],
+        "source": "def extract_modalites(text):\n    modalites_list = list()\n    modalites_matches = re.findall(short_modalite_pattern, text)\n    for modalite_match in modalites_matches:\n        modalite = {\"title\": modalite_match}\n        modalite[\"associated_segments\"] = []\n\n        cheminement_exists = any(\n            previous_modalite[\"title\"] == modalite_match\n            for previous_modalite in modalites_list\n        )\n        if cheminement_exists:  # sometimes orientations are repeated in the description\n            continue\n\n        modalites_list.append(modalite)\n    return modalites_list",
+        "start_line": 286,
+        "end_line": 301,
+        "called_by": [
+            "parse"
+        ],
+        "calls": [],
+        "description": "This function extracts modalites (short modalites, such as \"avec mémoire\" or \"mémoire\") from a given text. It returns a list of dictionaries, where each dictionary represents a modality with a title and associated segments.",
+        "tags": [
+            "Modalites parser",
+            "extract modalites",
+            "modalites extraction",
+            "segment associated",
+            "modalites management"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_one_segment",
+        "parameters": [
+            [
+                "file",
+                "str"
+            ],
+            [
+                "source_file_path",
+                "str"
+            ]
+        ],
+        "source": "def extract_one_segment(file, source_file_path):\n    global i\n    segment = dict()\n\n    line = file[i]\n\n    cut = line[5:].split(\" \")\n    try:\n        segment[\"id\"] = \" \".join(cut[0:2]).strip()\n        segment[\"name\"] = \" \".join(cut[2:]).strip()\n    except Exception as e:\n        logger.error(\n            f\"Fatal: Not enought field while parsing the segment at line {i} : \\t{line}\"\n        )\n        exit(1)\n\n    if not re.match(segment_pattern, segment[\"id\"]):\n        logger.error(\n            f\"Fatal: The segment id '{segment['id']}' do not match the given pattern '{segment_pattern}'\"\n        )\n        logger.error(f\"Raw line: {line.strip()}\")\n        exit(1)\n\n    if i + 1 < len(file) and file[i + 1][0:5] == \"<ERD>\":\n        i += 1\n        segment[\"description\"] = extract_text_flag(file, source_file_path)\n    else:\n        segment[\"description\"] = \"\"\n\n    segment[\"blocs\"] = []\n    # extrat all the blocs\n    while i + 1 < len(file) and file[i + 1][0:5] == \"<ALT>\":\n        i += 1\n        segment[\"blocs\"].append(extract_one_bloc(file, source_file_path))\n\n    return segment",
+        "start_line": 306,
+        "end_line": 341,
+        "called_by": [
+            "parse"
+        ],
+        "calls": [
+            "extract_one_bloc",
+            "extract_text_flag"
+        ],
+        "description": "Parses the \"Annuaire\" of synchro, a file containing program structure data, and serializes it into a JSON string file.",
+        "tags": [
+            "Segment Parser",
+            "JSON Serialization",
+            "File Parsing",
+            "Data Extraction",
+            "Regular Expression Matching"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_one_bloc",
+        "parameters": [
+            [
+                "file",
+                "str"
+            ],
+            [
+                "source_file_path",
+                "str"
+            ]
+        ],
+        "source": "def extract_one_bloc(file, source_file_path):\n    global i\n    bloc = dict()\n    line = file[i]\n\n    alt_str = line[5:]\n    bloc_id_match = re.search(bloc_pattern, alt_str)\n\n    if bloc_id_match:\n        bloc[\"id\"] = bloc_id_match[0]\n        bloc[\"name\"] = alt_str[bloc_id_match.end() :].strip()\n        bloc_pattern_is_matching = True\n\n    else:\n        bloc_pattern_is_matching = False\n        bloc[\"name\"] = \"\"\n        bloc[\"id\"] = \"\"\n        bloc[\"description\"] = alt_str.strip()\n\n        logger.error(\n            f\"Error {i}: The bloc id '{bloc['id']}' do not match the given pattern '{bloc_pattern}' at line {i} of {source_file_path}'\"\n        )\n        logger.error(f\"Raw line: {line.strip()}\")\n        logger.info(\n            f\"The script will continue with those data extracted:\\n\\tname = ''\\n\\tbloc_id = ''\\n\\tbloc[description] = {bloc['description']} + <ALD_string>\"\n        )\n\n    if i + 1 < len(file) and file[i + 1][0:5] == \"<ALD>\":\n        # <ALD>Option - Minimum 9 crédits, maximum 18 crédits.\\n[text]\n        i += 1\n\n        ALD_string = extract_text_flag(file, source_file_path).replace(\"\\n\\n\", \"\\n\")\n\n        if bloc_pattern_is_matching:  # \"description key doesn't exist\n            bloc[\"description\"] = ALD_string\n        else:  # no bloc_pattern was found, \"description\" key allready exist\n            bloc[\"description\"] = bloc[\"description\"] + ALD_string\n\n        # line = ALD_string.split(\"\\n\")[0]\n        line = ALD_string\n\n        # normal regex pattern = obligatoire | choix | option | cours en ligne\n        if credit_type := re.search(credit_type_pattern, line):\n            bloc[\"type\"] = credit_type[0]\n\n            find_minmax = False\n            # this form : Minimum 12 crédits, maximum 7 crédits\n            if m := re.search(r\"[mM]aximum \\d\\d? crédits\", line):\n                bloc[\"max\"] = float(m[0].split(\" \")[1])\n                find_minmax = True\n            if m := re.search(r\"[mM]inimum \\d\\d? crédits\", line):\n                bloc[\"min\"] = float(m[0].split(\" \")[1])\n                find_minmax = True\n\n            if \"max\" in bloc and \"min\" not in bloc:\n                bloc[\"min\"] = 0.0\n\n            if not find_minmax:\n                # this form : \"6 à 9 crédits\"\n                if credit_struct := re.search(r\"^\\d\\d? à \\d\\d? crédit$\", line):\n                    credit_struct = credit_struct[\n                        0\n                    ].split()  # access the matched string\n                    bloc[\"min\"] = float(credit_struct[0])\n                    bloc[\"max\"] = float(credit_struct[2])\n\n                # this form : \"5 crédits\"\n                elif credit_struct := re.search(credit_struct_pattern, line):\n                    credit_struct = credit_struct[\n                        0\n                    ].split()  # access the matched string\n                    bloc[\"max\"] = float(credit_struct[0])\n                    bloc[\"min\"] = float(credit_struct[0])\n\n                else:  # no good form\n                    logger.error(\n                        f\"Error {i} : No pattern is found work for bloc credit structure description:\\n\\tline : {line}\\n\"\n                    )\n                    bloc[\"min\"], bloc[\"max\"] = -1.0, -1.0\n        else:\n            logger.error(\n                f\"No credit_type_pattern '{credit_type_pattern}' were found in the line: \\t {line}\"\n            )\n            bloc[\"min\"], bloc[\"max\"], bloc[\"type\"] = -1.0, -1.0, \"\"\n\n        # to not have a bloc object with no min/max key , put \"-1\" to say no min/max where found\n        for extrem in [\"min\", \"max\"]:\n            if extrem not in bloc:\n                bloc[extrem] = -1.0\n\n    else:  # no <ALD> found\n        if bloc_pattern_is_matching:  # \"description key doesn't exist\n            bloc[\"description\"] = \"\"\n        bloc[\"min\"], bloc[\"max\"], bloc[\"type\"] = -1.0, -1.0, \"\"\n\n    if i + 1 < len(file) and file[i + 1][0:5] == \"<CRS>\":\n        i += 1\n        bloc[\"courses\"] = extract_all_courses(file, source_file_path)\n    else:\n        bloc[\"courses\"] = []\n\n    return bloc",
+        "start_line": 346,
+        "end_line": 447,
+        "called_by": [
+            "extract_one_segment"
+        ],
+        "calls": [
+            "extract_all_courses",
+            "extract_text_flag"
+        ],
+        "description": "This function parses a file and extracts program information, including segments, blocs, and courses, from it. It takes two parameters: the file path and the source file path, both of type str. It returns the extracted data in a JSON format.",
+        "tags": [
+            "Data Parsing",
+            "JSON Serialization",
+            "Regular Expression Matching",
+            "File Input Handling",
+            "Structured Data Extraction"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_all_courses",
+        "parameters": [
+            [
+                "file",
+                "str"
+            ],
+            [
+                "source_file_path",
+                "str"
+            ]
+        ],
+        "source": "def extract_all_courses(file, source_file_path):\n    global i\n    courses = []\n\n    test = True  # if this function is called, we are allready on a \"<CRS>\" flag\n    # so `test` is set to True by default\n    parsing_error = False\n\n    while test:\n        course = dict()\n        if parsing_error:\n            if i + 1 < len(file) and file[i + 1][0:5] == \"<CRS>\":\n                i += 1\n                parsing_error = False\n                continue\n\n            else:\n                test = False\n                continue\n\n        cut = file[i][5:].strip().split(\"\\t\")\n        parsing_error = False\n        if len(cut) != 5:\n            logger.error(\n                f\"Error: Not enought field while parsing the course at line {i}, there should be 6 field: sigle, credit, semestrer, daytime, name. Correction: the course is skipped entirely. The not parsed line:\\n{file[i]}\"\n            )\n            parsing_error = True\n            continue\n        else:\n            sigle, credit, semestrer, moment, name = cut[0:6]\n\n        # verification of the extracted data follow the correct format\n        if not re.match(sigle_id_pattern, sigle):\n            logger.error(\n                f\"Error: The course sigle {sigle} do not match the given pattern {sigle_id_pattern} at line {i} of {source_file_path}. Correction, the course is skipped.\"\n            )\n            parsing_error = True\n            continue\n        if not re.match(float_pattern, credit):\n            logger.error(\n                f\"Error: The course credit '{credit}' do not match the given pattern '{float_pattern}' at line {i} of {source_file_path}. Correction, the course is skipped.\"\n            )\n            parsing_error = True\n            continue\n        if moment not in [\"J\", \"S\", \"JS\", \"SJ\", \"\"]:\n            logger.error(\n                f'Error: The course moment \\'{moment}\\' do not match the given pattern \\'[\"J\",\"S\",\"JS\",\"SJ\"]\\' at line {i} of {source_file_path}Correction, the course is skipped.'\n            )\n            parsing_error = True\n            continue\n\n        sigle = standarize_sigle(sigle)\n        course[\"_id\"] = sigle\n        course[\"code\"] = sigle[:3]\n        course[\"number\"] = sigle[3:]\n        course[\"credits\"] = float(credit)\n        course[\"name\"] = name.strip()\n\n        terms = course.setdefault(\n            \"available_terms\", {\"autumn\": False, \"winter\": False, \"summer\": False}\n        )\n        periods = course.setdefault(\n            \"available_periods\", {\"daytime\": False, \"evening\": False}\n        )\n\n        if \"A\" in semestrer:\n            terms[\"autumn\"] = True\n        if \"H\" in semestrer:\n            terms[\"winter\"] = True\n        if \"E\" in semestrer:\n            terms[\"summer\"] = True\n\n        if \"J\" in moment:\n            periods[\"daytime\"] = True\n        if \"S\" in moment:\n            periods[\"evening\"] = True\n\n        courses.append(course)\n        if i + 1 < len(file) and file[i + 1][0:5] == \"<CRS>\":\n            i += 1\n        else:\n            test = False\n\n    return courses",
+        "start_line": 450,
+        "end_line": 533,
+        "called_by": [
+            "extract_one_bloc"
+        ],
+        "calls": [],
+        "description": "Parse \"Annuaire\" of synchro containing all programme structure, serialize it into a JSON string file, and provide a JSON object structure as an image in the documentation.",
+        "tags": [
+            "Parser",
+            "Extractor",
+            "Course Parser",
+            "Segment Parser",
+            "Data Extractor"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "courses",
+            "list"
+        ]
+    }
+]

@@ -1,8 +1,9 @@
 from time import sleep
 import os
+import time
 from openai import OpenAI
 from dotenv import load_dotenv
-from util import extract_information, get_json, in_list, in_range, list_files, read_file, time_step, valid_category, validate_tags, validate_type, validate_types, write_file, write_function_definitions, write_valid_types
+from util import extract_information, get_json, in_list, in_range, list_files, read_file, time_step, valid_category, validate_tags, validate_type, validate_types, write_file, write_function_definitions, write_functions_to_json, write_valid_types
 from local import (
     FUNCTION_TYPES_LIST,
     FUNCTION_TYPES_GUIDE,
@@ -39,7 +40,7 @@ def ask(model:str, user_query:str, system:list[str], error:str|None=None)->str|E
     return answer
     
 
-def define_param_types(function_info:dict, model:str, imports, ex_tries=0)->list[str]|Exception:
+def define_param_types(function_info:dict, model:str, imports)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source and a list of its parameters.",
@@ -48,7 +49,7 @@ def define_param_types(function_info:dict, model:str, imports, ex_tries=0)->list
         "Respond ONLY with a Python list of types."
     ]
 
-    param_names = list(function_info['parameters'].keys())
+    param_names = [p_name for p_name,p_type in function_info['parameters']]
     code = function_info['source']
     user_query = f"""
     Function Source:
@@ -67,19 +68,12 @@ def define_param_types(function_info:dict, model:str, imports, ex_tries=0)->list
             parsed_types = validate_types(answer, imports)
             print(f"Parsed Types for {param_names} after {tries} tries:\n{parsed_types}\n")
         except Exception as e:
-            err = str(e).lower()
-            if "exceeded" in err:
-                ex_tries = exceed_credits_handle(e,ex_tries)
-            else:
-                last_error = str(e)
-                print(f"Attempt {tries} failed: {e}")
-                tries += 1
-                if tries >= MAX_RETRY:
-                    raise RuntimeError(f"Failed to define parameter types after {tries} tries: {e}")
+            name = "parameter types"
+            last_error=exception_handler(name, tries, e)
             continue
     return parsed_types
 
-def define_tags(function_info:dict, content:str, model:str, max_tags:int=5, ex_tries=0)->list[str]|Exception:
+def define_tags(function_info:dict, content:str, model:str, max_tags:int=5)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python file, a function source and its description.",
@@ -110,20 +104,13 @@ def define_tags(function_info:dict, content:str, model:str, max_tags:int=5, ex_t
             print(f"Parsed Tags for {name} after {tries} tries:\n{parsed_tags}\n")
 
         except Exception as e:
-            err = str(e).lower()
-            if "exceeded" in err:
-                ex_tries = exceed_credits_handle(e,ex_tries)
-            else:
-                last_error = str(e)
-                print(f"Attempt {tries} failed: {e}")
-                tries += 1
-                if tries >= MAX_RETRY:
-                    raise RuntimeError(f"Failed to define tags after {tries} tries: {e}")
+            name = "tags"
+            last_error=exception_handler(name, tries, e)
             continue
         
     return parsed_tags
 
-def define_description(function_info:dict, content:str, model:str, min_len:int=100, max_len:int=250, ex_tries=0)->list[str]|Exception:
+def define_description(function_info:dict, content:str, model:str, min_len:int=100, max_len:int=250)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python file, a function source, and its parameters.",
@@ -160,19 +147,12 @@ def define_description(function_info:dict, content:str, model:str, min_len:int=1
             print(f"Parsed Description for {name} after {tries} tries:\n{parsed_desc}\n")
 
         except Exception as e:
-            err = str(e).lower()
-            if "exceeded" in err:
-                ex_tries = exceed_credits_handle(e,ex_tries)
-            else:
-                last_error = str(e)
-                print(f"Attempt {tries} failed: {e}")
-                tries += 1
-                if tries >= MAX_RETRY:
-                    raise RuntimeError(f"Failed to define description after {tries} tries: {e}")
+            name = "description"
+            last_error=exception_handler(name, tries, e)
             continue
     return parsed_desc
 
-def define_return_type(function_info:dict, model:str, imports:list, ex_tries=0)->str|Exception:
+def define_return_type(function_info:dict, model:str, imports:list)->str|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source, a list of its parameters and their types, and its return value.",
@@ -180,14 +160,13 @@ def define_return_type(function_info:dict, model:str, imports:list, ex_tries=0)-
         "Respond ONLY with a the return type of the function."
     ]
 
-    params = function_info['parameters'].keys()
+    params = function_info['parameters']
     code = function_info['source']
-    if not function_info["return"]:
-        return_value = "None"
-    else:
-        return_value, return_type = next(iter(function_info["return"].items()))
-        if (return_type!=""):
-            return return_type
+    return_value, return_type = function_info["return"]
+    if return_value =="" and return_type =="" :
+        return "None"
+    if return_type!="any":
+        return return_type
 
     user_query = f"""
     Function Source:
@@ -208,19 +187,12 @@ def define_return_type(function_info:dict, model:str, imports:list, ex_tries=0)-
             return_type = validate_type(answer, imports)
             print(f"Parsed Type for {return_value} atfer {tries} tries:\n{return_type}\n")
         except Exception as e:
-            err = str(e).lower()
-            if "exceeded" in err:
-                ex_tries = exceed_credits_handle(e,ex_tries)
-            else:
-                last_error = str(e)
-                print(f"Attempt {tries} failed: {e}")
-                tries += 1
-                if tries >= MAX_RETRY:
-                    raise RuntimeError(f"Failed to define return type after {tries} tries: {e}")
+            name = "return type"
+            last_error=exception_handler(name, tries, e)
             continue
     return return_type
 
-def define_category(function_info:dict, content:str, model:str, ex_tries=0)->str|Exception:
+def define_category(function_info:dict, content:str, model:str)->str|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python function source, its description, tags, parameters, and return value.",
@@ -235,7 +207,7 @@ def define_category(function_info:dict, content:str, model:str, ex_tries=0)->str
     code = function_info['source']
     description = function_info['description']
     tags = function_info['tags']
-    return_ = function_info['return']
+    return_tuple = function_info['return']
     user_query = f"""
     FUNCTION_TYPES_GUIDE:
     {FUNCTION_TYPES_GUIDE}
@@ -253,7 +225,7 @@ def define_category(function_info:dict, content:str, model:str, ex_tries=0)->str
     {params}
 
     Return Value and type:
-    {return_}
+    {return_tuple}
     """
 
     category = ""
@@ -272,19 +244,24 @@ def define_category(function_info:dict, content:str, model:str, ex_tries=0)->str
             print(f"Parsed category for {name} after {tries} tries:\n{category}\n")
 
         except Exception as e:
-            err = str(e).lower()
-            if "exceeded" in err:
-                ex_tries = exceed_credits_handle(e,ex_tries)
-            else:
-                last_error = str(e)
-                print(f"Attempt {tries} failed: {e}")
-                tries += 1
-                if ex_tries >= MAX_RETRY:
-                    raise RuntimeError(f"Failed to define category after {ex_tries} tries: {e}")
+            name = "category"
+            last_error=exception_handler(name, tries, e)
             continue
     return category
 
-def exceed_credits_handle(e, ex_tries):
+def exception_handler(name, tries, e):
+    err = str(e).lower()
+    if "exceeded" in err:
+        exceed_credits_handle(e)
+    else:
+        last_error = str(e)
+        print(f"Attempt {tries} failed: {e}")
+        tries += 1
+        if tries >= MAX_RETRY:
+            raise RuntimeError(f"Failed to define {name} after {tries} tries: {e}")
+        return last_error
+
+def exceed_credits_handle(e):
     ex_tries+=1
     if ex_tries >= MAX_EX_RETRY:
         raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
@@ -306,14 +283,14 @@ if __name__ == "__main__":
     # list_of_files = [list_of_files[f] for f in range(2,len(list_of_files)-1)] #Testing
     for file in list_of_files:
         filepath = f"{base}/{file}"
+        returnpath = f"results/{file}"
         print(f"--- {file} ---")
         functions, imports = time_step(
             "Extract information",
             extract_information,
             filepath
         )
-        write_valid_types(imports)
-        continue
+        write_valid_types(imports, file)
         content = read_file(filepath)
         
         for func in functions:
@@ -325,7 +302,8 @@ if __name__ == "__main__":
                 model_in_use,
                 imports
             )
-            func["parameters"] = dict(zip(func['parameters'].keys(), answer_types))
+            param_names = [p_name for p_name,p_type in func["parameters"]]
+            func["parameters"] = [(p_name,p_type) for p_name,p_type in zip(param_names,answer_types)]
 
             # Tags
             func["tags"] = time_step(
@@ -353,7 +331,7 @@ if __name__ == "__main__":
                 model_in_use,
                 imports
             )
-            func["return"] =dict(zip(func['return'].keys(), [answer_return]))
+            func["return"] =(func['return'][0],answer_return)
 
             # Category
             func["category"] = time_step(
@@ -368,6 +346,12 @@ if __name__ == "__main__":
         time_step(
             f"{file} - Writing Function Definitions",
             write_function_definitions,
-            filepath,
+            returnpath,
             functions
+        )
+        time_step(
+            f"{file} - Writing Functions to JSON",
+            write_functions_to_json,
+            functions,
+            returnpath
         )

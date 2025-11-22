@@ -48,12 +48,12 @@ def generate_valid_types(depth=1):
     valid |= expand(base, 1)
     return valid
 
-def write_valid_types(plus, output_path="results/valid_types"):
+def write_valid_types(plus, file:str, output_path="results/valid_types"):
     """
     Writes all valid types (VALID_BASE_TYPES) to a file, sorted alphabetically.
     """
     try:
-        out = next_available_filename(output_path)
+        out = next_available_filename(f"{output_path}_{file}")
         with open(out, "w", encoding="utf-8") as f:
             for t in list(VALID_BASE_TYPES):
                 f.write(f"{t}\n")
@@ -62,6 +62,7 @@ def write_valid_types(plus, output_path="results/valid_types"):
         print(f"[OK] Valid types written to {out}")
     except Exception as e:
         print(f"[ERROR] Cannot write valid types: {e}")
+        
 VALID_BASE_TYPES = PRIMITIVES | NON_EXHAUSTIVE | generate_valid_types()
 
 def list_files(directory: str) -> list[str]:
@@ -143,7 +144,7 @@ def write_file(filepath: str, content: str) -> str:
         print(f"Error writing file {filepath}: {e}")
         return ""
 
-def next_available_filename(base_name: str) -> str:
+def next_available_filename(base_name: str, ext:str="txt") -> str:
     """
     Given a base_name like 'filename_func_def',
     returns a file name like 'filename_func_def_1.txt'
@@ -152,7 +153,7 @@ def next_available_filename(base_name: str) -> str:
     directory = os.path.dirname(base_name) or "."
     filename_root = os.path.basename(base_name)
 
-    pattern = re.compile(rf"^{re.escape(filename_root)}_(\d+)\.txt$")
+    pattern = re.compile(rf"^{re.escape(filename_root)}_(\d+)\.{ext}$")
 
     existing_versions = []
 
@@ -164,36 +165,7 @@ def next_available_filename(base_name: str) -> str:
 
     next_version = max(existing_versions, default=0) + 1
 
-    return os.path.join(directory, f"{filename_root}_{next_version}.txt")
-
-def write_function_definitions(filepath: str, functions: list[dict]) -> None:
-    base_name = os.path.splitext(os.path.basename(filepath))[0]
-    base_output_name = f"results/{base_name}_func_def"
-    output_file = next_available_filename(base_output_name)
-
-    with open(output_file, "w", encoding="utf-8") as f:
-        for i, func in enumerate(functions, start=1):
-            f.write(f"--- Function {i}: {func['name']} - {func["start_line"]}:{func["end_line"]}---")
-            f.write(f"\n# Source:\n{func["source"]}")
-            params = "("
-            for param, p_type in func["parameters"].items():
-                params += f"{param}: {p_type},"
-            params+= ")"
-            f.write(f"\n\n# Parameters:\n{params}")
-            if not func["return"]:
-                return_value, return_type = "None", "None"
-            else:
-                return_value, return_type = next(iter(func["return"].items()))
-
-            f.write(f"\n# Returns:\n{return_value}:{return_type}")
-            f.write(f"\n# Category:\n{func['category']}")
-            f.write(f"\n# Description:\n{func['description']}")
-            f.write(f"\n# Tags:\n{', '.join(func['tags'])}")
-            f.write(f"\n# Calls:\n{', '.join(func['calls'])}")
-            f.write(f"\n# Called by:\n{', '.join(func['called_by'])}")
-            f.write("\n\n")
-
-    print(f"Wrote {len(functions)} function definitions to {output_file}")
+    return os.path.join(directory, f"{filename_root}_{next_version}.{ext}")
 
 def get_json(filename: str) -> dict:
     """
@@ -240,7 +212,7 @@ def list_functions(code, functions, node):
 
         functions.append({
             "name": node.name,
-            "parameters": {param: "" for param in param_names},
+            "parameters": [(param, "") for param in param_names],
             "source": func_source,
             "start_line": node.lineno,
             "end_line": node.end_lineno,
@@ -249,7 +221,7 @@ def list_functions(code, functions, node):
             "description": "",
             "tags": [],
             "category": "",
-            "return": {}
+            "return": ("","")
         })
 
 def list_calls(tree, functions):
@@ -296,18 +268,18 @@ def list_returns(node, current_function, functions):
         return
 
     index = index_of(functions, "name", current_function)
-
+    
     if isinstance(node, ast.Return):
         value = node.value
 
-        if value is None:
-            functions[index]["return"] = {"None":"None"}
-            return
-
         try:
-            functions[index]["return"] = {ast.unparse(value):""}
+            return_expr = ast.unparse(value)
         except Exception:
-            functions[index]["return"] = {"Unknown":""}
+            return_expr = "Unknown"
+
+        inferred_type = infer_python_type_from_ast(value)
+
+        functions[index]["return"] = (return_expr, inferred_type )
 
 def extract_information(filepath: str):
     code = read_file(filepath)
@@ -361,12 +333,12 @@ def validate_type(llm_answer: str, imports: set[str]) -> str|Exception:
     return sanitized
 
 def sanitize_and_validate(t: str, imports: set[str]) -> str:
-    t = sanitize(t)
+    sanitized_t = sanitize(t)
 
-    if not is_valid_type(t, imports):
-        raise ValueError(f"Unknown or unsupported type name: '{t}'")
+    if not is_valid_type(sanitized_t, imports):
+        raise ValueError(f"Unknown or unsupported type name: '{sanitized_t}'")
     
-    return t
+    return sanitized_t
 
 def sanitize(t):
     if not isinstance(t, str):
@@ -412,7 +384,6 @@ def valid_category(answer_LLM:str, function_types):
     else:
         return True
 
-
 def in_range(value:int, min_val:int, max_val:int)->bool:
     return min_val <= value <= max_val
 
@@ -444,3 +415,82 @@ def time_step(label: str, func, *args, **kwargs):
             f"with exception: {e}"
         )
         raise
+
+def write_function_definitions(filepath: str, functions: list[dict]) -> None:
+    base_name = os.path.splitext(os.path.basename(filepath))[0]
+    base_output_name = f"results/{base_name}_func_def"
+    output_file = next_available_filename(base_output_name)
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        for i, func in enumerate(functions, start=1):
+            f.write(f"--- Function {i}: {func['name']} - {func["start_line"]}:{func["end_line"]}---")
+            f.write(f"\n# Source:\n{func["source"]}")
+            params = "("
+            for param, p_type in func["parameters"]:
+                params += f"{param}: {p_type},"
+            params+= ")"
+            f.write(f"\n\n# Parameters:\n{params}")
+            return_value, return_type = func["return"]
+
+            f.write(f"\n# Returns:\n{return_value}:{return_type}")
+            f.write(f"\n# Category:\n{func['category']}")
+            f.write(f"\n# Description:\n{func['description']}")
+            f.write(f"\n# Tags:\n{', '.join(func['tags'])}")
+            f.write(f"\n# Calls:\n{', '.join(func['calls'])}")
+            f.write(f"\n# Called by:\n{', '.join(func['called_by'])}")
+            f.write("\n\n")
+
+    print(f"Wrote {len(functions)} function definitions to {output_file}")
+
+def write_functions_to_json(functions: list[dict], output:str):
+    try:
+        base_name = os.path.splitext(os.path.basename(output))[0]
+        base_output_name = f"results/{base_name}_func_concepts"
+        output_file = next_available_filename(base_output_name, ext="json")
+
+        with open(output_file, "w", encoding="utf-8") as out:
+            json.dump(functions, out, indent=4, ensure_ascii=False)
+
+        print(f"[OK] JSON written: {output_file}")
+        return output_file
+
+    except Exception as e:
+        print(f"[ERROR] Failed to write JSON: {e}")
+        return ""
+
+def infer_python_type_from_ast(node) -> str:
+    if isinstance(node, ast.Tuple):
+        return "tuple"
+
+    if isinstance(node, ast.List):
+        return "list"
+
+    if isinstance(node, ast.Dict):
+        return "dict"
+
+    if isinstance(node, ast.Set):
+        return "set"
+
+    if isinstance(node, ast.Constant):
+        # True, 5, "hi", None
+        if isinstance(node.value, bool):
+            return "bool"
+        if isinstance(node.value, int):
+            return "int"
+        if isinstance(node.value, float):
+            return "float"
+        if isinstance(node.value, str):
+            return "str"
+        if node.value is None:
+            return "None"
+        return "any"
+
+    if isinstance(node, ast.Name):
+        # something like "return x"
+        return "any"
+
+    if isinstance(node, ast.Call):
+        # return something() → unknown
+        return "any"
+
+    return "any"

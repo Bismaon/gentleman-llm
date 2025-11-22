@@ -1,0 +1,33 @@
+[
+    {
+        "name": "parse",
+        "parameters": [
+            [
+                "file_path",
+                "str"
+            ],
+            [
+                "dest_path",
+                "str"
+            ]
+        ],
+        "source": "def parse(file_path, dest_path=None):\n    with open(file_path, \"r\", encoding=\"utf-8\") as f:\n        # pass the weird none caracter leading in the first bits of the files (windows artefact)\n        while f.read(1) not in alphanum:\n            pass  # remove broken none-car leading the file\n        f.seek(f.tell() - 1)\n\n        reader = csv.DictReader(f)\n\n        faculties = dict()\n\n        for row in reader:\n\n            faculty_id = row[\"Faculté - Identifiant\"].strip().zfill(2)\n            faculty_name = row[\"Faculté - Description\"].strip()\n            department_id = row[\"Département - Identifiant\"].strip().zfill(4)\n            department_name = row[\"Département - Description\"].strip()\n            program_id = row[\"Identifiant\"].strip()\n            program_name = row[\"Description\"].strip()\n\n            faculty = faculties.setdefault(faculty_id, dict())\n            faculty[\"name\"] = faculty_name\n            faculty[\"_id\"] = faculty_id\n\n            departments = faculty.setdefault(\"departments\", dict())\n\n            department = departments.setdefault(department_id, dict())\n\n            # remove options from name\n\n            department[\"name\"] = department_name\n            department[\"_id\"] = department_id\n\n            programs = department.setdefault(\"programs\", dict())\n\n            program = programs.setdefault(program_id, dict())\n\n            if re.search(r\"[oO]ption\", program_name):\n                program_name = re.split(\"[oO]ption\", department_name)[0]\n                program_name = department_name.rsplit(\" - \", 1)[0]\n\n                # delete arthefact  caracters and the end like space or comma\n                i = len(program_name)\n                while program_name[i - 1] not in alphanum:\n                    i -= 1\n                program_name = department_name[:i]\n            program[\"name\"] = program_name\n            program[\"_id\"] = program_id\n\n        \"\"\"\n        Only one exception from the source document is the master and doctorate in \n        DIRO that are togheter in the document, we need to manually split them\n        \"\"\"\n        if \"217510 - 317510\" in faculties[\"03\"][\"departments\"][\"0340\"][\"programs\"]:\n            program = faculties[\"03\"][\"departments\"][\"0340\"][\"programs\"].pop(\n                \"217510 - 317510\"\n            )\n        faculties[\"03\"][\"departments\"][\"0340\"][\"programs\"][\"217510\"] = {\n            \"_id\": \"217510\",\n            \"name\": \"Maîtrise en informatique\",\n        }\n        faculties[\"03\"][\"departments\"][\"0340\"][\"programs\"][\"317510\"] = {\n            \"_id\": \"317510\",\n            \"name\": \"Doctorat en informatique\",\n        }\n\n        # Now we need to transform dict into list\n        for faculty in faculties.values():\n\n            for department in faculty[\"departments\"].values():\n                department[\"programs\"] = [\n                    program for program in department[\"programs\"].values()\n                ]\n            faculty[\"departments\"] = [\n                department for department in faculty[\"departments\"].values()\n            ]\n        faculties = [faculty for faculty in faculties.values()]\n\n        if dest_path is not None:\n            file_name = file_path.rsplit(\"/\", 1)[-1].rsplit(\".\", 1)[0]\n            dest_path_name = dest_path + file_name + \"_parsed.json\"\n            with open(dest_path_name, \"w\", encoding=\"utf-8\") as f:\n                f.write(json.dumps(faculties))\n\n        return faculties",
+        "start_line": 9,
+        "end_line": 93,
+        "called_by": [],
+        "calls": [],
+        "description": "Parses a raw CSV data file into a faculties structure, transforming dictionaries into lists, and optionally writes the result to a JSON file.",
+        "tags": [
+            "Data Parser",
+            "CSV Reader",
+            "JSON Writer",
+            "Faculty Structure Builder",
+            "Data Transformation"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "faculties",
+            "list"
+        ]
+    }
+]
