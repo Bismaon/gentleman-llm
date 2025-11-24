@@ -110,7 +110,7 @@ def define_tags(function_info:dict, content:str, model:str, max_tags:int=5)->lis
         
     return parsed_tags
 
-def define_description(function_info:dict, content:str, model:str, min_len:int=100, max_len:int=250)->list[str]|Exception:
+def define_description(function_info:dict, content:str, model:str, min_len:int=50, max_len:int=200)->list[str]|Exception:
     system = [
         "You are a code analysis assistant.",
         "You will be given a Python file, a function source, and its parameters.",
@@ -280,8 +280,8 @@ if __name__ == "__main__":
     )
     base = "code"
     list_of_files = list_files(base)
-    # list_of_files = [list_of_files[f] for f in range(2,len(list_of_files)-1)] #Testing
-    for file in list_of_files:
+    for i in range(0,1):
+        file = list_of_files[i]
         filepath = f"{base}/{file}"
         returnpath = f"results/{file}"
         print(f"--- {file} ---")

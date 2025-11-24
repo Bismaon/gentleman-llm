@@ -51,16 +51,16 @@
                 {
                     "name": "return",
                     "target": {
-                        "name": "return_value"
+                        "name": "return_c"
                     }
                 },
                 {
-                    "name": "param_names",
+                    "name": "parameters",
                     "target": {
                         "name": "set",
                         "accept": [
                             {
-                                "name": "parameter"
+                                "name": "param_c"
                             }
                         ]
                     }
@@ -68,7 +68,7 @@
                 {
                     "name": "source",
                     "target": {
-                        "name": "source"
+                        "name": "source_c"
                     }
                 },
                 {
@@ -107,7 +107,7 @@
             ]
         },
         {
-            "name": "parameter",
+            "name": "param_c",
             "nature": "concrete",
             "attributes": [
                 {
@@ -115,15 +115,9 @@
                     "target": {
                         "name": "string"
                     }
-                }
-            ]
-        },
-        {
-            "name": "return_value",
-            "nature": "concrete",
-            "attributes": [
+                },
                 {
-                    "name": "name",
+                    "name": "type",
                     "target": {
                         "name": "string"
                     }
@@ -131,7 +125,25 @@
             ]
         },
         {
-            "name": "source",
+            "name": "return_c",
+            "nature": "concrete",
+            "attributes": [
+                {
+                    "name": "name",
+                    "target": {
+                        "name": "string"
+                    }
+                },
+                {
+                    "name": "type",
+                    "target": {
+                        "name": "string"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "source_c",
             "nature": "concrete",
             "attributes": [
                 {

@@ -281,9 +281,9 @@ def list_returns(node, current_function, functions):
 
         functions[index]["return"] = (return_expr, inferred_type )
 
-def extract_information(filepath: str):
+def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
     code = read_file(filepath)
-    tree = ast.parse(code, filename=filepath)
+    tree = ast.parse(code, filepath)
 
     functions = []
     imports = []
@@ -444,12 +444,13 @@ def write_function_definitions(filepath: str, functions: list[dict]) -> None:
 
 def write_functions_to_json(functions: list[dict], output:str):
     try:
-        base_name = os.path.splitext(os.path.basename(output))[0]
-        base_output_name = f"results/{base_name}_func_concepts"
+        base_name = os.path.basename(output)
+        base_name_no_ext = os.path.splitext(base_name)[0]
+        base_output_name = f"results/{base_name_no_ext}_func_concepts"
         output_file = next_available_filename(base_output_name, ext="json")
-
+        func_with_file = [{"file":base_name}] + functions
         with open(output_file, "w", encoding="utf-8") as out:
-            json.dump(functions, out, indent=4, ensure_ascii=False)
+            json.dump(func_with_file, out, indent=4, ensure_ascii=False)
 
         print(f"[OK] JSON written: {output_file}")
         return output_file
