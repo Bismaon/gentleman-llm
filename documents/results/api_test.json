@@ -1,0 +1,252 @@
+[
+    {
+        "file": "master.py"
+    },
+    {
+        "name": "main",
+        "parameters": [
+            [
+                "root",
+                "str"
+            ],
+            [
+                "import_links_directory",
+                "str"
+            ],
+            [
+                "schedule_raw_directory",
+                "str"
+            ],
+            [
+                "schedule_parsed_directory",
+                "str"
+            ],
+            [
+                "annuaire_raw_directory",
+                "str"
+            ],
+            [
+                "annuaire_parsed_directory",
+                "str"
+            ],
+            [
+                "repertoire_raw_directory",
+                "str"
+            ],
+            [
+                "repertoire_parsed_directory",
+                "str"
+            ],
+            [
+                "hierarchy_path",
+                "str"
+            ],
+            [
+                "debug",
+                "bool"
+            ]
+        ],
+        "source": "def main(\n    root: str,\n    import_links_directory: str,\n    schedule_raw_directory: str,\n    schedule_parsed_directory: str,\n    annuaire_raw_directory: str,\n    annuaire_parsed_directory: str,\n    repertoire_raw_directory: str,\n    repertoire_parsed_directory: str,\n    hierarchy_path: str,\n    debug: bool = False,\n):\n    \"\"\"\n    Main function to parse the raw data and populate the database.\n\n    Args:\n        root (str): Root directory of the project.\n        schedule_raw_directory (str): Directory containing the raw schedule data.\n        schedule_parsed_directory (str): Directory containing the parsed schedule data.\n        annuaire_raw_directory (str): Directory containing the raw annuaire data.\n        annuaire_parsed_directory (str): Directory containing the parsed annuaire data.\n        repertoire_raw_directory (str): Directory containing the raw repertoire data.\n        repertoire_parsed_directory (str): Directory containing the parsed repertoire data.\n        hierarchy_path (str): Path to the hierarchy file.\n        debug (bool, optional): Set the logging level to debug. Defaults to False.\n    \"\"\"\n\n    # add root to the directories in order to have the full path if root is given\n    schedule_raw_directory = os.path.join(root, schedule_raw_directory)\n    schedule_parsed_directory = os.path.join(root, schedule_parsed_directory)\n\n    annuaire_raw_directory = os.path.join(root, annuaire_raw_directory)\n    annuaire_parsed_directory = os.path.join(root, annuaire_parsed_directory)\n\n    repertoire_raw_directory = os.path.join(root, repertoire_raw_directory)\n    repertoire_parsed_directory = os.path.join(root, repertoire_parsed_directory)\n    hierarchy_path = os.path.join(root, hierarchy_path)\n    import_links_directory = os.path.join(root, import_links_directory)\n\n    # transform .csv into xlsx\n    list_schedules_xlsx = [\n        os.path.join(schedule_raw_directory, file)\n        for file in os.listdir(schedule_raw_directory)\n        if file.rsplit(\".\")[-1] == \"xlsx\"\n    ]\n\n    # erase the allready present schedule_parsed ( the .csv that came from xlsx2csv )\n    for file_path in os.listdir(schedule_parsed_directory):\n        if file_path.rsplit(\".\")[-1] == \"csv\":\n            os.remove(os.path.join(schedule_parsed_directory, file_path))\n\n    for file_path in list_schedules_xlsx:\n        file_path = file_path\n        xlsx2csv.xlsx2csv(file_path, schedule_parsed_directory)\n\n    # get the list of the raw file to be parsed\n    list_schedule = [\n        os.path.join(schedule_parsed_directory, file)\n        for file in os.listdir(schedule_parsed_directory)\n        if file.rsplit(\".\", 1)[-1] == \"csv\"\n    ]\n\n    list_repertoire = [\n        os.path.join(repertoire_raw_directory, file)\n        for file in os.listdir(repertoire_raw_directory)\n        if file.rsplit(\".\", 1)[-1] == \"pdf\"\n    ]\n\n    list_annuaire = [\n        os.path.join(annuaire_raw_directory, file)\n        for file in os.listdir(annuaire_raw_directory)\n        if file.rsplit(\".\", 1)[-1] == \"txt\"\n    ]\n\n    for list_of_file in [list_annuaire, list_repertoire, list_schedule]:\n        if len(list_of_file) == 0:\n            logger.error(f\"The {list_of_file} is empty, script is terminated.\")\n            exit(1)\n\n    # ----- launch the parsers----\n    # --- annuaire\n    annuaire = list()\n    for file in list_annuaire:\n        annuaire += annuaire_parser.parse(file)\n\n    # --- schedule\n    # here we are parsing all the files, then sorting them by their fetching date.\n    # This way when we combine them in the same dictionnary,  the most recent courses update/overwrite the old ones.\n    # For exemple, A24IFT1005 fetched the 2024-7-20 will overwrite A24IFT1005 fetched the 2024-7-15\n    schedule_dict_list = []\n    schedule_dict = dict()\n    for file in list_schedule:\n        schedule_dict_list.append(schedule_parser.parse(file))\n        # return form is tuple ( date, master_data )\n    schedule_dict_list.sort(key=lambda x: x[0])  # sort by date\n    for _, dicti in schedule_dict_list:\n        schedule_dict.update(dicti)\n    for course in schedule_dict.values():\n        course[\"semester_int\"] = pattern.semester2int(course[\"semester\"])\n\n    schedule_set = {value[\"sigle\"] for value in schedule_dict.values()}\n\n    # --- repertoire\n    repertoire = list()\n    for file in list_repertoire:\n        repertoire += repertoire_parser.parse(file)\n\n    repertoire_dict = {course[\"_id\"]: course for course in repertoire}\n    del repertoire\n    repertoire_set = {course_id for course_id in repertoire_dict.keys()}\n\n    # --- faculties\n    with open(hierarchy_path, \"r\", encoding=\"utf-8\") as f:\n        faculties = faculty_parser.parse(hierarchy_path)\n\n    faculties = refactor_faculties(\n        faculties, {\"03\": annuaire}, [(\"v1\", import_links_directory)]\n    )\n\n    logger.info(f\"nbr de facultés dans faculties after refactoring = {len(faculties)}\")\n    logger.info(f\"nbr d'item schedules = {len(schedule_set)}\")\n    logger.info(f\"nbr d'item annuaire = {len(annuaire)}\")\n    logger.info(f\"nbr d'item repertoire = {len(repertoire_set)}\")\n\n    # --- merge the data together to be data_model conform ---#\n\n    # Extract courses detail from annuaire and replace those details with a id list\n    annuaire_courses_dict = dict()\n    for program in annuaire:\n        program_courses = list()\n        for segment in program[\"segments\"]:\n           for bloc in segment[\"blocs\"]:\n                bloc_courses = list()\n                for course in bloc[\"courses\"]:\n                    program_courses.append(course[\"_id\"])\n                bloc_courses.append(course[\"_id\"])\n                    annuaire_courses_dict[course[\"_id\"]] = course\n                bloc[\"courses\"] = bloc_courses\n        program[\"courses\"] = program_courses\n    annuaire_courses_set = {course_id for course_id in annuaire_courses_dict.keys()}\n\n    master_data = repertoire_dict\n    default_course = lambda course: {\n        \"_id\": course[\"_id\"],\n        \"name\": course[\"name\"] if \"name\" in course else \"\",\n        \"code\": course[\"_id\"][:3],\n        \"number\": course[\"_id\"][3:],\n        \"description\": course[\"description\"] if \"description\" in course else \"\",\n        \"credits\": course[\"credit\"] if \"credit\" in course else 0,\n        \"available_terms\": (\n            course[\"available_terms\"]\n            if \"available_terms\" in course\n            else {\"autumn\": False, \"winter\": False, \"summer\": False}\n        ),\n        \"available_periods\": (\n            course[\"available_periods\"]\n            if \"available_periods\" in course\n            else {\"daytime\": False, \"evening\": False}\n        ),\n        \"requirement_text\": (\n            course[\"requirement_text\"] if \"requirement_text\" in course else \"\"\n        ),\n        \"prerequisites_courses\": (\n            course[\"prerequisites_courses\"] if \"prerequisites_courses\" in course else []\n        ),\n        \"concomitant_courses\": (\n            course[\"concomitant_courses\"] if \"concomitant_courses\" in course else []\n        ),\n        \"equivalent_courses\": (\n            course[\"equivalent_courses\"] if \"equivalent_courses\" in course else []\n        ),\n    }\n\n    # merge schedule\n    for course_id in schedule_dict:\n        course_id_sch = course_id\n        course_id = course_id[3:]\n        if course_id not in master_data:\n            if course_id in annuaire_courses_set:\n                course = default_course(annuaire_courses_dict[course_id])\n            else:\n                course = default_course(\n                    {\"_id\": course_id, \"name\": schedule_dict[course_id_sch][\"name\"]}\n                )\n            master_data[course_id] = course\n\n    # merge annuaire\n    only_annuaire = annuaire_courses_set.difference(schedule_set, repertoire_set)\n    for course_id in only_annuaire:\n        course = default_course(annuaire_courses_dict[course_id])\n        master_data[course_id] = course\n\n    # if no availability in repertoire, take the one from annuaire\n    for course_id in repertoire_set.intersection(annuaire_courses_set):\n        course = master_data[course_id]\n        for key in [\"available_terms\", \"available_periods\"]:\n            if not any(course[key]):\n                course[key] = annuaire_courses_dict[course_id][key]\n\n    db = MongoDB(\n        uri=os.getenv(\"MONGO_URL\", \"mongodb://localhost:27017\"),\n        db_name=os.getenv(\"MONGO_DB_NAME\", \"planificateur-academique\"),\n        collection_name=os.getenv(\"MONGO_COLLECTION_NAME\", \"courses\"),\n        logger=logging.getLogger(__name__),\n    )\n    store_data(master_data, annuaire, faculties, schedule_dict, db)\n\n    schedule_diff = schedule_set.difference(repertoire_set)\n    annuaire_diff = annuaire_courses_set.difference(repertoire_set)\n\n    log_insertion_details(\n        schedule_diff,\n        annuaire_diff,\n    )",
+        "start_line": 14,
+        "end_line": 227,
+        "called_by": [],
+        "calls": [
+            "log_insertion_details",
+            "refactor_faculties",
+            "store_data"
+        ],
+        "description": "Main function to parse raw data and populate the database, handling schedule, annuaire, and repertoire data.",
+        "tags": [
+            "Data Parser",
+            "Main Function",
+            "Database Populator",
+            "Raw Data Processor",
+            "Course Merging"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "store_data",
+        "parameters": [
+            [
+                "master_data",
+                "dict"
+            ],
+            [
+                "annuaire",
+                "list"
+            ],
+            [
+                "faculties",
+                "list"
+            ],
+            [
+                "schedule_dict",
+                "dict"
+            ],
+            [
+                "db",
+                "mongodb"
+            ]
+        ],
+        "source": "def store_data(master_data, annuaire, faculties, schedule_dict, db):\n    \"\"\"\n    Store the data in the database.\n\n    Args:\n        master_data (dict): Dictionary containing the course details.\n        annuaire (list): List of annuaire data.\n        db (MongoDB): MongoDB object for database connection.\n    \"\"\"\n    db.drop()\n    db.insert_many([course_detail for course_detail in master_data.values()])\n\n    db.set_collection(\"programs\")\n    db.drop()\n    db.insert_many(annuaire)\n\n    db.set_collection(\"faculties\")\n    db.drop()\n    db.insert_many(faculties)\n\n    schedules = [detail for detail in schedule_dict.values()]\n    db.set_collection(\"schedules\")\n    db.drop()\n    db.insert_many(schedules)",
+        "start_line": 230,
+        "end_line": 253,
+        "called_by": [
+            "main"
+        ],
+        "calls": [],
+        "description": "Store data from various sources into a MongoDB database.",
+        "tags": [
+            "Data Storage",
+            "Database",
+            "MongoDB",
+            "Data Persistence",
+            "Course Details"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "log_insertion_details",
+        "parameters": [
+            [
+                "schedule_diff",
+                "set"
+            ],
+            [
+                "annuaire_diff",
+                "set"
+            ]
+        ],
+        "source": "def log_insertion_details(\n    schedule_diff,\n    annuaire_diff,\n):\n    \"\"\"\n    Log insertion details.\n\n    Args:\n        schedule_diff, the difference of schedule set with repertoire set\n        annuaire_diff, the difference of annuaire set with repertoire set\n    \"\"\"\n\n    logger.info(\n        f\"Courses that exist in schedule, but not in repertoire:\n {schedule_diff}\n\"\n    )\n    logger.info(\n        f\"Courses that exist in annuaire, but not in repertoire:\n {annuaire_diff}\n\"\n    )\n    logger.info(\n        f\"Courses that exist in annuaire and schedule, but not in repertoire:\n {annuaire_diff.intersection(schedule_diff)}\n\"\n    )",
+        "start_line": 256,
+        "end_line": 276,
+        "called_by": [
+            "main"
+        ],
+        "calls": [],
+        "description": "Logs the insertion details of new courses in the database.",
+        "tags": [
+            "Logging",
+            "Data Comparison",
+            "Set Operations",
+            "Database Population",
+            "Difference Analysis"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "find_in_sorted_list",
+        "parameters": [
+            [
+                "elem",
+                "int"
+            ],
+            [
+                "sorted_list",
+                "list"
+            ]
+        ],
+        "source": "def find_in_sorted_list(elem, sorted_list):\n    \"Locate the leftmost value exactly equal to x\"\n    i = bisect.bisect_left(sorted_list, elem, key=lambda program: program[\"_id\"])\n    if i != len(sorted_list) and sorted_list[i][\"_id\"] == elem:\n        return i\n    return -1",
+        "start_line": 279,
+        "end_line": 284,
+        "called_by": [
+            "refactor_faculties"
+        ],
+        "calls": [],
+        "description": "This function finds the leftmost value in a sorted list that is equal to the given element.",
+        "tags": [
+            "Binary search implementation",
+            "List traversal",
+            "Element locating",
+            "Sorted list searching",
+            "Index finding"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "refactor_faculties",
+        "parameters": [
+            [
+                "faculties",
+                "dict"
+            ],
+            [
+                "annuaires",
+                "dict"
+            ],
+            [
+                "directories_tuples",
+                "list"
+            ]
+        ],
+        "source": "def refactor_faculties(faculties, annuaires, directories_tuples: list[tuple]):\n    \"\"\"\n    annuaire**s** of this form, dict : {  <faculty_id> : <annuaire_object> , ...  }\n    \"\"\"\n\n    faculty2programs = dict()\n    for _id, annuaire in annuaires.items():\n        annuaire.sort(key=lambda faculty: faculty[\"_id\"])\n        faculty2programs[_id] = {program[\"_id\"] for program in annuaire}\n\n    new_faculties = dict()\n    links = readImportLinks(directories_tuples)\n    for faculty in faculties:\n        id_f = faculty[\"_id\"]\n        name_f = faculty[\"name\"]\n        if id_f in annuaires:\n         corresponding_annuaire = annuaires[id_f                ]\n        else:\n            continue\n        hit_programs = set()\n        default_program = lambda x: {\n            \"_id\": x[0],\n            \"name\": x[1],\n            \"orientation\": links[x[0]] if x[0] in links else [],\n        }\n        for department in faculty[\"departments\"]:\n            id_d = department[\"_id\"]\n            name_d = department[\"name\"]\n            for program in department[\"programs\"]:\n                id_p = program[\"_id\"]\n                name_p = program[\"name\"]\n                if (i := find_in_sorted_list(id_p, corresponding_annuaire)) != -1:\n                    hit_programs.add(id_p)\n                    name_pa = corresponding_annuaire[i                    ][\"name\"]\n                    new_faculties.setdefault(\n                        id_f, {\"_id\": id_f, \"name\": name_f, \"departments\": dict()}\n                    )[\"departments\"].setdefault(\n                        id_d, {\"_id\": id_d, \"name\": name_d, \"programs\": list()}\n                    )[\n                        \"programs\"\n                    ].append(\n                        default_program((id_p, name_pa))\n                    )  # We prefer the name from the annuaire\n        program_not_integrated = faculty2programs[id_f                        ].difference(hit_programs)\n        autres_dep_list = new_faculties.setdefault(\n            id_f,                        {\"_id\": id_f, \"name\": name_f, \"departments\": dict()}\n        )[\"departments\"].setdefault(\n            \"9999\", {\"_id\": \"9999\", \"name\": \"Autres\", \"programs\": list()}\n        )[\n            \"programs\"\n        ]\n\n        for _id in program_not_integrated:\n            i = find_in_sorted_list(_id, corresponding_annuaire)\n            name = corresponding_annuaire[i][\"name\"]\n            autres_dep_list.append(default_program((_id, name)))\n    # transform back to json compliant structure, we need to transform dict into list\n    new_faculties = [faculty for faculty in new_faculties.values()]\n\n    for faculty in new_faculties:\n        faculty[\"departments\"] = [\n            department for department in faculty[\"departments\"].values()\n        ]\n\n    return new_faculties",
+        "start_line": 287,
+        "end_line": 351,
+        "called_by": [
+            "main"
+        ],
+        "calls": [
+            "find_in_sorted_list",
+            "readImportLinks"
+        ],
+        "description": "Refactors faculties by matching programs from faculties with corresponding annuaire data.",
+        "tags": [
+            "Faculty data refactoring",
+            "Data integration",
+            "Faculty program mapping",
+            "Annuaires integration",
+            "Data normalization"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "readImportLinks",
+        "parameters": [
+            [
+                "directories_tuples",
+                "list"
+            ]
+        ],
+        "source": "def readImportLinks(directories_tuples):\n    all_links = {}\n    for version, directory in directories_tuples:\n\n        files = [os.path.join(directory, file) for file in os.listdir(directory)]\n\n        match version:\n\n            case \"v1\":\n                for file in files:\n                    with open(file, \"r\", encoding=\"utf-8\") as f:\n                        lines = f.readlines()\n                    for line in lines:\n                        program_id = line.split(\"/\")[-4]\n                        if not re.match(\n                            pattern.program_id_pattern.replace(\"-\", \"\"), program_id\n                        ):\n                            logger.error(\n                                f\"Program id '{program_id}' doesn't match the pattern in file '{file}' of directoy '{directory}'\"\n                            )\n                            continue\n                        all_links.setdefault(program_id, list()).append(line.strip())\n            case _:\n                pass\n\n    return all_links",
+        "start_line": 362,
+        "end_line": 387,
+        "called_by": [
+            "refactor_faculties"
+        ],
+        "calls": [],
+        "description": "Matches URLs from import links directories according to their version.",
+        "tags": [
+            "File Parsing",
+            "Data Retrieval",
+            "Data Merging",
+            "Database Population",
+            "Import Link Handling"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "i",
+            "dict"
+        ]
+    }
+]
