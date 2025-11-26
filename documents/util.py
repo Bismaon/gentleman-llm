@@ -1,30 +1,44 @@
 import ast
-import json
 import os
 import re
-import time
-import logging
+import json
 
-CONTAINERS = {"list", "dict", "tuple", "set", "frozenset"}
+CONTAINERS = {"list", "dict", "tuple", "set"}
 
-PRIMITIVES = {"int", "float", "bool", "str", "bytes", "none", "any", "object"} | CONTAINERS
+PRIMITIVES = {
+    "int",
+    "float",
+    "bool",
+    "str",
+    "bytes",
+    "none",
+    "any",
+    "object",
+} | CONTAINERS
 CUSTOM = {"DB"}
-NON_EXHAUSTIVE = {"date", "time", "datetime", "timedelta", "timezone","Path", "PurePath", "PathLike", "UUID", "Decimal", "Complex","Pattern", "Match", "Callable"}
+NON_EXHAUSTIVE = {
+    "date",
+    "time",
+    "datetime",
+    "timedelta",
+    "timezone",
+    "Path",
+    "PurePath",
+    "PathLike",
+    "UUID",
+    "Decimal",
+    "Complex",
+    "Pattern",
+    "Match",
+    "Callable",
+}
 
-logging.basicConfig(
-    filename="timing.log",          # or any file path you want
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
-logger = logging.getLogger(__name__)
-
-
-def generate_valid_types(depth=1):
+def generate_valid_types(depth=0):
     """
     Generate an exhaustive set of type expressions up to a given nesting depth.
     """
-    base = PRIMITIVES | CUSTOM 
+    base = PRIMITIVES | CUSTOM
     valid = set(base)
 
     def expand(base_types, current_depth):
@@ -48,22 +62,8 @@ def generate_valid_types(depth=1):
     valid |= expand(base, 1)
     return valid
 
-def write_valid_types(plus, file:str, output_path="results/valid_types"):
-    """
-    Writes all valid types (VALID_BASE_TYPES) to a file, sorted alphabetically.
-    """
-    try:
-        out = next_available_filename(f"{output_path}_{file}")
-        with open(out, "w", encoding="utf-8") as f:
-            for t in list(VALID_BASE_TYPES):
-                f.write(f"{t}\n")
-            for t in list(plus):
-                f.write(f"{t}\n")
-        print(f"[OK] Valid types written to {out}")
-    except Exception as e:
-        print(f"[ERROR] Cannot write valid types: {e}")
-        
-VALID_BASE_TYPES = PRIMITIVES | NON_EXHAUSTIVE | generate_valid_types()
+
+VALID_BASE_TYPES = PRIMITIVES | NON_EXHAUSTIVE | generate_valid_types(0)
 
 def list_files(directory: str) -> list[str]:
     """
@@ -92,6 +92,7 @@ def list_files(directory: str) -> list[str]:
         print(f"Error listing files in {directory}: {e}")
         return []
 
+
 def read_file(filepath: str) -> str:
     """
     Read and return the content of a file given its name and parent directory.
@@ -116,35 +117,8 @@ def read_file(filepath: str) -> str:
         print(f"Error reading file {filepath}: {e}")
         return ""
 
-def write_file(filepath: str, content: str) -> str:
-    """
-    Write content to a file inside the given directory.
 
-    Parameters
-    ----------
-        filepath : str
-            Path to the file to create/overwrite.
-        content : str
-            The text content to write.
-
-    Returns
-    -------
-        str
-            Full path of the written file.
-    """
-    try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(content)
-
-        return filepath
-    except FileNotFoundError:
-        print(f"File not found: {filepath}")
-        return ""
-    except Exception as e:
-        print(f"Error writing file {filepath}: {e}")
-        return ""
-
-def next_available_filename(base_name: str, ext:str="txt") -> str:
+def next_available_filename(base_name: str, ext: str = "txt") -> str:
     """
     Given a base_name like 'filename_func_def',
     returns a file name like 'filename_func_def_1.txt'
@@ -167,32 +141,6 @@ def next_available_filename(base_name: str, ext:str="txt") -> str:
 
     return os.path.join(directory, f"{filename_root}_{next_version}.{ext}")
 
-def get_json(filename: str) -> dict:
-    """
-    Load and return the JSON from the `filename` file.
-
-    Parameters
-    ----------
-        filename : str
-            JSON filename.
-
-    Returns
-    -------
-        dict
-            The JSON.
-    """
-    try:
-        with open(filename, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"JSON file not found: {filename}")
-        return {}
-    except json.JSONDecodeError:
-        print("Error decoding JSON from file.")
-        return {}
-    except Exception as e:
-        print(f"Error loading JSON: {e}")
-        return {}
 
 def list_imports(node, imports: list[str]):
     if isinstance(node, ast.Import):
@@ -205,24 +153,28 @@ def list_imports(node, imports: list[str]):
             sanitized_name = sanitize(alias.name)
             imports.append(sanitized_name)
 
+
 def list_functions(code, functions, node):
     if isinstance(node, ast.FunctionDef):
         func_source = ast.get_source_segment(code, node)
         param_names = [param.arg for param in node.args.args]
 
-        functions.append({
-            "name": node.name,
-            "parameters": [(param, "") for param in param_names],
-            "source": func_source,
-            "start_line": node.lineno,
-            "end_line": node.end_lineno,
-            "called_by": [],
-            "calls": [],
-            "description": "",
-            "tags": [],
-            "category": "",
-            "return": ("","")
-        })
+        functions.append(
+            {
+                "name": node.name,
+                "parameters": [(param, "") for param in param_names],
+                "source": func_source,
+                "start_line": node.lineno,
+                "end_line": node.end_lineno,
+                "called_by": [],
+                "calls": [],
+                "description": "",
+                "tags": [],
+                "category": "",
+                "return": ("", ""),
+            }
+        )
+
 
 def list_calls(tree, functions):
     local_function_names = {f["name"] for f in functions}
@@ -248,6 +200,7 @@ def list_calls(tree, functions):
 
     return functions
 
+
 def list_called_by(functions):
     for f in functions:
         caller = f["name"]
@@ -263,12 +216,13 @@ def list_called_by(functions):
 
     return functions
 
+
 def list_returns(node, current_function, functions):
     if current_function is None:
         return
 
     index = index_of(functions, "name", current_function)
-    
+
     if isinstance(node, ast.Return):
         value = node.value
 
@@ -279,11 +233,12 @@ def list_returns(node, current_function, functions):
 
         inferred_type = infer_python_type_from_ast(value)
 
-        functions[index]["return"] = (return_expr, inferred_type )
+        functions[index]["return"] = (return_expr, inferred_type)
+
 
 def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
-    code = read_file(filepath)
-    tree = ast.parse(code, filepath)
+    content = read_file(filepath)
+    tree = ast.parse(content, filepath)
 
     functions = []
     imports = []
@@ -292,39 +247,44 @@ def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
             current_function = node.name
-        list_functions(code, functions, node)
+        list_functions(content, functions, node)
         list_imports(node, imports)
         list_returns(node, current_function, functions)
 
     functions = list_calls(tree, functions)
     functions = list_called_by(functions)
 
-    return functions, set(imports)
+    return functions, set(imports), content
 
-def validate_types(llm_answer: str, imports: set[str]) -> list[str]|Exception:
-    try:
-        value = ast.literal_eval(llm_answer.strip())
-    except Exception as e:
-        raise ValueError(f"Invalid Python literal for type list: {e}") from e
 
-    if not isinstance(value, list):
-        raise ValueError(f"Expected a list of type names, got {type(value).__name__}")
+def validate_types(llm_answer: str, imports: set[str]) -> list[str] | Exception:
+    cleaned = llm_answer.strip()
+    cleaned = cleaned.replace("`", "").strip()
+    cleaned = cleaned.replace('"', "").strip()
+    cleaned = cleaned.replace("'", "").strip()
+
+    if not (cleaned.startswith("[") and cleaned.endswith("]")):
+        raise ValueError(f"Expected list syntax '[...]', got: {cleaned}")
+
+    # Drop outer brackets
+    inner = cleaned[1:-1].strip()
+
+    items = [item.strip() for item in inner.split(",")]
 
     sanitized = []
-    for v in value:
-        try:
-            t = sanitize_and_validate(v, imports)
-            sanitized.append(t)
-        except Exception as e:
-            raise ValueError(f"Invalid type entry '{v}': {e}") from e
-
+    for item in items:
+        t = validate_type(item, imports)
+        sanitized.append(t)
     return sanitized
 
-def validate_type(llm_answer: str, imports: set[str]) -> str|Exception:
-    if not isinstance(llm_answer, str):
-        raise ValueError(f"Expected a list of type names, got {type(llm_answer).__name__}")
 
-    sanitized = ''
+def validate_type(llm_answer: str, imports: set[str]) -> str | Exception:
+    if not isinstance(llm_answer, str):
+        raise ValueError(
+            f"Expected a type, got {type(llm_answer).__name__}"
+        )
+
+    sanitized = ""
     try:
         sanitized = sanitize_and_validate(llm_answer, imports)
     except Exception as e:
@@ -332,13 +292,15 @@ def validate_type(llm_answer: str, imports: set[str]) -> str|Exception:
 
     return sanitized
 
+
 def sanitize_and_validate(t: str, imports: set[str]) -> str:
     sanitized_t = sanitize(t)
 
     if not is_valid_type(sanitized_t, imports):
         raise ValueError(f"Unknown or unsupported type name: '{sanitized_t}'")
-    
+
     return sanitized_t
+
 
 def sanitize(t):
     if not isinstance(t, str):
@@ -352,19 +314,17 @@ def sanitize(t):
         if len(parts[-1].strip()) > 0:
             t = parts[-1].strip()
     t = re.sub(r"\s+", "", t)
-    match = re.match(r"^(\w+)", t.strip().lower()) # get root type
+    match = re.match(r"^(\w+)", t.strip().lower())  # get root type
 
     if match:
         t = match.group(1)
 
-    if any(ch in t for ch in ["(" ,")","[[", "{", "}"]):
+    if any(ch in t for ch in ["(", ")", "[[", "{", "}"]):
         raise ValueError(f"Invalid characters in type name: '{t}'")
     return t
 
-def is_valid_type(expr: str, imports:set[str]) -> bool:
-    return expr in (VALID_BASE_TYPES|imports) 
 
-def validate_tags(llm_answer: str) -> list[str]|Exception:
+def validate_tags(llm_answer: str) -> list[str] | Exception:
     try:
         value = ast.literal_eval(llm_answer.strip())
     except Exception as e:
@@ -373,91 +333,18 @@ def validate_tags(llm_answer: str) -> list[str]|Exception:
         raise ValueError("Expected a list of tags string.")
     if not all(isinstance(tag, str) for tag in value):
         raise ValueError("All tags must be strings.")
-        
-    return value 
 
-def valid_category(answer_LLM:str, function_types):
+    return value
+
+
+def valid_category(answer_LLM: str, function_types):
     ans = answer_LLM.strip()
-    ans = ans.replace('"','').replace("'","")
+    ans = ans.replace('"', "").replace("'", "")
     if not in_list(ans, function_types):
         raise ValueError(f"Invalid category: {ans}")
     else:
         return True
 
-def in_range(value:int, min_val:int, max_val:int)->bool:
-    return min_val <= value <= max_val
-
-def index_of(dicts:list[dict], key:str, value:any):
-    for i, d in enumerate(dicts):
-        if d.get(key) == value:
-            return i
-    return -1  # or None
-
-def in_list(value,list_str):
-    low_val = value.lower()
-    for items in list_str:
-        if (items.lower() == low_val):
-            return True
-
-    return False
-
-def time_step(label: str, func, *args, **kwargs):
-    start = time.perf_counter()
-    try:
-        result = func(*args, **kwargs)
-        end = time.perf_counter()
-        logger.info(f"[TIME] {label}: {end - start:.3f} seconds")
-        return result
-    except Exception as e:
-        end = time.perf_counter()
-        logger.error(
-            f"[TIME ERROR] {label} failed after {end - start:.3f} seconds "
-            f"with exception: {e}"
-        )
-        raise
-
-def write_function_definitions(filepath: str, functions: list[dict]) -> None:
-    base_name = os.path.splitext(os.path.basename(filepath))[0]
-    base_output_name = f"results/{base_name}_func_def"
-    output_file = next_available_filename(base_output_name)
-
-    with open(output_file, "w", encoding="utf-8") as f:
-        for i, func in enumerate(functions, start=1):
-            f.write(f"--- Function {i}: {func['name']} - {func["start_line"]}:{func["end_line"]}---")
-            f.write(f"\n# Source:\n{func["source"]}")
-            params = "("
-            for param, p_type in func["parameters"]:
-                params += f"{param}: {p_type},"
-            params+= ")"
-            f.write(f"\n\n# Parameters:\n{params}")
-            return_value, return_type = func["return"]
-
-            f.write(f"\n# Returns:\n{return_value}:{return_type}")
-            f.write(f"\n# Category:\n{func['category']}")
-            f.write(f"\n# Description:\n{func['description']}")
-            f.write(f"\n# Tags:\n{', '.join(func['tags'])}")
-            f.write(f"\n# Calls:\n{', '.join(func['calls'])}")
-            f.write(f"\n# Called by:\n{', '.join(func['called_by'])}")
-            f.write("\n\n")
-
-    print(f"Wrote {len(functions)} function definitions to {output_file}")
-
-def write_functions_to_json(functions: list[dict], output:str):
-    try:
-        base_name = os.path.basename(output)
-        base_name_no_ext = os.path.splitext(base_name)[0]
-        base_output_name = f"results/{base_name_no_ext}_func_concepts"
-        output_file = next_available_filename(base_output_name, ext="json")
-        func_with_file = [{"file":base_name}] + functions
-        with open(output_file, "w", encoding="utf-8") as out:
-            json.dump(func_with_file, out, indent=4, ensure_ascii=False)
-
-        print(f"[OK] JSON written: {output_file}")
-        return output_file
-
-    except Exception as e:
-        print(f"[ERROR] Failed to write JSON: {e}")
-        return ""
 
 def infer_python_type_from_ast(node) -> str:
     if isinstance(node, ast.Tuple):
@@ -495,3 +382,43 @@ def infer_python_type_from_ast(node) -> str:
         return "any"
 
     return "any"
+
+
+def is_valid_type(expr: str, imports: set[str]) -> bool:
+    return expr in (VALID_BASE_TYPES | imports)
+
+
+def in_range(value: int, min_val: int, max_val: int) -> bool:
+    return min_val <= value <= max_val
+
+
+def index_of(dicts: list[dict], key: str, value: any):
+    for i, d in enumerate(dicts):
+        if d.get(key) == value:
+            return i
+    return -1  # or None
+
+
+def in_list(value, list_str):
+    low_val = value.lower()
+    for items in list_str:
+        if items.lower() == low_val:
+            return True
+    return False
+
+def write_functions_to_json(functions: list[dict], output: str):
+    try:
+        base_name = os.path.basename(output)
+        base_name_no_ext = os.path.splitext(base_name)[0]
+        base_output_name = f"results/{base_name_no_ext}_func_concepts"
+        output_file = next_available_filename(base_output_name, ext="json")
+        func_with_file = [{"file": base_name}] + functions
+        with open(output_file, "w", encoding="utf-8") as out:
+            json.dump(func_with_file, out, indent=4, ensure_ascii=False)
+
+        print(f"[OK] JSON written: {output_file}")
+        return output_file
+
+    except Exception as e:
+        print(f"[ERROR] Failed to write JSON: {e}")
+        return ""
