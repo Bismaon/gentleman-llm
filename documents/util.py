@@ -34,9 +34,14 @@ NON_EXHAUSTIVE = {
 }
 
 
-def generate_valid_types(depth=0):
-    """
-    Generate an exhaustive set of type expressions up to a given nesting depth.
+def generate_valid_types(depth: int = 0) -> set[str]:
+    """Generate an exhaustive set of type expressions up to a given nesting depth.
+
+    Args:
+        depth (int, optional): The depth of valid types to generate (d=0: list,dict; d=1: list[str], dict[str];...). Defaults to 0.
+
+    Returns:
+        set(str): The set of types to compare to for the LLM's answer.
     """
     base = PRIMITIVES | CUSTOM
     valid = set(base)
@@ -65,20 +70,17 @@ def generate_valid_types(depth=0):
 
 VALID_BASE_TYPES = PRIMITIVES | NON_EXHAUSTIVE | generate_valid_types(0)
 
+
 def list_files(directory: str) -> list[str]:
-    """
-    Lists all files in a given directory.
+    """Lists all files in a given directory.
 
-    Parameters
-    ----------
-    directory : str
-        The name of the directory
+    Args:
+        directory (str): The name of the directory
 
-    Returns
-    -------
-        list[str]
-            Lists of all file names in a directory.
+    Returns:
+        list[str]: Lists of all file names in a directory.
     """
+
     try:
         return [
             f
@@ -94,19 +96,15 @@ def list_files(directory: str) -> list[str]:
 
 
 def read_file(filepath: str) -> str:
-    """
-    Read and return the content of a file given its name and parent directory.
+    """Read and return the content of a file given its name and parent directory.
 
-    Parameters
-    ----------
-    filepath : str
-        The name of path of the file
+    Args:
+        filepath (str): The name of path of the file
 
-    Returns
-    -------
-        str
-            Content of the file
+    Returns:
+        str: Content of the file
     """
+
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             return f.read()
@@ -119,11 +117,16 @@ def read_file(filepath: str) -> str:
 
 
 def next_available_filename(base_name: str, ext: str = "txt") -> str:
+    """Given a base_name like 'filename_func_def', returns a file name like 'filename_func_def_1.txt' or increments until a free name is found.
+
+    Args:
+        base_name (str): The name of the file
+        ext (str, optional): The extension of the file. Defaults to "txt".
+
+    Returns:
+        str: The name of the file numbered.
     """
-    Given a base_name like 'filename_func_def',
-    returns a file name like 'filename_func_def_1.txt'
-    or increments until a free name is found.
-    """
+
     directory = os.path.dirname(base_name) or "."
     filename_root = os.path.basename(base_name)
 
@@ -142,7 +145,13 @@ def next_available_filename(base_name: str, ext: str = "txt") -> str:
     return os.path.join(directory, f"{filename_root}_{next_version}.{ext}")
 
 
-def list_imports(node, imports: list[str]):
+def list_imports(node: ast, imports: list[str]):
+    """Lists the imports of the file.
+
+    Args:
+        node (ast): The current node explored by AST of the file.
+        imports (list[str]): The list to add the imports to.
+    """
     if isinstance(node, ast.Import):
         for alias in node.names:
             sanitized_name = sanitize(alias.name)
@@ -154,9 +163,16 @@ def list_imports(node, imports: list[str]):
             imports.append(sanitized_name)
 
 
-def list_functions(code, functions, node):
+def list_functions(content: str, functions: list[dict], node: ast):
+    """Appends the function in the file as a dict to the given functions' list.
+
+    Args:
+        code (str): The content of the file.
+        functions (list[dict]): The lists to which all the functions dict will be added.
+        node (ast): The current node being explored.
+    """
     if isinstance(node, ast.FunctionDef):
-        func_source = ast.get_source_segment(code, node)
+        func_source = ast.get_source_segment(content, node)
         param_names = [param.arg for param in node.args.args]
 
         functions.append(
@@ -176,7 +192,17 @@ def list_functions(code, functions, node):
         )
 
 
-def list_calls(tree, functions):
+def list_calls(tree: ast.Module, functions: list[dict]) -> list[dict]:
+    """Gets the calls made by each function in the file.
+
+    Args:
+        tree (ast.Module): The AST tree of the file.
+        functions (list[dict]): The list of function dictionaries.
+
+    Returns:
+        list[dict]: The updated list of function dictionaries with call information.
+    """
+
     local_function_names = {f["name"] for f in functions}
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
@@ -201,7 +227,15 @@ def list_calls(tree, functions):
     return functions
 
 
-def list_called_by(functions):
+def list_called_by(functions: list[dict]) -> list[dict]:
+    """Lists the functions that call each function in the file.
+
+    Args:
+        functions (list[dict]): The list of function dictionaries.
+
+    Returns:
+        list[dict]: The updated list of function dictionaries with caller information.
+    """
     for f in functions:
         caller = f["name"]
 
@@ -217,7 +251,14 @@ def list_called_by(functions):
     return functions
 
 
-def list_returns(node, current_function, functions):
+def list_returns(node: ast, current_function: dict, functions: list[dict]):
+    """Lists the return statements and their inferred types for the current function.
+
+    Args:
+        node (ast): The current AST node being explored.
+        current_function (dict): The dictionary representing the current function.
+        functions (list[dict]): The list of function dictionaries.
+    """
     if current_function is None:
         return
 
@@ -237,6 +278,14 @@ def list_returns(node, current_function, functions):
 
 
 def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
+    """Extracts information about functions and imports from a Python file.
+
+    Args:
+        filepath (str): The path to the Python file.
+
+    Returns:
+        tuple[list[dict], set[str]]: A tuple containing a list of function dictionaries and a set of import statements.
+    """
     content = read_file(filepath)
     tree = ast.parse(content, filepath)
 
@@ -258,6 +307,18 @@ def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
 
 
 def validate_types(llm_answer: str, imports: set[str]) -> list[str] | Exception:
+    """Validates a list of types provided by the LLM answer.
+    
+    Args:
+        llm_answer (str): The LLM answer containing the list of types.
+        imports (set[str]): The set of import statements.
+
+    Raises:
+        ValueError: If the LLM answer does not conform to the expected list syntax.
+
+    Returns:
+        list[str] | Exception: A list of validated types or an exception.
+    """
     cleaned = llm_answer.strip()
     cleaned = cleaned.replace("`", "").strip()
     cleaned = cleaned.replace('"', "").strip()
@@ -279,10 +340,21 @@ def validate_types(llm_answer: str, imports: set[str]) -> list[str] | Exception:
 
 
 def validate_type(llm_answer: str, imports: set[str]) -> str | Exception:
+    """Validates a single type provided by the LLM answer.
+
+    Args:
+        llm_answer (str): The LLM answer containing the type.
+        imports (set[str]): The set of import statements.
+    
+    Raises:
+        ValueError: If the LLM answer is not a string.
+        ValueError: If the type entry is invalid.
+
+    Returns:
+        str | Exception: The validated and sanitized type or an exception.
+    """
     if not isinstance(llm_answer, str):
-        raise ValueError(
-            f"Expected a type, got {type(llm_answer).__name__}"
-        )
+        raise ValueError(f"Expected a type, got {type(llm_answer).__name__}")
 
     sanitized = ""
     try:
@@ -294,6 +366,18 @@ def validate_type(llm_answer: str, imports: set[str]) -> str | Exception:
 
 
 def sanitize_and_validate(t: str, imports: set[str]) -> str:
+    """Sanitizes and validates a type name.
+
+    Args:
+        t (str): The type name to sanitize and validate.
+        imports (set[str]): The set of import statements.
+    
+    Raises:
+        ValueError: If the type name is unknown or unsupported.
+
+    Returns:
+        str: The sanitized and validated type name.
+    """
     sanitized_t = sanitize(t)
 
     if not is_valid_type(sanitized_t, imports):
@@ -302,7 +386,19 @@ def sanitize_and_validate(t: str, imports: set[str]) -> str:
     return sanitized_t
 
 
-def sanitize(t):
+def sanitize(t: str) -> str | ValueError:
+    """Sanitizes a type name by removing extraneous characters and validating its format.
+
+    Args:
+        t (str): The type name to sanitize.
+
+    Raises:
+        TypeError: If the type name is not a string.
+        ValueError: If the type name contains invalid characters.
+    
+    Returns:
+        str|ValueError: The sanitized type name or a ValueError if invalid.
+    """
     if not isinstance(t, str):
         raise TypeError(f"Type name must be a string.\n Type: {t}")
 
@@ -325,6 +421,19 @@ def sanitize(t):
 
 
 def validate_tags(llm_answer: str) -> list[str] | Exception:
+    """Validates a list of tags provided by the LLM answer.
+
+    Args:
+        llm_answer (str): The LLM answer containing the list of tags.
+
+    Raises:
+        ValueError: If the LLM answer is not a valid Python literal.
+        ValueError: If the LLM answer is not a list.
+        ValueError: If any tag in the list is not a string.
+
+    Returns:
+        list[str] | Exception: A list of validated tags or an exception.
+    """
     try:
         value = ast.literal_eval(llm_answer.strip())
     except Exception as e:
@@ -337,7 +446,19 @@ def validate_tags(llm_answer: str) -> list[str] | Exception:
     return value
 
 
-def valid_category(answer_LLM: str, function_types):
+def valid_category(answer_LLM: str, function_types: list[str]) -> bool:
+    """Validates a single category provided by the LLM answer.
+
+    Args:
+        answer_LLM (str): The LLM answer containing the category.
+        function_types (list[str]): The list of valid function types.
+    
+    Raises:
+        ValueError: If the category is not in the list of valid function types.
+
+    Returns:
+        bool: True if the category is valid, otherwise raises a ValueError.
+    """
     ans = answer_LLM.strip()
     ans = ans.replace('"', "").replace("'", "")
     if not in_list(ans, function_types):
@@ -346,7 +467,15 @@ def valid_category(answer_LLM: str, function_types):
         return True
 
 
-def infer_python_type_from_ast(node) -> str:
+def infer_python_type_from_ast(node: ast) -> str:
+    """Infers the Python type from an AST node.
+
+    Args:
+        node (ast): The AST node to infer the type from.
+
+    Returns:
+        str: The inferred Python type as a string.
+    """
     if isinstance(node, ast.Tuple):
         return "tuple"
 
@@ -385,28 +514,76 @@ def infer_python_type_from_ast(node) -> str:
 
 
 def is_valid_type(expr: str, imports: set[str]) -> bool:
+    """Checks if a given type expression is valid based on known base types and imported types.
+
+    Args:
+        expr (str): The type expression to validate.
+        imports (set[str]): A set of imported type names to consider valid.
+    
+    Returns:
+        bool: True if the type expression is valid, False otherwise.
+    """
     return expr in (VALID_BASE_TYPES | imports)
 
 
 def in_range(value: int, min_val: int, max_val: int) -> bool:
+    """Checks if a value is within a specified range.
+
+    Args:
+        value (int): The value to check.
+        min_val (int): The minimum acceptable value.
+        max_val (int): The maximum acceptable value.
+
+    Returns:
+        bool: True if the value is within the specified range, False otherwise.
+    """
     return min_val <= value <= max_val
 
 
-def index_of(dicts: list[dict], key: str, value: any):
+def index_of(dicts: list[dict], key: str, value: any) -> int:
+    """Finds the index of the first dictionary in a list where the specified key has the given value.
+
+    Args:
+        dicts (list[dict]): The list of dictionaries to search.
+        key (str): The key to look for in each dictionary.
+        value (any): The value to match against the specified key.
+
+    Returns:
+        int: The index of the first dictionary where the key matches the value, or -1 if not found.
+    """
     for i, d in enumerate(dicts):
         if d.get(key) == value:
             return i
     return -1  # or None
 
 
-def in_list(value, list_str):
+def in_list(value: str, list_str: list[str]) -> bool:
+    """Checks if a string value is present in a list of strings, case-insensitively.
+
+    Args:
+        value (str): The string value to check.
+        list_str (list[str]): The list of strings to search within.
+    
+    Returns:
+        bool: True if the string value is present in the list, False otherwise.
+    """
     low_val = value.lower()
     for items in list_str:
         if items.lower() == low_val:
             return True
     return False
 
-def write_functions_to_json(functions: list[dict], output: str):
+
+def write_functions_to_json(functions: list[dict], output: str) -> str:
+    """Writes a list of function dictionaries to a JSON file.
+
+    Args:
+        functions (list[dict]): The list of function dictionaries to write.
+        output (str): The output file path or base name for the JSON file.
+    
+    Returns:
+        str: The path to the written JSON file, or an empty string if writing failed.
+    """
     try:
         base_name = os.path.basename(output)
         base_name_no_ext = os.path.splitext(base_name)[0]

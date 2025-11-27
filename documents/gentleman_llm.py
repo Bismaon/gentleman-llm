@@ -1,4 +1,3 @@
-import json
 import os
 from time import sleep
 from openai import OpenAI
@@ -28,7 +27,22 @@ class GentlemanLLM:
         self.max_retry = 7
         self.max_ex_retry = 5
 
-    def ask(self, user_query: str, system: list[str], error: str | None = None):
+    def ask(
+        self, user_query: str, system: list[str], error: str | None = None
+    ) -> str | RuntimeError:
+        """Queries the llm with the user query, and system query. Optionally error if the last the last query with the LLM was unsuccessful.
+
+        Args:
+            user_query (str): a list of user queries
+            system (list[str]): a list of system queries
+            error (str | None, optional): The last error if the previous query was unsuccesful. Defaults to None.
+
+        Raises:
+            RuntimeError: The LLM did not return anything.
+
+        Returns:
+            (str|RuntimeError): The answer of the model.
+        """
         messages = [{"role": "system", "content": s_query} for s_query in system]
         if error:
             messages.append(
@@ -44,8 +58,17 @@ class GentlemanLLM:
 
     # Define functions
     def define_param_types(
-        self, function_info: list[dict], imports: set[str]
+        self, function_info: dict, imports: set[str]
     ) -> list[str] | Exception:
+        """Defines the types of each parameters of a function.
+
+        Args:
+            function_info (dict): The dictionnary containing the function's information.
+            imports (set[str]): The set containing all of the imports of the function's file, used to match types with LLM answer.
+
+        Returns:
+            (list[str] | Exception): A list of the types of each parameters. Or an exception if the LLM's answer is not valid.
+        """
         system = [
             "You are a code analysis assistant.",
             "You will be given a Python function source and a list of its parameters.",
@@ -78,7 +101,7 @@ class GentlemanLLM:
                         f"Not enough types given.\nGiven: {len_ans}, Expected: {p_len}."
                     )
                 tries += 1
-                
+
             except Exception as e:
                 name = "parameter types"
                 last_error, tries = self.exception_handler(name, tries, e)
@@ -86,6 +109,16 @@ class GentlemanLLM:
     def define_tags(
         self, function_info: dict, content: str, max_tags: int = 5
     ) -> list[str] | Exception:
+        """Defines `max_tags` tags for the function.
+
+        Args:
+            function_info (dict): The dictionnary containing the function's information.
+            content (str): The whole content of the function's file.
+            max_tags (int, optional): The number of tags to define for the function. Defaults to 5.
+
+        Returns:
+            (list[str] | Exception): A list of the tags. Or an exception if the LLM's answer isn't valid.
+        """
         system = [
             "You are a code analysis assistant.",
             "You will be given a Python file, a function source and its description.",
@@ -108,6 +141,17 @@ class GentlemanLLM:
     def define_description(
         self, function_info: dict, content: str, min_len=50, max_len=200
     ) -> str | Exception:
+        """Define the description of the function.
+
+        Args:
+            function_info (dict): The dictionnary containing the function's information.
+            content (str): The whole content of the function's file.
+            min_len (int, optional): The minimum length of the description. Defaults to 50.
+            max_len (int, optional): The maximum length of the description. Defaults to 200.
+
+        Returns:
+            (str | Exception): The description of the function. Or an exception if the LLM's answer isn't valid.
+        """
         system = [
             "You are a code analysis assistant.",
             "You will be given a Python file, a function source, and its parameters.",
@@ -141,6 +185,15 @@ class GentlemanLLM:
     def define_return_type(
         self, function_info: dict, imports: set[str]
     ) -> str | Exception:
+        """Define the return type of the function.
+
+        Args:
+            function_info (dict): The dictionnary containing the function's information.
+            imports (set[str]): The set containing all of the imports of the function's file, used to match types with LLM answer.
+
+        Returns:
+            (str | Exception): The return type of the function. Or an exception if the LLm's answer isn't valid.
+        """
         r_value, r_type = function_info["return"]
         if r_value == "" and r_type == "":
             return "None"
@@ -172,6 +225,14 @@ class GentlemanLLM:
                 last_error, tries = self.exception_handler(name, tries, e)
 
     def define_category(self, function_info: dict) -> str | Exception:
+        """Define the category of the function.
+
+        Args:
+            function_info (dict): The dictionnary containing the function's information.
+
+        Returns:
+            str | Exception: The category of the function. Or an exception if the LLm's answer isn't valid.
+        """
         system = [
             "You are a code analysis assistant.",
             "You will be given a Python function source, its description, tags, parameters, and return value.",
@@ -209,17 +270,28 @@ class GentlemanLLM:
             try:
                 answer = self.ask(query, system, last_error).strip()
                 tries += 1
-                
+
                 if valid_category(answer, FUNCTION_TYPES_LIST):
                     return answer
-                
+
                 last_error = f"Category is not a valid function category: {answer}."
 
             except Exception as e:
                 name = "category"
                 last_error, tries = self.exception_handler(name, tries, e)
 
-    def analyze_file(self, filepath: str) -> list[str] | Exception:
+    def analyze_file(self, filepath: str) -> list[dict] | RuntimeError:
+        """Defines the all of the function's in the file.
+
+        Args:
+            filepath (str): The file containing the code.
+
+        Raises:
+            RuntimeError: The LLM failed to define the function's of the file.
+
+        Returns:
+            (list[dict] | Exception): The function defined in a list. Or an Exception if the LLM failed to define the functions.
+        """
         functions, imports, content = extract_information(filepath)
 
         for f in functions:
@@ -239,12 +311,25 @@ class GentlemanLLM:
                 raise RuntimeError(f"Failed to define function {f['name']}: {e}")
 
         base_name = os.path.basename(filepath)
-        json_output = [{"file": base_name}] +functions
+        json_output = [{"file": base_name}] + functions
         return json_output
 
     def exception_handler(
         self, name: str, tries: int, e: Exception
-    ) -> str | RuntimeError:
+    ) -> tuple[str, int] | RuntimeError:
+        """Handles the different exception returned by the LLM.
+
+        Args:
+            name (str): The name of the current step in the function definition.
+            tries (int): The number of tries for the current step.
+            e (Exception): The exception returned.
+
+        Raises:
+            RuntimeError: if the number of tries exceed `max_retry`, the LLM's failing to define the current step.
+
+        Returns:
+            ((str, int) | RuntimeError): The error to return to the LLM, and number of tries. Or an Exception if the number of retries have been exceeded.
+        """
         err = str(e).lower()
         if "exceeded" in err:
             self.exceed_credits_handle(e)
@@ -258,6 +343,17 @@ class GentlemanLLM:
 
     # Obsolete
     def exceed_credits_handle(self, e: Exception) -> int:
+        """Handles the credit issue with Hugging Face.
+
+        Args:
+            e (Exception): Credit issue exception.
+
+        Raises:
+            RuntimeError: Number of retries have exceeded `max_ex_retry`.
+
+        Returns:
+            (int): The number of retries for the credit exception.
+        """
         self.ex_tries += 1
         if self.ex_tries >= self.max_ex_retry:
             raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e

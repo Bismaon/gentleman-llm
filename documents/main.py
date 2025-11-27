@@ -1,4 +1,3 @@
-# main.py
 from dotenv import load_dotenv
 from gentleman_llm import GentlemanLLM
 import os

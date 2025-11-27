@@ -58,6 +58,7 @@ FUNCTION_TYPES_GUIDE_BEGIN
         - Internal data transformation detached from external communication
 FUNCTION_TYPES_GUIDE_END
 """
+
 FUNCTION_TYPES_LIST = [
     "Constructor",
     "ExternalInteraction",
