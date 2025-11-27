@@ -10,9 +10,8 @@ resp = requests.post(
     json={
         "filepath": "code/master.py",
         "model": "meta-llama/Llama-3.1-8B-Instruct",
-        "hf_token": os.getenv("HF_TOKEN")
-    }
+        "hf_token": os.getenv("HF_TOKEN"),
+    },
 )
 
 write_functions_to_json(resp.json(), "test_api")
-

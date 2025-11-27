@@ -308,7 +308,7 @@ def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
 
 def validate_types(llm_answer: str, imports: set[str]) -> list[str] | Exception:
     """Validates a list of types provided by the LLM answer.
-    
+
     Args:
         llm_answer (str): The LLM answer containing the list of types.
         imports (set[str]): The set of import statements.
@@ -345,7 +345,7 @@ def validate_type(llm_answer: str, imports: set[str]) -> str | Exception:
     Args:
         llm_answer (str): The LLM answer containing the type.
         imports (set[str]): The set of import statements.
-    
+
     Raises:
         ValueError: If the LLM answer is not a string.
         ValueError: If the type entry is invalid.
@@ -371,7 +371,7 @@ def sanitize_and_validate(t: str, imports: set[str]) -> str:
     Args:
         t (str): The type name to sanitize and validate.
         imports (set[str]): The set of import statements.
-    
+
     Raises:
         ValueError: If the type name is unknown or unsupported.
 
@@ -395,7 +395,7 @@ def sanitize(t: str) -> str | ValueError:
     Raises:
         TypeError: If the type name is not a string.
         ValueError: If the type name contains invalid characters.
-    
+
     Returns:
         str|ValueError: The sanitized type name or a ValueError if invalid.
     """
@@ -452,7 +452,7 @@ def valid_category(answer_LLM: str, function_types: list[str]) -> bool:
     Args:
         answer_LLM (str): The LLM answer containing the category.
         function_types (list[str]): The list of valid function types.
-    
+
     Raises:
         ValueError: If the category is not in the list of valid function types.
 
@@ -519,7 +519,7 @@ def is_valid_type(expr: str, imports: set[str]) -> bool:
     Args:
         expr (str): The type expression to validate.
         imports (set[str]): A set of imported type names to consider valid.
-    
+
     Returns:
         bool: True if the type expression is valid, False otherwise.
     """
@@ -563,7 +563,7 @@ def in_list(value: str, list_str: list[str]) -> bool:
     Args:
         value (str): The string value to check.
         list_str (list[str]): The list of strings to search within.
-    
+
     Returns:
         bool: True if the string value is present in the list, False otherwise.
     """
@@ -580,7 +580,7 @@ def write_functions_to_json(functions: list[dict], output: str) -> str:
     Args:
         functions (list[dict]): The list of function dictionaries to write.
         output (str): The output file path or base name for the JSON file.
-    
+
     Returns:
         str: The path to the written JSON file, or an empty string if writing failed.
     """
