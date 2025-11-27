@@ -4,7 +4,6 @@ import re
 import json
 
 CONTAINERS = {"list", "dict", "tuple", "set"}
-
 PRIMITIVES = {
     "int",
     "float",
