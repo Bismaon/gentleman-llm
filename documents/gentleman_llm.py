@@ -358,8 +358,7 @@ class GentlemanLLM:
         if self.ex_tries >= self.max_ex_retry:
             raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
         wait = 2**self.ex_tries
-        print(
-            f"Exceeded monthly included credits (false), retrying in {wait} seconds..."
-        )
+        print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
+        
         sleep(wait)
         return self.ex_tries
