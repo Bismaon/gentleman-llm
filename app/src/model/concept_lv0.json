@@ -16,11 +16,11 @@
                     "name": "functions",
                     "target": {
                         "name": "set",
-                        "accept": [
+                        "accept":
                             {
                                 "name": "function"
                             }
-                        ]
+                        
                     },
                     "required": false
                 }
@@ -58,11 +58,11 @@
                     "name": "parameters",
                     "target": {
                         "name": "set",
-                        "accept": [
+                        "accept": 
                             {
                                 "name": "param_c"
                             }
-                        ]
+                        
                     }
                 },
                 {
@@ -75,33 +75,33 @@
                     "name": "called_by",
                     "target": {
                         "name": "set",
-                        "accept": [
+                        "accept":
                             {
                                 "name": "string"
                             }
-                        ]
+                    
                     }
                 },
                 {
                     "name": "calls",
                     "target": {
                         "name": "set",
-                        "accept": [
+                        "accept": 
                             {
                                 "name": "string"
                             }
-                        ]
+                        
                     }
                 },
                 {
                     "name": "tags",
                     "target": {
                         "name": "set",
-                        "accept": [
+                        "accept":
                             {
                                 "name": "string"
                             }
-                        ]
+                        
                     }
                 }
             ]

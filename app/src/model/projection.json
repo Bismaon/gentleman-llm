@@ -2,9 +2,7 @@
     "type": "projection",
     "projection": [
         {
-            "concept": {
-                "name": "file"
-            },
+            "concept": { "name": "file" },
             "tags": ["file"],
             "type": "container",
             "container": {
@@ -15,6 +13,18 @@
                             "type": "text",
                             "content": "File"
                         }
+                    },
+                    {
+                        "kind": "static",
+                        "type": "text",
+                        "content": { "type": "attribute"},
+                        "name": "name",
+                        "tag": "textbox-label"
+                    },
+                    {
+                        "type": "attribute",
+                        "name": "functions",
+                        "tag": "functions"
                     }
                 ],
                 "style": {
@@ -26,6 +36,505 @@
                     "type": "flex",
                     "orientation": "column",
                     "wrappable": false
+                }
+            }
+        },
+        {
+            "concept": { "name": "function" },
+            "tags": ["list-item"],
+            "container": {
+                "content": [
+                    {
+                        "type": "static",
+                        "static": {
+                            "type": "Function",
+                            "content": ":"
+                        }
+                    },
+                    {
+                        "type": "container",
+                        "content": [
+                            {
+                                "type": "attribute",
+                                "name": "name"
+                            },
+                            {
+                                "type": "static",
+                                "static": {
+                                    "type": "text",
+                                    "content": ":"
+                                }
+                            },
+                            {
+                                "type": "attribute",
+                                "name": "description"
+                            }
+                        ],
+                        "layout": { "type": "flex", "orientation": "row" },
+                        "style": {
+                            "css": ["function-item-body"]
+                        }
+                    }
+                ],
+                "style": {
+                    "css": [
+                        "function-item"
+                    ]
+                },
+                "layout": {
+                    "type": "flex",
+                    "orientation": "column"
+                }
+            }
+        },
+        {
+            "concept": { "name": "string" },
+            "type": "field",
+            "tags": ["tag"],
+            "content": {
+                "type": "text",
+                "resizable": true,
+                "input": {
+                    "type": "text",
+                    "placeholder": "tag",
+                    "style": {
+                        "css": [
+                            "pp-tagbox__input"
+                        ]
+                    }
+                },
+                "style": {
+                    "css": [
+                        "pp-tagbox"
+                    ]
+                }
+            }
+        },
+        {
+            "concept": { "name": "string" },
+            "type": "field",
+            "tags": ["textbox"],
+            "content": {
+                "type": "text",
+                "input": {
+                    "type": "text",
+                    "placeholder": {
+                        "type": "property",
+                        "name": "label"
+                    },
+                    "style": {
+                        "css": [
+                            "simple-textbox__input"
+                        ]
+                    }
+                },
+                "style": {
+                    "css": [
+                        "simple-textbox"
+                    ]
+                }
+            }
+        },
+        {
+            "concept": { "name": "string" },
+            "type": "field",
+            "tags": ["textbox-label"],
+            "content": {
+                "type": "text",
+                "container": {
+                    "type": "flex",
+                    "orientation": "row",
+                    "content": [
+                        {
+                            "type": "static",
+                            "static": {
+                                "type": "text",
+                                "content": {
+                                    "type": "property",
+                                    "name": "label"
+                                },
+                                "style": {
+                                    "css": [
+                                        "labeled-textbox__label"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "input",
+                            "input": {
+                                "type": "text",
+                                "placeholder": {
+                                    "type": "property",
+                                    "name": "placeholder"
+                                },
+                                "style": {
+                                    "css": [
+                                        "labeled-textbox__input"
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "style": {
+                        "css": [
+                            "labeled-textbox"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "concept": { "name": "string" },
+            "type": "field",
+            "tags": ["textarea"],
+            "content": {
+                "type": "text",
+                "multiline": true,
+                "input": {
+                    "type": "text",
+                    "placeholder": "Enter a description",
+                    "style": {
+                        "css": ["simple-textarea__input"]
+                    }
+                },
+                "style": {
+                    "css": ["simple-textarea"]
+                }
+            }
+        },
+        {
+            "concept": { "name": "string" },
+            "type": "field",
+            "tags": ["textarea-label"],
+            "field": {
+                "type": "text",
+                "multiline": true,
+                "container": {
+                    "content": [
+                        {
+                            "type": "static",
+                            "static": {
+                                "type": "text",
+                                "content": {
+                                    "type": "property",
+                                    "name": "label"
+                                },
+                                "style": {
+                                    "css": ["labeled-textarea__label"]
+                                }
+                            }
+                        },
+                        {
+                            "type": "input",
+                            "multiline": true,
+                            "input": {
+                                "type": "text",
+                                "placeholder": "Enter a description",
+                                "style": {
+                                    "css": ["labeled-textarea__input"]
+                                }
+                            }
+                        }
+                    ],
+                    "layout": {
+                        "type": "flex",
+                        "orientation": "row",
+                        "wrappable": true
+                    }
+                },
+                "style": {
+                    "css": [
+                        "labeled-textarea"
+                    ]
+                }
+            }
+        },
+        {
+            "concept": { "name": "number" },
+            "type": "field",
+            "tags": ["numbox-label"],
+            "field": {
+                "type": "text",
+                "container": {
+                    "content": [
+                        {
+                            "type": "static",
+                            "static": {
+                                "type": "text",
+                                "content": {
+                                    "type": "property",
+                                    "name": "label"
+                                },
+                                "style": {
+                                    "css": ["labeled-numbox__label"]
+                                }
+                            }
+                        },
+                        {
+                            "type": "input",
+                            "input": {
+                                "type": "number",
+                                "style": {
+                                    "css": ["labeled-numbox__input"]
+                                }
+                            }
+                        }
+                    ],
+                    "layout": {
+                        "type": "flex",
+                        "orientation": "row",
+                        "wrappable": true
+                    }
+                },
+                "style": {
+                    "css": [
+                        "labeled-numbox"
+                    ]
+                }
+            }
+        },
+        {
+            "concept": { "name": "number" },
+            "tags": ["textual"],
+            "type": "field",
+            "content": {
+                "type": "text",
+                "resizable": false,
+                "input": {
+                    "type": "number",
+                    "style": {
+                        "css": ["numbox__input"]
+                    }
+                },
+                "style": {
+                    "css": ["numbox"]
+                }
+            }
+        },
+        {
+            "concept": { "name": "number" },
+            "tags": ["label-number"],
+            "type": "layout",
+            "content": {
+                "type": "wrap",
+                "disposition": [
+                    {
+                        "type": "static",
+                        "static": {
+                            "type": "text",
+                            "content": {
+                                "type": "property",
+                                "name": "refname"
+                            },
+                            "style": {
+                                "css": [
+                                    "label",
+                                    "groupfield-label"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "field",
+                        "field": {
+                            "type": "text",
+                            "input": {
+                                "type": "number",
+                                "style": {
+                                    "css": [
+                                        "textbox__input"
+                                    ]
+                                }
+                            },
+                            "style": {
+                                "css": [
+                                    "textbox",
+                                    "groupfield__textbox"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "style": {
+                    "css": [
+                        "groupfield"
+                    ]
+                }
+            }
+        },
+        {
+            "concept": { "name": "reference" },
+            "type": "field",
+            "tags": ["tag-reference"],
+            "content": {
+                "type": "choice",
+                "choice": {
+                    "option": {
+                        "template": {
+                            "tag": "refchoice"
+                        },
+                        "style": {
+                            "css": ["tag-reference__choice-option"]
+                        }
+                    },
+                    "style": {
+                        "css": ["tag-reference__choice"]
+                    }
+                },
+                "placeholder": "select tag",
+                "expanded": false,
+                "input": {
+                    "placeholder": "Search..."
+                },
+                "style": {
+                    "css": ["tag-reference"]
+                }
+            }
+        },
+        {
+            "concept": { "name": "string" },
+            "type": "static",
+            "tags": ["text"],
+            "content": {
+                "type": "text",
+                "content": {
+                    "type": "property",
+                    "name": "value"
+                },
+                "style": {
+                    "css": ["ql-text"]
+                }
+            }
+        },
+        {
+            "concept": { "name": "set" },
+            "type": "layout",
+            "tags": ["functions"],
+            "projection": {
+                "type": "flex",
+                "orientation": "column",
+                "disposition": [
+                    {
+                        "type": "layout",
+                        "layout": {
+                            "type": "flex",
+                            "orientation": "row",
+                            "disposition": [
+                                {
+                                    "type": "static",
+                                    "static": {
+                                        "type": "text",
+                                        "content": "Functions",
+                                        "style": {
+                                            "css": ["llm-function-set-header-title"]
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "field",
+                                    "field": {
+                                        "type": "list",
+                                        "readonly": false,
+                                        "disabled": false,
+                                        "list": false,
+                                        "action": {
+                                            "add": {
+                                                "help": "Add a function",
+                                                "content": [
+                                                    {
+                                                        "type": "static",
+                                                        "static": {
+                                                            "type": "text",
+                                                            "content": "+ New question",
+                                                            "style": {
+                                                                "css": [
+                                                                    "ql-question-set-header__button-content"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                ],
+                                                "style": {
+                                                    "css": ["llm-function-set-header__button"]
+                                                }
+                                            }
+                                        },
+                                        "style": {
+                                            "css": ["llm-function-set-header__list"]
+                                        }
+                                    }
+                                }
+                            ],
+                            "style": {
+                                "css": [
+                                    "llm-function-set-header"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "field",
+                        "field": {
+                            "type": "list",
+                            "list": {
+                                "item": {
+                                    "template": { "tag": "", "name": "" },
+                                    "style": {
+                                        "css": ["llm-function-set__list-item"]
+                                    }
+                                },
+                                "style": {
+                                    "css": ["llm-function-set__list"]
+                                }
+                            },
+                            "action": {
+                                "add": false
+                            },
+                            "style": {
+                                "css": [
+                                    "llm-function-set"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "style": {
+                    "css": ["llm-function-set"]
+                }
+            }
+        },
+        {
+            "concept": { "name": "set" },
+            "type": "field",
+            "tags": ["tags"],
+            "content": {
+                "type": "list",
+                "list": {
+                    "item": {
+                        "template": { "tag": "tag" },
+                        "style": {
+                            "css": ["pp-tag-set__list-item"]
+                        }
+                    },
+                    "style": {
+                        "css": ["pp-tag-set__list"]
+                    }
+                },
+                "action": {
+                    "add": false,
+                    "remove": {
+                        "content": [
+                            {
+                                "kind": "static",
+                                "type": "text",
+                                "content": "✖"
+                            }
+                        ],
+                        "style": {
+                            "css": ["pp-tag-set__btn-remove"]
+                        }
+                    }
                 }
             }
         }

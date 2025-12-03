@@ -24,7 +24,7 @@ class GentlemanLLM:
             api_key=hf_token,
         )
         self.ex_retries = 0
-        self.max_retry = 7
+        self.max_retry = 10
         self.max_ex_retry = 5
 
     def ask(

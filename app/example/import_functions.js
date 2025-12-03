@@ -1,4 +1,4 @@
-const FUNCTIONS_DATA = require('../../documents/results/annuaire_parser_func_concepts_2.json');
+import FUNCTIONS_DATA from '../../documents/results/annuaire_parser_func_concepts_2.json';
 
 export const API = {
     fetchFunctions(editor, fileConcept) {
@@ -21,7 +21,7 @@ export const API = {
             let returnConcept = editor.createConcept("return_c");
             returnConcept.getAttribute("name").setValue(entry.return?.[0] || "");
             returnConcept.getAttribute("type").setValue(entry.return?.[1] || "");
-            fn.getAttribute("return").setTarget(returnConcept);
+            fn.getAttribute("return").setValue(returnConcept);
 
             // PARAMETERS
             const paramsSet = fn.getAttribute("parameters").getTarget();
@@ -33,23 +33,24 @@ export const API = {
             });
 
             // SOURCE
-            let src = editor.createConcept("source_c");
-            src.getAttribute("code").setValue(entry.source);
-            src.getAttribute("start_line").setValue(entry.start_line);
-            src.getAttribute("end_line").setValue(entry.end_line);
-            fn.getAttribute("source").setTarget(src);
-
+         
             // TAGS
             let tags = fn.getAttribute("tags").getTarget();
-            (entry.tags || []).forEach(tag => tags.addElement(tag));
+            (entry.tags || []).forEach(tag => {
+                tags.createElement(tag)
+            });
 
             // CALLS
             let calls = fn.getAttribute("calls").getTarget();
-            (entry.calls || []).forEach(c => calls.addElement(c));
+            (entry.calls || []).forEach(c => {
+                calls.createElement(c)
+            });
 
             // CALLED BY
             let calledBy = fn.getAttribute("called_by").getTarget();
-            (entry.called_by || []).forEach(cb => calledBy.addElement(cb));
+            (entry.called_by || []).forEach(cb => {
+                calledBy.createElement(cb)
+            });
 
             // ADD TO FILE
             functionsSet.addElement(fn);
