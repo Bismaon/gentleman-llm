@@ -25,33 +25,7 @@
 #     except Exception as e:
 #         print(f"[ERROR] Cannot write valid types: {e}")
 
-def write_file(filepath: str, content: str) -> str:
-    """
-    Write content to a file inside the given directory.
 
-    Parameters
-    ----------
-        filepath : str
-            Path to the file to create/overwrite.
-        content : str
-            The text content to write.
-
-    Returns
-    -------
-        str
-            Full path of the written file.
-    """
-    try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(content)
-
-        return filepath
-    except FileNotFoundError:
-        print(f"File not found: {filepath}")
-        return ""
-    except Exception as e:
-        print(f"Error writing file {filepath}: {e}")
-        return ""
     
 # def get_json(filename: str) -> dict:
 #     """

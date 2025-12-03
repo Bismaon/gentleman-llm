@@ -1,0 +1,799 @@
+[
+    {
+        "file": "util_analysis.json"
+    },
+    {
+        "file": "util.py"
+    },
+    {
+        "name": "generate_valid_types",
+        "parameters": [
+            [
+                "depth",
+                "int"
+            ]
+        ],
+        "source": "def generate_valid_types(depth: int = 0) -> set[str]:\n    \"\"\"Generate an exhaustive set of type expressions up to a given nesting depth.\n\n    Args:\n        depth (int, optional): The depth of valid types to generate (d=0: list,dict; d=1: list[str], dict[str];...). Defaults to 0.\n\n    Returns:\n        set(str): The set of types to compare to for the LLM's answer.\n    \"\"\"\n    base = PRIMITIVES | CUSTOM\n    valid = set(base)\n\n    def expand(base_types, current_depth):\n        if current_depth > depth:\n            return set()\n\n        new_types = set()\n        for outer in CONTAINERS:\n            for inner in base_types:\n                if outer == \"dict\" or outer == \"tuple\":\n                    for inner2 in base_types:\n                        new_types.add(f\"{outer}[{inner},{inner2}]\")\n                else:\n                    new_types.add(f\"{outer}[{inner}]\")\n\n        if current_depth < depth:\n            new_types |= expand(new_types, current_depth + 1)\n\n        return new_types\n\n    valid |= expand(base, 1)\n    return valid",
+        "start_line": 36,
+        "end_line": 67,
+        "called_by": [],
+        "calls": [
+            "expand"
+        ],
+        "description": "This function generates an exhaustive set of type expressions up to a given nesting depth, used for comparing to the LLM's answer.",
+        "tags": [
+            "type_validation",
+            "generative",
+            "function_definition",
+            "type_system",
+            "recursive"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_files",
+        "parameters": [
+            [
+                "directory",
+                "str"
+            ]
+        ],
+        "source": "def list_files(directory: str) -> list[str]:\n    \"\"\"Lists all files in a given directory.\n\n    Args:\n        directory (str): The name of the directory\n\n    Returns:\n        list[str]: Lists of all file names in a directory.\n    \"\"\"\n\n    try:\n        return [\n            f\n            for f in os.listdir(directory)\n            if os.path.isfile(os.path.join(directory, f))\n        ]\n    except FileNotFoundError:\n        print(f\"Directory not found: {directory}\")\n        return []\n    except Exception as e:\n        print(f\"Error listing files in {directory}: {e}\")\n        return []",
+        "start_line": 73,
+        "end_line": 94,
+        "called_by": [],
+        "calls": [],
+        "description": "Lists all files in a given directory, ignoring directories and hidden files.",
+        "tags": [
+            "File system",
+            "Directory",
+            "File",
+            "Path management"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "read_file",
+        "parameters": [
+            [
+                "filepath",
+                "str"
+            ]
+        ],
+        "source": "def read_file(filepath: str) -> str:\n    \"\"\"Read and return the content of a file given its name and parent directory.\n\n    Args:\n        filepath (str): The name of path of the file\n\n    Returns:\n        str: Content of the file\n    \"\"\"\n\n    try:\n        with open(filepath, \"r\", encoding=\"utf-8\") as f:\n            return f.read()\n    except FileNotFoundError:\n        print(f\"File not found: {filepath}\")\n        return \"\"\n    except Exception as e:\n        print(f\"Error reading file {filepath}: {e}\")\n        return \"\"",
+        "start_line": 97,
+        "end_line": 115,
+        "called_by": [
+            "extract_information"
+        ],
+        "calls": [],
+        "description": "Reads and returns the content of a file given its name and parent directory.",
+        "tags": [
+            "file",
+            "io",
+            "input",
+            "output"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "next_available_filename",
+        "parameters": [
+            [
+                "base_name",
+                "str"
+            ],
+            [
+                "ext",
+                "str"
+            ]
+        ],
+        "source": "def next_available_filename(base_name: str, ext: str = \"txt\") -> str:\n    \"\"\"Given a base_name like 'filename_func_def', returns a file name like 'filename_func_def_1.txt' or increments until a free name is found.\n\n    Args:\n        base_name (str): The name of the file\n        ext (str, optional): The extension of the file. Defaults to \"txt\".\n\n    Returns:\n        str: The name of the file numbered.\n    \"\"\"\n\n    directory = os.path.dirname(base_name) or \".\"\n    filename_root = os.path.basename(base_name)\n\n    pattern = re.compile(rf\"^{re.escape(filename_root)}_(\\d+)\\.{ext}$\")\n\n    existing_versions = []\n\n    for file in os.listdir(directory):\n        match = pattern.match(file)\n        if match:\n            version = int(match.group(1))\n            existing_versions.append(version)\n\n    next_version = max(existing_versions, default=0) + 1\n\n    return os.path.join(directory, f\"{filename_root}_{next_version}.{ext}\")",
+        "start_line": 118,
+        "end_line": 144,
+        "called_by": [
+            "write_functions_to_json"
+        ],
+        "calls": [],
+        "description": "Generates a numbered filename for a given base name in a specified directory or current directory if none is provided.",
+        "tags": [
+            "filename_generation",
+            "path_handling",
+            "file_management",
+            "directory_iteration",
+            "versioning"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_imports",
+        "parameters": [
+            [
+                "node",
+                "ast"
+            ],
+            [
+                "imports",
+                "list"
+            ]
+        ],
+        "source": "def list_imports(node: ast, imports: list[str]):\n    \"\"\"Lists the imports of the file.\n\n    Args:\n        node (ast): The current node explored by AST of the file.\n        imports (list[str]): The list to add the imports to.\n    \"\"\"\n    if isinstance(node, ast.Import):\n        for alias in node.names:\n            sanitized_name = sanitize(alias.name)\n            imports.append(sanitized_name)\n\n    elif isinstance(node, ast.ImportFrom):\n        for alias in node.names:\n            sanitized_name = sanitize(alias.name)\n            imports.append(sanitized_name)",
+        "start_line": 147,
+        "end_line": 162,
+        "called_by": [
+            "extract_information"
+        ],
+        "calls": [
+            "sanitize"
+        ],
+        "description": "Lists the imports of the file by traversing the Abstract Syntax Tree (AST).",
+        "tags": [
+            "list",
+            "import",
+            "function",
+            "type",
+            "validation"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_functions",
+        "parameters": [
+            [
+                "content",
+                "str"
+            ],
+            [
+                "functions",
+                "list"
+            ],
+            [
+                "node",
+                "ast"
+            ]
+        ],
+        "source": "def list_functions(content: str, functions: list[dict], node: ast):\n    \"\"\"Appends the function in the file as a dict to the given functions' list.\n\n    Args:\n        code (str): The content of the file.\n        functions (list[dict]): The lists to which all the functions dict will be added.\n        node (ast): The current node being explored.\n    \"\"\"\n    if isinstance(node, ast.FunctionDef):\n        func_source = ast.get_source_segment(content, node)\n        param_names = [param.arg for param in node.args.args]\n\n        functions.append(\n            {\n                \"name\": node.name,\n                \"parameters\": [(param, \"\") for param in param_names],\n                \"source\": func_source,\n                \"start_line\": node.lineno,\n                \"end_line\": node.end_lineno,\n                \"called_by\": [],\n                \"calls\": [],\n                \"description\": \"\",\n                \"tags\": [],\n                \"category\": \"\",\n                \"return\": (\"\", \"\"),\n            }\n        )",
+        "start_line": 165,
+        "end_line": 191,
+        "called_by": [
+            "extract_information"
+        ],
+        "calls": [],
+        "description": "Lists functions in the given file by appending their definitions to the provided list of functions.",
+        "tags": [
+            "Function Parser",
+            "Function Processor",
+            "AST Walker",
+            "Function Analyzer",
+            "Code Extractor"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_calls",
+        "parameters": [
+            [
+                "tree",
+                "ast"
+            ],
+            [
+                "functions",
+                "list"
+            ]
+        ],
+        "source": "def list_calls(tree: ast.Module, functions: list[dict]) -> list[dict]:\n    \"\"\"Gets the calls made by each function in the file.\n\n    Args:\n        tree (ast.Module): The AST tree of the file.\n        functions (list[dict]): The list of function dictionaries.\n\n    Returns:\n        list[dict]: The updated list of function dictionaries with call information.\n    \"\"\"\n\n    local_function_names = {f[\"name\"] for f in functions}\n    for node in ast.walk(tree):\n        if isinstance(node, ast.FunctionDef):\n            func_name = node.name\n            index = index_of(functions, \"name\", func_name)\n            calls = set()\n\n            for inner in ast.walk(node):\n                if isinstance(inner, ast.Call):\n                    if isinstance(inner.func, ast.Name):\n                        name = inner.func.id\n                        if name in local_function_names:\n                            calls.add(name)\n\n                    elif isinstance(inner.func, ast.Attribute):\n                        name = inner.func.attr\n                        if name in local_function_names:\n                            calls.add(name)\n\n            functions[index][\"calls\"] = list(calls)\n\n    return functions",
+        "start_line": 194,
+        "end_line": 226,
+        "called_by": [
+            "extract_information"
+        ],
+        "calls": [
+            "index_of"
+        ],
+        "description": "Lists the calls made by each function in the file.",
+        "tags": [
+            "AST",
+            "tree",
+            "traversal",
+            "function_calls",
+            "function_call_analysis"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_called_by",
+        "parameters": [
+            [
+                "functions",
+                "list"
+            ]
+        ],
+        "source": "def list_called_by(functions: list[dict]) -> list[dict]:\n    \"\"\"Lists the functions that call each function in the file.\n\n    Args:\n        functions (list[dict]): The list of function dictionaries.\n\n    Returns:\n        list[dict]: The updated list of function dictionaries with caller information.\n    \"\"\"\n    for f in functions:\n        caller = f[\"name\"]\n\n        for callee in f[\"calls\"]:\n            idx = index_of(functions, \"name\", callee)\n            if idx != -1:\n                functions[idx][\"called_by\"].append(caller)\n\n    for f in functions:\n        f[\"calls\"] = sorted(set(f[\"calls\"]))\n        f[\"called_by\"] = sorted(set(f[\"called_by\"]))\n\n    return functions",
+        "start_line": 229,
+        "end_line": 250,
+        "called_by": [
+            "extract_information"
+        ],
+        "calls": [
+            "index_of"
+        ],
+        "description": "Lists the functions that call each function in the file.",
+        "tags": [
+            "Function Analysis",
+            "AST Node Walker",
+            "Function Call Tracker",
+            "Code Analysis",
+            "Dynamic Program Analysis"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_returns",
+        "parameters": [
+            [
+                "node",
+                "ast"
+            ],
+            [
+                "current_function",
+                "dict"
+            ],
+            [
+                "functions",
+                "list"
+            ]
+        ],
+        "source": "def list_returns(node: ast, current_function: dict, functions: list[dict]):\n    \"\"\"Lists the return statements and their inferred types for the current function.\n\n    Args:\n        node (ast): The current AST node being explored.\n        current_function (dict): The dictionary representing the current function.\n        functions (list[dict]): The list of function dictionaries.\n    \"\"\"\n    if current_function is None:\n        return\n\n    index = index_of(functions, \"name\", current_function)\n\n    if isinstance(node, ast.Return):\n        value = node.value\n\n        try:\n            return_expr = ast.unparse(value)\n            print(return_expr)\n        except Exception:\n            return_expr = \"Unknown\"\n\n        inferred_type = infer_python_type_from_ast(value)\n\n        functions[index][\"return\"] = (return_expr, inferred_type)",
+        "start_line": 253,
+        "end_line": 277,
+        "called_by": [
+            "extract_information"
+        ],
+        "calls": [
+            "index_of",
+            "infer_python_type_from_ast"
+        ],
+        "description": "Lists the return statements and their inferred types for the current function.",
+        "tags": [
+            "function",
+            "analysis",
+            "type",
+            "inference",
+            "AST"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "extract_information",
+        "parameters": [
+            [
+                "filepath",
+                "str"
+            ]
+        ],
+        "source": "def extract_information(filepath: str) -> tuple[list[dict], set[str]]:\n    \"\"\"Extracts information about functions and imports from a Python file.\n\n    Args:\n        filepath (str): The path to the Python file.\n\n    Returns:\n        tuple[list[dict], set[str]]: A tuple containing a list of function dictionaries and a set of import statements.\n    \"\"\"\n    content = read_file(filepath)\n    tree = ast.parse(content, filepath)\n\n    functions = []\n    imports = []\n    current_function = None\n\n    for node in ast.walk(tree):\n        if isinstance(node, ast.FunctionDef):\n            current_function = node.name\n        list_functions(content, functions, node)\n        list_imports(node, imports)\n        list_returns(node, current_function, functions)\n\n    functions = list_calls(tree, functions)\n    functions = list_called_by(functions)\n\n    return functions, set(imports), content",
+        "start_line": 280,
+        "end_line": 306,
+        "called_by": [],
+        "calls": [
+            "list_called_by",
+            "list_calls",
+            "list_functions",
+            "list_imports",
+            "list_returns",
+            "read_file"
+        ],
+        "description": "Extracts information about functions and imports from a Python file.",
+        "tags": [
+            "function_extraction",
+            "ast_parser",
+            "information_extraction",
+            "python_file_processing",
+            "code_analysis"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "validate_types",
+        "parameters": [
+            [
+                "llm_answer",
+                "str"
+            ],
+            [
+                "imports",
+                "set"
+            ]
+        ],
+        "source": "def validate_types(llm_answer: str, imports: set[str]) -> list[str] | Exception:\n    \"\"\"Validates a list of types provided by the LLM answer.\n\n    Args:\n        llm_answer (str): The LLM answer containing the list of types.\n        imports (set[str]): The set of import statements.\n\n    Raises:\n        ValueError: If the LLM answer does not conform to the expected list syntax.\n\n    Returns:\n        list[str] | Exception: A list of validated types or an exception.\n    \"\"\"\n    cleaned = llm_answer.strip()\n    cleaned = cleaned.replace(\"`\", \"\").strip()\n    cleaned = cleaned.replace('\"', \"\").strip()\n    cleaned = cleaned.replace(\"'\", \"\").strip()\n\n    if not (cleaned.startswith(\"[\") and cleaned.endswith(\"]\")):\n        raise ValueError(f\"Expected list syntax '[...]', got: {cleaned}\")\n\n    # Drop outer brackets\n    inner = cleaned[1:-1].strip()\n\n    items = [item.strip() for item in inner.split(\",\")]\n\n    sanitized = []\n    for item in items:\n        t = validate_type(item, imports)\n        sanitized.append(t)\n    return sanitized",
+        "start_line": 309,
+        "end_line": 339,
+        "called_by": [],
+        "calls": [
+            "validate_type"
+        ],
+        "description": "Validates a list of types provided by the LLM answer by checking if they conform to the expected list syntax and sanitizing them.",
+        "tags": [
+            "Type Validation",
+            "LLM Answer Processing",
+            "Parsing",
+            "Data Sanitization",
+            "Error Handling"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "validate_type",
+        "parameters": [
+            [
+                "llm_answer",
+                "str"
+            ],
+            [
+                "imports",
+                "set"
+            ]
+        ],
+        "source": "def validate_type(llm_answer: str, imports: set[str]) -> str | Exception:\n    \"\"\"Validates a single type provided by the LLM answer.\n\n    Args:\n        llm_answer (str): The LLM answer containing the type.\n        imports (set[str]): The set of import statements.\n\n    Raises:\n        ValueError: If the LLM answer is not a string.\n        ValueError: If the type entry is invalid.\n\n    Returns:\n        str | Exception: The validated and sanitized type or an exception.\n    \"\"\"\n    if not isinstance(llm_answer, str):\n        raise ValueError(f\"Expected a type, got {type(llm_answer).__name__}\")\n\n    sanitized = \"\"\n    try:\n        sanitized = sanitize_and_validate(llm_answer, imports)\n    except Exception as e:\n        raise ValueError(f\"Invalid type entry '{llm_answer}': {e}\") from e\n\n    return sanitized",
+        "start_line": 342,
+        "end_line": 365,
+        "called_by": [
+            "validate_types"
+        ],
+        "calls": [
+            "sanitize_and_validate"
+        ],
+        "description": "Validates a single type provided by the LLM answer.",
+        "tags": [
+            "type validation",
+            "LLM answer",
+            "set validation",
+            "python type",
+            "import validation"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "sanitize_and_validate",
+        "parameters": [
+            [
+                "t",
+                "str"
+            ],
+            [
+                "imports",
+                "set"
+            ]
+        ],
+        "source": "def sanitize_and_validate(t: str, imports: set[str]) -> str:\n    \"\"\"Sanitizes and validates a type name.\n\n    Args:\n        t (str): The type name to sanitize and validate.\n        imports (set[str]): The set of import statements.\n\n    Raises:\n        ValueError: If the type name is unknown or unsupported.\n\n    Returns:\n        str: The sanitized and validated type name.\n    \"\"\"\n    sanitized_t = sanitize(t)\n\n    if not is_valid_type(sanitized_t, imports):\n        raise ValueError(f\"Unknown or unsupported type name: '{sanitized_t}'\")\n\n    return sanitized_t",
+        "start_line": 368,
+        "end_line": 386,
+        "called_by": [
+            "validate_type"
+        ],
+        "calls": [
+            "is_valid_type",
+            "sanitize"
+        ],
+        "description": "Sanitizes and validates a type name by removing extraneous characters and checking its format against known base types and imported types.",
+        "tags": [
+            "type validation",
+            "type sanitization",
+            "import validation",
+            "function analysis",
+            "python code analysis"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "sanitize",
+        "parameters": [
+            [
+                "t",
+                "str"
+            ]
+        ],
+        "source": "def sanitize(t: str) -> str | ValueError:\n    \"\"\"Sanitizes a type name by removing extraneous characters and validating its format.\n\n    Args:\n        t (str): The type name to sanitize.\n\n    Raises:\n        TypeError: If the type name is not a string.\n        ValueError: If the type name contains invalid characters.\n\n    Returns:\n        str|ValueError: The sanitized type name or a ValueError if invalid.\n    \"\"\"\n    if not isinstance(t, str):\n        raise TypeError(f\"Type name must be a string.\\n Type: {t}\")\n\n    # Remove  \"x:int\" or \"x - str\"\n    if \":\" in t:\n        t = t.split(\":\")[-1].strip()\n    elif \"-\" in t:\n        parts = t.split(\"-\")\n        if len(parts[-1].strip()) > 0:\n            t = parts[-1].strip()\n    t = re.sub(r\"\\s+\", \"\", t)\n    match = re.match(r\"^(\\w+)\", t.strip().lower())  # get root type\n\n    if match:\n        t = match.group(1)\n\n    if any(ch in t for ch in [\"(\", \")\", \"[[\", \"{\", \"}\"]):\n        raise ValueError(f\"Invalid characters in type name: '{t}'\")\n    return t",
+        "start_line": 389,
+        "end_line": 420,
+        "called_by": [
+            "list_imports",
+            "sanitize_and_validate"
+        ],
+        "calls": [],
+        "description": "Sanitizes a type name by removing extraneous characters and validating its format.",
+        "tags": [
+            "sanitize",
+            "type",
+            "validation",
+            "character",
+            "removal"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "validate_tags",
+        "parameters": [
+            [
+                "llm_answer",
+                "str"
+            ]
+        ],
+        "source": "def validate_tags(llm_answer: str) -> list[str] | Exception:\n    \"\"\"Validates a list of tags provided by the LLM answer.\n\n    Args:\n        llm_answer (str): The LLM answer containing the list of tags.\n\n    Raises:\n        ValueError: If the LLM answer is not a valid Python literal.\n        ValueError: If the LLM answer is not a list.\n        ValueError: If any tag in the list is not a string.\n\n    Returns:\n        list[str] | Exception: A list of validated tags or an exception.\n    \"\"\"\n    try:\n        value = ast.literal_eval(llm_answer.strip())\n    except Exception as e:\n        raise ValueError(f\"Invalid Python literal for tags list: {e}\") from e\n    if not isinstance(value, list):\n        raise ValueError(\"Expected a list of tags string.\")\n    if not all(isinstance(tag, str) for tag in value):\n        raise ValueError(\"All tags must be strings.\")\n\n    return value",
+        "start_line": 423,
+        "end_line": 446,
+        "called_by": [],
+        "calls": [],
+        "description": "Validates a list of tags provided by the LLM answer.",
+        "tags": [
+            "Function",
+            "Validation",
+            "Tags",
+            "List",
+            "Validation"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "valid_category",
+        "parameters": [
+            [
+                "answer_LLM",
+                "str"
+            ],
+            [
+                "function_types",
+                "list"
+            ]
+        ],
+        "source": "def valid_category(answer_LLM: str, function_types: list[str]) -> bool:\n    \"\"\"Validates a single category provided by the LLM answer.\n\n    Args:\n        answer_LLM (str): The LLM answer containing the category.\n        function_types (list[str]): The list of valid function types.\n\n    Raises:\n        ValueError: If the category is not in the list of valid function types.\n\n    Returns:\n        bool: True if the category is valid, otherwise raises a ValueError.\n    \"\"\"\n    ans = answer_LLM.strip()\n    ans = ans.replace('\"', \"\").replace(\"'\", \"\")\n    if not in_list(ans, function_types):\n        raise ValueError(f\"Invalid category: {ans}\")\n    else:\n        return True",
+        "start_line": 449,
+        "end_line": 467,
+        "called_by": [],
+        "calls": [
+            "in_list"
+        ],
+        "description": "Validates a single category provided by the LLM answer.",
+        "tags": [
+            "category_validation",
+            "single_category_validation",
+            "function_category_validation",
+            "type_category_verification",
+            "category_validation_function"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "infer_python_type_from_ast",
+        "parameters": [
+            [
+                "node",
+                "ast"
+            ]
+        ],
+        "source": "def infer_python_type_from_ast(node: ast) -> str:\n    \"\"\"Infers the Python type from an AST node.\n\n    Args:\n        node (ast): The AST node to infer the type from.\n\n    Returns:\n        str: The inferred Python type as a string.\n    \"\"\"\n    if isinstance(node, ast.Tuple):\n        return \"tuple\"\n\n    if isinstance(node, ast.List):\n        return \"list\"\n\n    if isinstance(node, ast.Dict):\n        return \"dict\"\n\n    if isinstance(node, ast.Set):\n        return \"set\"\n\n    if isinstance(node, ast.Constant):\n        # True, 5, \"hi\", None\n        if isinstance(node.value, bool):\n            return \"bool\"\n        if isinstance(node.value, int):\n            return \"int\"\n        if isinstance(node.value, float):\n            return \"float\"\n        if isinstance(node.value, str):\n            return \"str\"\n        if node.value is None:\n            return \"None\"\n        return \"any\"\n\n    if isinstance(node, ast.Name):\n        # something like \"return x\"\n        return \"any\"\n\n    if isinstance(node, ast.Call):\n        # return something() → unknown\n        return \"any\"\n\n    return \"any\"",
+        "start_line": 470,
+        "end_line": 513,
+        "called_by": [
+            "list_returns"
+        ],
+        "calls": [],
+        "description": "Infer the Python type from a given Abstract Syntax Tree (AST) node.",
+        "tags": [
+            "Type Inference",
+            "Python AST",
+            "Function Analysis",
+            "Code Analysis",
+            "Static Analysis"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "is_valid_type",
+        "parameters": [
+            [
+                "expr",
+                "str"
+            ],
+            [
+                "imports",
+                "set"
+            ]
+        ],
+        "source": "def is_valid_type(expr: str, imports: set[str]) -> bool:\n    \"\"\"Checks if a given type expression is valid based on known base types and imported types.\n\n    Args:\n        expr (str): The type expression to validate.\n        imports (set[str]): A set of imported type names to consider valid.\n\n    Returns:\n        bool: True if the type expression is valid, False otherwise.\n    \"\"\"\n    return expr in (VALID_BASE_TYPES | imports)",
+        "start_line": 516,
+        "end_line": 526,
+        "called_by": [
+            "sanitize_and_validate"
+        ],
+        "calls": [],
+        "description": "This function checks if a given type expression is valid based on known base types and imported types.",
+        "tags": [
+            "Type validation",
+            "function",
+            "checks",
+            "type expression",
+            "validity"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "in_range",
+        "parameters": [
+            [
+                "value",
+                "int"
+            ],
+            [
+                "min_val",
+                "int"
+            ],
+            [
+                "max_val",
+                "int"
+            ]
+        ],
+        "source": "def in_range(value: int, min_val: int, max_val: int) -> bool:\n    \"\"\"Checks if a value is within a specified range.\n\n    Args:\n        value (int): The value to check.\n        min_val (int): The minimum acceptable value.\n        max_val (int): The maximum acceptable value.\n\n    Returns:\n        bool: True if the value is within the specified range, False otherwise.\n    \"\"\"\n    return min_val <= value <= max_val",
+        "start_line": 529,
+        "end_line": 540,
+        "called_by": [],
+        "calls": [],
+        "description": "This function checks if a given value is within a specified range. It returns True if the value is within the range, and False otherwise.",
+        "tags": [
+            "range_check",
+            "comparison",
+            "math",
+            "validation",
+            "boolean"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "index_of",
+        "parameters": [
+            [
+                "dicts",
+                "list"
+            ],
+            [
+                "key",
+                "str"
+            ],
+            [
+                "value",
+                "any"
+            ]
+        ],
+        "source": "def index_of(dicts: list[dict], key: str, value: any) -> int:\n    \"\"\"Finds the index of the first dictionary in a list where the specified key has the given value.\n\n    Args:\n        dicts (list[dict]): The list of dictionaries to search.\n        key (str): The key to look for in each dictionary.\n        value (any): The value to match against the specified key.\n\n    Returns:\n        int: The index of the first dictionary where the key matches the value, or -1 if not found.\n    \"\"\"\n    for i, d in enumerate(dicts):\n        if d.get(key) == value:\n            return i\n    return -1",
+        "start_line": 543,
+        "end_line": 557,
+        "called_by": [
+            "list_called_by",
+            "list_calls",
+            "list_returns"
+        ],
+        "calls": [],
+        "description": "Finds the index of the first dictionary in a list where the specified key has the given value.",
+        "tags": [
+            "List",
+            "Dictionary",
+            "Indexing",
+            "Function",
+            "Search"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "in_list",
+        "parameters": [
+            [
+                "value",
+                "str"
+            ],
+            [
+                "list_str",
+                "list"
+            ]
+        ],
+        "source": "def in_list(value: str, list_str: list[str]) -> bool:\n    \"\"\"Checks if a string value is present in a list of strings, case-insensitively.\n\n    Args:\n        value (str): The string value to check.\n        list_str (list[str]): The list of strings to search within.\n\n    Returns:\n        bool: True if the string value is present in the list, False otherwise.\n    \"\"\"\n    low_val = value.lower()\n    for items in list_str:\n        if items.lower() == low_val:\n            return True\n    return False",
+        "start_line": 560,
+        "end_line": 574,
+        "called_by": [
+            "valid_category"
+        ],
+        "calls": [],
+        "description": "Checks if a string value is present in a list of strings, case-insensitively.",
+        "tags": [
+            "case_insensitive_search",
+            "string_comparison",
+            "list_search",
+            "function",
+            "algorithm"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "write_functions_to_json",
+        "parameters": [
+            [
+                "functions",
+                "list"
+            ],
+            [
+                "output",
+                "str"
+            ]
+        ],
+        "source": "def write_functions_to_json(functions: list[dict], output: str) -> str:\n    \"\"\"Writes a list of function dictionaries to a JSON file.\n\n    Args:\n        functions (list[dict]): The list of function dictionaries to write.\n        output (str): The output file path or base name for the JSON file.\n\n    Returns:\n        str: The path to the written JSON file, or an empty string if writing failed.\n    \"\"\"\n    try:\n        base_name = os.path.basename(output)\n        base_name_no_ext = os.path.splitext(base_name)[0]\n        base_output_name = f\"results/{base_name_no_ext}_func_concepts\"\n        output_file = next_available_filename(base_output_name, ext=\"json\")\n        func_with_file = [{\"file\": base_name}] + functions\n        with open(output_file, \"w\", encoding=\"utf-8\") as out:\n            json.dump(func_with_file, out, indent=4, ensure_ascii=False)\n\n        print(f\"[OK] JSON written: {output_file}\")\n        return output_file\n\n    except Exception as e:\n        print(f\"[ERROR] Failed to write JSON: {e}\")\n        return \"\"",
+        "start_line": 577,
+        "end_line": 601,
+        "called_by": [],
+        "calls": [
+            "next_available_filename"
+        ],
+        "description": "Writes a list of function dictionaries to a JSON file.",
+        "tags": [
+            "Function",
+            "Persistence",
+            "Filesystem",
+            "IO",
+            "JSON"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "write_file",
+        "parameters": [
+            [
+                "filepath",
+                "str"
+            ],
+            [
+                "content",
+                "str"
+            ]
+        ],
+        "source": "def write_file(filepath: str, content: str) -> str:\n    \"\"\"\n    Write content to a file inside the given directory.\n\n    Parameters\n    ----------\n        filepath : str\n            Path to the file to create/overwrite.\n        content : str\n            The text content to write.\n\n    Returns\n    -------\n        str\n            Full path of the written file.\n    \"\"\"\n    try:\n        with open(filepath, \"w\", encoding=\"utf-8\") as f:\n            f.write(content)\n\n        return filepath\n    except FileNotFoundError:\n        print(f\"File not found: {filepath}\")\n        return \"\"\n    except Exception as e:\n        print(f\"Error writing file {filepath}: {e}\")\n        return \"\"",
+        "start_line": 603,
+        "end_line": 629,
+        "called_by": [],
+        "calls": [],
+        "description": "Writes a given string content to a file located at the given filepath.",
+        "tags": [
+            "File",
+            "Writer",
+            "Utility",
+            "Function",
+            "Filesystem"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "expand",
+        "parameters": [
+            [
+                "base_types",
+                "set"
+            ],
+            [
+                "current_depth",
+                "str"
+            ]
+        ],
+        "source": "def expand(base_types, current_depth):\n        if current_depth > depth:\n            return set()\n\n        new_types = set()\n        for outer in CONTAINERS:\n            for inner in base_types:\n                if outer == \"dict\" or outer == \"tuple\":\n                    for inner2 in base_types:\n                        new_types.add(f\"{outer}[{inner},{inner2}]\")\n                else:\n                    new_types.add(f\"{outer}[{inner}]\")\n\n        if current_depth < depth:\n            new_types |= expand(new_types, current_depth + 1)\n\n        return new_types",
+        "start_line": 48,
+        "end_line": 64,
+        "called_by": [
+            "expand",
+            "generate_valid_types"
+        ],
+        "calls": [
+            "expand"
+        ],
+        "description": "Generates an exhaustive set of type expressions up to a given nesting depth.",
+        "tags": [
+            "type generation",
+            "recursion",
+            "set operations",
+            "type expansion",
+            "nested loops"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "''",
+            "str"
+        ]
+    }
+]

@@ -104,7 +104,7 @@ class GentlemanLLM:
 
             except Exception as e:
                 name = "parameter types"
-                last_error, tries = self.exception_handler(name, tries, e)
+                last_error, tries = self.exception_handler(function_info["name"], name, tries, e)
 
     def define_tags(
         self, function_info: dict, content: str, max_tags: int = 5
@@ -136,7 +136,7 @@ class GentlemanLLM:
                 return tags
             except Exception as e:
                 name = "tags"
-                last_error, tries = self.exception_handler(name, tries, e)
+                last_error, tries = self.exception_handler(function_info["name"], name, tries, e)
 
     def define_description(
         self, function_info: dict, content: str, min_len=50, max_len=200
@@ -180,7 +180,7 @@ class GentlemanLLM:
 
             except Exception as e:
                 name = "description"
-                last_error, tries = self.exception_handler(name, tries, e)
+                last_error, tries = self.exception_handler(function_info["name"], name, tries, e)
 
     def define_return_type(
         self, function_info: dict, imports: set[str]
@@ -222,7 +222,7 @@ class GentlemanLLM:
                 return return_type
             except Exception as e:
                 name = "return type"
-                last_error, tries = self.exception_handler(name, tries, e)
+                last_error, tries = self.exception_handler(function_info["name"], name, tries, e)
 
     def define_category(self, function_info: dict) -> str | Exception:
         """Define the category of the function.
@@ -278,7 +278,7 @@ class GentlemanLLM:
 
             except Exception as e:
                 name = "category"
-                last_error, tries = self.exception_handler(name, tries, e)
+                last_error, tries = self.exception_handler(function_info["name"], name, tries, e)
 
     def analyze_file(self, filepath: str) -> list[dict] | RuntimeError:
         """Defines the all of the function's in the file.
@@ -315,7 +315,7 @@ class GentlemanLLM:
         return json_output
 
     def exception_handler(
-        self, name: str, tries: int, e: Exception
+        self, funcname:str, name: str, tries: int, e: Exception
     ) -> tuple[str, int] | RuntimeError:
         """Handles the different exception returned by the LLM.
 
@@ -335,7 +335,7 @@ class GentlemanLLM:
             self.exceed_credits_handle(e)
         else:
             last_error = str(e)
-            print(f"Attempt {tries} failed: {e}")
+            print(f"Attempt {tries} failed for function {funcname}: {e}")
             tries += 1
             if tries >= self.max_retry:
                 raise RuntimeError(f"Failed to define {name} after {tries} tries: {e}")
@@ -358,8 +358,7 @@ class GentlemanLLM:
         if self.ex_tries >= self.max_ex_retry:
             raise RuntimeError("Exceeded maximum retries for exceeded credits.") from e
         wait = 2**self.ex_tries
-        print(
-            f"Exceeded monthly included credits (false), retrying in {wait} seconds..."
-        )
+        print(f"Exceeded monthly included credits (false), retrying in {wait} seconds...")
+        
         sleep(wait)
         return self.ex_tries

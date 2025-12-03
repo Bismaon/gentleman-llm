@@ -1,0 +1,100 @@
+[
+    {
+        "file": "temp_analysis.json"
+    },
+    {
+        "file": "temp.py"
+    },
+    {
+        "name": "generate_valid_types",
+        "parameters": [
+            [
+                "depth",
+                "int"
+            ]
+        ],
+        "source": "def generate_valid_types(depth: int = 0) -> set[str]:\n    \"\"\"Generate an exhaustive set of type expressions up to a given nesting depth.\n\n    Args:\n        depth (int, optional): The depth of valid types to generate (d=0: list,dict; d=1: list[str], dict[str];...). Defaults to 0.\n\n    Returns:\n        set(str): The set of types to compare to for the LLM's answer.\n    \"\"\"\n    base = PRIMITIVES | CUSTOM\n    valid = set(base)\n\n    def expand(base_types, current_depth):\n        if current_depth > depth:\n            return set()\n\n        new_types = set()\n        for outer in CONTAINERS:\n            for inner in base_types:\n                if outer == \"dict\" or outer == \"tuple\":\n                    for inner2 in base_types:\n                        new_types.add(f\"{outer}[{inner},{inner2}]\")\n                else:\n                    new_types.add(f\"{outer}[{inner}]\")\n\n        if current_depth < depth:\n            new_types |= expand(new_types, current_depth + 1)\n\n        return new_types\n\n    valid |= expand(base, 1)\n    return valid",
+        "start_line": 31,
+        "end_line": 62,
+        "called_by": [],
+        "calls": [
+            "expand"
+        ],
+        "description": "Generates an exhaustive set of type expressions for a given nesting depth.",
+        "tags": [
+            "Type Generation",
+            "Type Hierarchy",
+            "Recursive Expansion",
+            "Type Expression Generation",
+            "Nested Type Generation"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "list_files",
+        "parameters": [
+            [
+                "directory",
+                "str"
+            ]
+        ],
+        "source": "def list_files(directory: str) -> list[str]:\n    \"\"\"Lists all files in a given directory.\n\n    Args:\n        directory (str): The name of the directory\n\n    Returns:\n        list[str]: Lists of all file names in a directory.\n    \"\"\"\n\n    try:\n        return [\n            f\n            for f in os.listdir(directory)\n            if os.path.isfile(os.path.join(directory, f))\n        ]\n    except FileNotFoundError:\n        print(f\"Directory not found: {directory}\")\n        return []\n    except Exception as e:\n        print(f\"Error listing files in {directory}: {e}\")\n        return []",
+        "start_line": 65,
+        "end_line": 86,
+        "called_by": [],
+        "calls": [],
+        "description": "Lists all files in a given directory by recursively iterating over its contents and returning a list of file names.",
+        "tags": [
+            "File",
+            "Directory",
+            "Listing",
+            "Path",
+            "Filesystem"
+        ],
+        "category": "ExternalInteraction",
+        "return": [
+            "",
+            "None"
+        ]
+    },
+    {
+        "name": "expand",
+        "parameters": [
+            [
+                "base_types",
+                "list"
+            ],
+            [
+                "current_depth",
+                "set"
+            ]
+        ],
+        "source": "def expand(base_types, current_depth):\n        if current_depth > depth:\n            return set()\n\n        new_types = set()\n        for outer in CONTAINERS:\n            for inner in base_types:\n                if outer == \"dict\" or outer == \"tuple\":\n                    for inner2 in base_types:\n                        new_types.add(f\"{outer}[{inner},{inner2}]\")\n                else:\n                    new_types.add(f\"{outer}[{inner}]\")\n\n        if current_depth < depth:\n            new_types |= expand(new_types, current_depth + 1)\n\n        return new_types",
+        "start_line": 43,
+        "end_line": 59,
+        "called_by": [
+            "expand",
+            "generate_valid_types"
+        ],
+        "calls": [
+            "expand"
+        ],
+        "description": "This function recursively generates a set of type expressions by nesting containers (\"list\", \"dict\", \"tuple\", \"set\") with primitive types (\"int\", \"float\", \"bool\", etc.).",
+        "tags": [
+            "Type Expansion",
+            "Recursion",
+            "Set Generation",
+            "Dynamic Typing",
+            "Container Nesting"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "[]",
+            "list"
+        ]
+    }
+]

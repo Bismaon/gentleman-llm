@@ -1,4 +1,5 @@
 import ast
+import copy
 import os
 import re
 import json
@@ -162,33 +163,32 @@ def list_imports(node: ast, imports: list[str]):
             imports.append(sanitized_name)
 
 
-def list_functions(content: str, functions: list[dict], node: ast):
+def list_functions(node:ast, content: str, functions: list[dict]):
     """Appends the function in the file as a dict to the given functions' list.
 
     Args:
-        code (str): The content of the file.
-        functions (list[dict]): The lists to which all the functions dict will be added.
         node (ast): The current node being explored.
+        content (str): The content of the file.
+        functions (list[dict]): The lists to which all the functions dict will be added.
     """
-    if isinstance(node, ast.FunctionDef):
-        func_source = ast.get_source_segment(content, node)
-        param_names = [param.arg for param in node.args.args]
+    func_source = ast.get_source_segment(content, node)
+    param_names = [param.arg for param in node.args.args]
 
-        functions.append(
-            {
-                "name": node.name,
-                "parameters": [(param, "") for param in param_names],
-                "source": func_source,
-                "start_line": node.lineno,
-                "end_line": node.end_lineno,
-                "called_by": [],
-                "calls": [],
-                "description": "",
-                "tags": [],
-                "category": "",
-                "return": ("", ""),
-            }
-        )
+    functions.append(
+        {
+            "name": node.name,
+            "parameters": [(param, "") for param in param_names],
+            "source": func_source,
+            "start_line": node.lineno,
+            "end_line": node.end_lineno,
+            "called_by": [],
+            "calls": [],
+            "description": "",
+            "tags": [],
+            "category": "",
+            "return": ("", ""),
+        }
+    )
 
 
 def list_calls(tree: ast.Module, functions: list[dict]) -> list[dict]:
@@ -250,30 +250,27 @@ def list_called_by(functions: list[dict]) -> list[dict]:
     return functions
 
 
-def list_returns(node: ast, current_function: dict, functions: list[dict]):
+def list_returns(node: ast, current_function: str, functions: list[dict]):
     """Lists the return statements and their inferred types for the current function.
 
     Args:
         node (ast): The current AST node being explored.
-        current_function (dict): The dictionary representing the current function.
+        current_function (str): The name of the current function.
         functions (list[dict]): The list of function dictionaries.
     """
-    if current_function is None:
-        return
 
     index = index_of(functions, "name", current_function)
+    
+    value = node.value
 
-    if isinstance(node, ast.Return):
-        value = node.value
+    try:
+        return_expr = ast.unparse(value)
+    except Exception:
+        return_expr = "Unknown"
 
-        try:
-            return_expr = ast.unparse(value)
-        except Exception:
-            return_expr = "Unknown"
+    inferred_type = infer_python_type_from_ast(value)
 
-        inferred_type = infer_python_type_from_ast(value)
-
-        functions[index]["return"] = (return_expr, inferred_type)
+    functions[index]["return"] = (return_expr, inferred_type)
 
 
 def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
@@ -290,15 +287,22 @@ def extract_information(filepath: str) -> tuple[list[dict], set[str]]:
 
     functions = []
     imports = []
-    current_function = None
+    func_stack=[]
 
     for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            list_imports(node, imports)
+        
         if isinstance(node, ast.FunctionDef):
-            current_function = node.name
-        list_functions(content, functions, node)
-        list_imports(node, imports)
-        list_returns(node, current_function, functions)
+            list_functions(node, content, functions)
+            func_stack.insert(0,(node.name, copy.copy(node)))
 
+    for func_name, func_node in reversed(func_stack):
+        for subnode in ast.walk(func_node):
+            if isinstance(subnode, ast.Return) :
+                list_returns(subnode, func_name, functions) ## assign the first return found to the function (can lead to inadequate return value)
+                break
+    
     functions = list_calls(tree, functions)
     functions = list_called_by(functions)
 
@@ -573,7 +577,7 @@ def in_list(value: str, list_str: list[str]) -> bool:
     return False
 
 
-def write_functions_to_json(functions: list[dict], output: str) -> str:
+def write_functions_to_json(func_with_file: list[dict], output: str) -> str:
     """Writes a list of function dictionaries to a JSON file.
 
     Args:
@@ -588,7 +592,6 @@ def write_functions_to_json(functions: list[dict], output: str) -> str:
         base_name_no_ext = os.path.splitext(base_name)[0]
         base_output_name = f"results/{base_name_no_ext}_func_concepts"
         output_file = next_available_filename(base_output_name, ext="json")
-        func_with_file = [{"file": base_name}] + functions
         with open(output_file, "w", encoding="utf-8") as out:
             json.dump(func_with_file, out, indent=4, ensure_ascii=False)
 
@@ -597,4 +600,26 @@ def write_functions_to_json(functions: list[dict], output: str) -> str:
 
     except Exception as e:
         print(f"[ERROR] Failed to write JSON: {e}")
+        return ""
+    
+def write_file(filepath: str, content: str) -> str:
+    """Writes content to a file at the specified filepath.
+
+    Args:
+        filepath (str): The path to the file where content will be written.
+        content (str): The content to write to the file.
+    Returns:
+        str: The path to the written file, or an empty string if writing failed.
+    """
+    try:
+        directory = os.path.dirname(filepath)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+
+        return filepath
+    
+    except Exception as e:
+        print(f"Error writing file {filepath}: {e}")
         return ""
