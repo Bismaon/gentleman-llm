@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from util import write_file
 from gentleman_llm import GentlemanLLM
 
 app = FastAPI()
 
 
-class GentlemanRequest(BaseModel):
+class AnalyzeRequest(BaseModel):
     """Request model for analyzing a file with GentlemanLLM.
 
     Args:
@@ -18,7 +19,7 @@ class GentlemanRequest(BaseModel):
 
 
 @app.post("/analyze")
-def analyze(req: GentlemanRequest) -> list[dict]:
+def analyze(req: AnalyzeRequest) -> list[dict]:
     """Analyzes a file using the specified LLM model.
 
     Args:
@@ -33,3 +34,27 @@ def analyze(req: GentlemanRequest) -> list[dict]:
         model = req.model
     service = GentlemanLLM(model=model, hf_token=req.hf_token)
     return service.analyze_file(req.filepath)
+
+
+class UploadRequest(BaseModel):
+    """Request model for uploading a file with GentlemanLLM.
+
+    Args:
+        BaseModel (BaseModel): Pydantic base model for request validation.
+    """
+
+    filename: str
+    content: str
+    
+@app.post("/upload")
+def upload(req: UploadRequest) -> bool:
+    """Uploads a file using the specified content.
+
+    Args:
+        req (UploadRequest): The request containing filename and content.
+
+    Returns:
+        bool: Result of the upload operation.
+    """
+    write_file(f"code/{req.filename}", req.content)
+    return True
