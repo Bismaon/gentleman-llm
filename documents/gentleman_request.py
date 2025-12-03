@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from util import write_file
 from gentleman_llm import GentlemanLLM
+import os
 
 app = FastAPI()
 
@@ -15,7 +16,7 @@ class AnalyzeRequest(BaseModel):
 
     filepath: str
     model: str | None
-    hf_token: str
+    hf_token: str |None
 
 
 @app.post("/analyze")
@@ -32,7 +33,11 @@ def analyze(req: AnalyzeRequest) -> list[dict]:
         model = "meta-llama/Llama-3.1-8B-Instruct"
     else:
         model = req.model
-    service = GentlemanLLM(model=model, hf_token=req.hf_token)
+    if req.hf_token is None:
+        hf_token = os.getenv("HF_TOKEN")
+    else:
+        hf_token = req.hf_token
+    service = GentlemanLLM(model=model, hf_token=hf_token)
     return service.analyze_file(req.filepath)
 
 
