@@ -1,52 +1,46 @@
-```mermaid
-graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Continue]
-    B -->|No| D[Stop]
-```
+# Analyse statique avec `ast` dans Gentleman-LLM
+
+Gentleman-LLM utilise le module Python **`ast`** pour analyser automatiquement le contenu d’un fichier Python.  L’objectif est d’extraire des informations structurées pour guider la LLM dans l’analyse des fonctions.
+
+## Qu’est-ce que le module `ast` ?
+
+`ast` signifie **Abstract Syntax Tree**, Python peut transformer du code en un arbre de nœuds, chaque nœud représentant un élément du langage :
+
+- `FunctionDef` → une fonction  
+- `Return` → une instruction return  
+- `Call` → un appel de fonction  
+- `Import` → un import  
+- `Name` → une variable  
+- etc.
+
+Cela permet d’analyser du code de façon sûre, et fiable.
+
+## AST utilisé dans Gentleman-LLM
+
+Voici l’ordre dans lequel on récupère les informations :
 
 ```mermaid
-pie title Which animals do you prefer as pets?
-    "Dogs" : 386
-    "Cats" : 85
-    "Rabbits" : 53
-    "Hamsters" : 101
+flowchart TD
+    A[Lire le fichier Python] --> B[ast.parse → Arbre syntaxique]
+    B --> C[Extraire les imports]
+    B --> D[Extraire les fonctions]
+    D --> E[Paramètres]
+    D --> F[Code source]
+    D --> G[Type de return]
+    B --> H[Appels entre fonctions]
+    H --> I[Relations calls / called_by]
+    I --> J[Résultat final envoyé au LLM]
 ```
 
-## Why it's useful in IFT3150:
-> For computer science projects, visualizing algorithms, data flow, or system architecture is key. Mermaid lets students easily include diagrams without needing external images.
+## Interaction LLM dans Gentleman-LLM
 
----
+Gentleman-LLM ne se contente pas d’analyser statiquement le code avec `ast`.  
+Une fois que les informations sont extraites, le système interroge une LLM pour :
 
-### ✅ `pymdown-extensions`
+- déduire les types de paramètres  
+- inférer des tags  
+- générer une description concise  
+- déterminer la catégorie de fonction  
+- ajuster le type de retour si nécessaire  
 
-This is a collection of **enhanced Markdown extensions**, mostly used with **Material for MkDocs**. It enables:
-
-- **Better code highlighting** with `superfences`
-- **Tabs** in Markdown (`tabbed`)
-- **Collapsible sections** (`details`)
-- **Checkboxes** for task lists (`tasklist`)
-- **Emoji support**
-- **Keyboard key notation** (`keys`)
-- And many more UX-friendly features
-
-#### 🔧 Example use cases:
-
-=== "Python"
-    ```python
-    def hello():
-        print("Hello, world!")
-    ```
-
-=== "Java"
-    ```java
-    public class Hello {
-        public static void main(String[] args) {
-            System.out.println("Hello, world!");
-        }
-    }
-    ```
-
-!!! note
-This is an important note for the reader.
-
+Le module responsable de cette étape est `GentlemanLLM`, qui communique avec un modèle OpenAI via `HuggingFace`.
