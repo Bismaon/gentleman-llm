@@ -266,19 +266,13 @@ def log_insertion_details(
     """
 
     logger.info(
-        f"Courses that exist in schedule, but not in repertoire:
- {schedule_diff}
-"
+        f"Courses that exist in schedule, but not in repertoire:\n {schedule_diff}\n"
     )
     logger.info(
-        f"Courses that exist in annuaire, but not in repertoire:
- {annuaire_diff}
-"
+        f"Courses that exist in annuaire, but not in repertoire:\n {annuaire_diff}\n"
     )
     logger.info(
-        f"Courses that exist in annuaire and schedule, but not in repertoire:
- {annuaire_diff.intersection(schedule_diff)}
-"
+        f"Courses that exist in annuaire and schedule, but not in repertoire:\n {annuaire_diff.intersection(schedule_diff)}\n"
     )
 
 

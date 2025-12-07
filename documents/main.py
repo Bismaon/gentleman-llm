@@ -9,5 +9,7 @@ if __name__ == "__main__":
         model="meta-llama/Llama-3.1-70B-Instruct",
         hf_token=os.getenv("HF_TOKEN")
     )
-    result = service.analyze_file("./code/master.py")
-    write_functions_to_json(result, "master.json")
+    names = ["master","__init__", "annuaire_parser","repertoire_parser","schedule_parser","udem_info_parser","xlsx2csv"] 
+    for name in names:
+        result = service.analyze_file(f"./code/{name}.py")
+        write_functions_to_json(result, f"{name}.json")

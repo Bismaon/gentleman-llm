@@ -1,0 +1,36 @@
+[
+    {
+        "file": "udem_info_parser.py"
+    },
+    {
+        "name": "CreateDict",
+        "parameters": [
+            [
+                "target_subset",
+                "str"
+            ],
+            [
+                "target_value",
+                "str"
+            ]
+        ],
+        "source": "def CreateDict(target_subset, target_value):\n    result_dictionnary = dict()\n    reverse_result_dictionnary = dict()\n    df2 = df.drop_duplicates(\n        subset=[target_subset], keep=\"first\", inplace=False, ignore_index=False\n    )\n    df2 = df2[[target_subset, target_value]]\n    for index, row in df2.iterrows():\n        result_dictionnary[row[target_subset]] = row[target_value]\n        if not row[target_value] in reverse_result_dictionnary:\n            reverse_result_dictionnary[row[target_value]] = list()\n        reverse_result_dictionnary[row[target_value]].append(row[target_subset])\n    result_dictionnary = dict(sorted(result_dictionnary.items()))\n    reverse_result_dictionnary = dict(sorted(reverse_result_dictionnary.items()))\n    return result_dictionnary, reverse_result_dictionnary",
+        "start_line": 11,
+        "end_line": 25,
+        "called_by": [],
+        "calls": [],
+        "description": "Creates a dictionary and its reverse mapping from a DataFrame subset.",
+        "tags": [
+            "dictionary creation",
+            "data filtering",
+            "data transformation",
+            "duplication removal",
+            "reverse mapping"
+        ],
+        "category": "PureUtility",
+        "return": [
+            "(result_dictionnary, reverse_result_dictionnary)",
+            "tuple"
+        ]
+    }
+]
