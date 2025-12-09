@@ -66,6 +66,3 @@ FUNCTION_TYPES_LIST = [
     "PureUtility",
     "Property",
 ]
-
-MAX_RETRY = 7
-MAX_EX_RETRY = 5
