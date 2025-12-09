@@ -1,58 +1,30 @@
 import './style.css'
 import { getElement } from '@protolabo/zendom';
 import { activateEditor } from './gentleman/index.js';
-import { analyze, uploadFile } from './api.js';
 import MODEL from './model/concept_lv0.json';
 import PROJECTION from './model/projection.json';
 
 import { API } from './../example/import_functions.js'
 
-uploadFile({
-  filename: "fichier_test.py",
-  content: `
-  import os
-
-def list_files(directory: str) -> list[str]:
-    """Lists all files in a given directory.
-
-    Args:
-        directory (str): The name of the directory
-
-    Returns:
-        list[str]: Lists of all file names in a directory.
-    """
-
-    try:
-        return [
-            f
-            for f in os.listdir(directory)
-            if os.path.isfile(os.path.join(directory, f))
-        ]
-    except FileNotFoundError:
-        print(f"Directory not found: {directory}")
-        return []
-    except Exception as e:
-        print(f"Error listing files in {directory}: {e}")
-        return []
-  `,
-})
-  .then(console.log)
-  .catch(console.error);
+const CodeForm = getElement('#codeForm') as HTMLFormElement;
+const fileNames =  []
+CodeForm.addEventListener('change', (event) => {
+  const input = event.target as HTMLInputElement;
+  if (input.files) {
+    const files = Array.from(input.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result;
+        console.log(`File Name: ${file.name}`);
+        console.log('Content:', content);
+      };
+      reader.readAsText(file);
+    });
+  }
+});
 
 const app = getElement('#app')!;
-const btnAnalyze = getElement('#btnAnalyze')!;
-
-btnAnalyze.addEventListener("click", (event) => {
-  analyze({
-    filename: "code/fichier_test.py",
-    token: "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"
-  })
-    .then(json => {
-      let instance = editor.createInstance("file");
-      API.fetchFunctions(json, editor, instance.concept)
-    })
-    .catch(console.error)
-})
 
 app.innerHTML = `
   <div>
@@ -62,13 +34,16 @@ app.innerHTML = `
   </div>
 `
 
-let editor = activateEditor(app)[0];
+// let editor = activateEditor(app)[0];
 
-editor.init({
-  config: {
-    header: false,
-  },
-  conceptModel: MODEL,
-  projectionModel: PROJECTION
-});
+// editor.init({
+//   config: {
+//     header: false,
+//   },
+//   conceptModel: MODEL,
+//   projectionModel: PROJECTION
+// });
 
+// let instance = editor.createInstance("file");
+// API.fetchFunctions(editor, instance.concept)
+// console.log(instance.concept);

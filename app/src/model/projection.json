@@ -8,40 +8,18 @@
             "container": {
                 "content": [
                     {
-                        "type": "container",
-                        "content": [
-                            {
-                                "type": "static",
-                                "static": {
-                                    "type": "text",
-                                    "content": "📄",
-                                    "style": {
-                                        "css": ["code-file-icon"]
-                                    }
-                                }
-                            },
-                            {
-                                "type": "static",
-                                "static": {
-                                    "type": "text",
-                                    "content": "File",
-                                    "style": {
-                                        "css": ["code-file-label"]
-                                    }
-                                }
-                            },
-                            {
-                                "type": "attribute",
-                                "name": "name",
-                                "style": {
-                                    "css": ["code-file-name"]
-                                }
-                            }
-                        ],
-                        "style": {
-                            "css": ["code-file-header"]
-                        },
-                        "layout": { "type": "flex", "orientation": "row", "wrappable": false }
+                        "type": "static",
+                        "static": {
+                            "type": "text",
+                            "content": "File"
+                        }
+                    },
+                    {
+                        "kind": "static",
+                        "type": "text",
+                        "content": { "type": "attribute"},
+                        "name": "name",
+                        "tag": "textbox-label"
                     },
                     {
                         "type": "attribute",
@@ -50,9 +28,15 @@
                     }
                 ],
                 "style": {
-                    "css": ["code-file"]
+                    "css": [
+                        "code-file"
+                    ]
                 },
-                "layout": { "type": "flex", "orientation": "column", "wrappable": false }
+                "layout": {
+                    "type": "flex",
+                    "orientation": "column",
+                    "wrappable": false
+                }
             }
         },
         {
@@ -60,57 +44,11 @@
             "tags": ["list-item"],
             "container": {
                 "content": [
-                      {
-                        "type": "container",
-                        "content": [
-                            {
-                                "type": "static",
-                                "static": {
-                                    "type": "text",
-                                    "content": "Function:",
-                                    "style": {
-                                        "css": ["function-label"]
-                                    }
-                                }
-                            },
-                            {
-                                "type": "attribute",
-                                "name": "name",
-                                "style": {
-                                    "css": ["function-name"]
-                                }
-                            }
-                        ],
-                        "layout": { "type": "flex", "orientation": "row" },
-                        "style": {
-                            "css": ["function-item-body"]
-                        }
-                    },
-                  
                     {
-                        "type": "container",
-                        "content": [
-                            {
-                                "type": "static",
-                                "static": {
-                                    "type": "text",
-                                    "content": "Category:",
-                                    "style": {
-                                        "css": ["function-label"]
-                                    }
-                                }
-                            },
-                            {
-                                "type": "attribute",
-                                "name": "category",
-                                "style": {
-                                    "css": ["function-description"]
-                                }
-                            }
-                        ],
-                        "layout": { "type": "flex", "orientation": "row" },
-                        "style": {
-                            "css": ["function-item-body"]
+                        "type": "static",
+                        "static": {
+                            "type": "Function",
+                            "content": ":"
                         }
                     },
                     {
@@ -118,11 +56,18 @@
                         "content": [
                             {
                                 "type": "attribute",
-                                "name": "description",
-                                "tag": "textarea",
-                                "style": {
-                                    "css": ["function-description"]
+                                "name": "name"
+                            },
+                            {
+                                "type": "static",
+                                "static": {
+                                    "type": "text",
+                                    "content": ":"
                                 }
+                            },
+                            {
+                                "type": "attribute",
+                                "name": "description"
                             }
                         ],
                         "layout": { "type": "flex", "orientation": "row" },
