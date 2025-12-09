@@ -9,4 +9,56 @@ body {
 
 #app > div {
   height: 100%;
+
+}
+
+.code-file-header {
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding: 6px 8px;
+  background-color: #f7f7f7;
+  display: flex;
+  flex-direction: row;
+}
+
+.code-file-name {
+  margin-left: 3px;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.code-file-name .field--textbox__input {
+  border: 0 none;
+  background: transparent;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+}
+
+
+.function-item {
+  position: relative;
+  margin-right: 12px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.function-name .field--textbox__input {
+  border: 0 none;
+  background: transparent;
+  font-weight: bold;
+  font-family: Consolas, 'Courier New', Courier, monospace;
+}
+
+
+.function-description {
+  width: 100%;
+}
+
+.function-description .field--textbox__input {
+  width: 100%;
+  padding: 8px 6px;
+  min-height: 60px;
+  font-size: 0.95em;
+  border: 0 none;
+  border-radius: 4px;
+  background-color: #f0f0f0;
 }

@@ -10,7 +10,7 @@
                     "target": {
                         "name": "string"
                     },
-                    "required": false
+                    "required": true
                 },
                 {
                     "name": "functions",
@@ -22,7 +22,7 @@
                             }
                         
                     },
-                    "required": false
+                    "required": true
                 }
             ]
         },

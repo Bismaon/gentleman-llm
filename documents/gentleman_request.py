@@ -1,10 +1,25 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from util import write_file
 from gentleman_llm import GentlemanLLM
 import os
 
-app = FastAPI()
+
+app = FastAPI(
+    title="Gentleman LLM API",
+    description="Local API for LLM analysis.",
+    version="1.0.0"
+)
+
+# Allow all for development (recommend tightening for production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # or ["http://localhost:3000"] etc.
+    allow_credentials=True,
+    allow_methods=["*"],          # GET, POST, PUT, DELETE...
+    allow_headers=["*"],          # Authorization, Content-Type...
+)
 
 
 class AnalyzeRequest(BaseModel):
@@ -38,6 +53,9 @@ def analyze(req: AnalyzeRequest) -> list[dict]:
     else:
         hf_token = req.hf_token
     service = GentlemanLLM(model=model, hf_token=hf_token)
+    print("filepath:" + req.filepath)
+    print("model:"  + model)
+    print("hf_token:"  +hf_token)
     return service.analyze_file(req.filepath)
 
 
