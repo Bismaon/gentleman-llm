@@ -47,8 +47,8 @@
                     {
                         "type": "static",
                         "static": {
-                            "type": "Function",
-                            "content": ":"
+                            "type": "text",
+                            "content": "Function:"
                         }
                     },
                     {

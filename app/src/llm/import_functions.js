@@ -1,11 +1,9 @@
-import FUNCTIONS_DATA from '../../documents/results/annuaire_parser_func_concepts_2.json';
-
-export const API = {
-    fetchFunctions(editor, fileConcept) {
+export const LLM_API = {
+    fetchFunctions(data, editor, fileConcept) {
         const functionsSet = fileConcept.getAttribute("functions").getTarget();
         functionsSet.removeAllElement();
 
-        FUNCTIONS_DATA.forEach(entry => {
+        data.forEach(entry => {
             if (entry.file) {
                 fileConcept.getAttribute("name").setValue(entry.file);
                 return;
