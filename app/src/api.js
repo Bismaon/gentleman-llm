@@ -1,11 +1,11 @@
-export  async function uploadFile({ filename, content }) {
+export  async function uploadFile({ filepath, content }) {
     const response = await fetch("http://localhost:8000/upload", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            filename,
+            filepath,
             content,
         }),
     });

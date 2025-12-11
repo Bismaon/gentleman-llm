@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from util import write_file
+from util import next_available_foldername, write_file
 from gentleman_llm import GentlemanLLM
 import os
 
@@ -48,11 +48,11 @@ class UploadRequest(BaseModel):
         BaseModel (BaseModel): Pydantic base model for request validation.
     """
 
-    filename: str
+    filepath: str
     content: str
     
 @app.post("/upload")
-def upload(req: UploadRequest) -> bool:
+def upload(req: UploadRequest) -> str:
     """Uploads a file using the specified content.
 
     Args:
@@ -61,5 +61,7 @@ def upload(req: UploadRequest) -> bool:
     Returns:
         bool: Result of the upload operation.
     """
-    write_file(f"code/{req.filename}", req.content)
-    return True
+    file_name = os.path.basename(req.filepath)
+    folder_name = next_available_foldername("code")
+    write_file(f"{folder_name}/{file_name}", req.content.strip())
+    return folder_name

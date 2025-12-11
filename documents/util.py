@@ -144,6 +144,34 @@ def next_available_filename(base_name: str, ext: str = "txt") -> str:
 
     return os.path.join(directory, f"{filename_root}_{next_version}.{ext}")
 
+def next_available_foldername(base_name: str) -> str:
+    """
+    Given a base folder name like 'my_folder', returns 'my_folder_1'
+    or increments until a free folder name is found.
+
+    Args:
+        base_name (str): The folder name.
+
+    Returns:
+        str: A new folder name with an incremented suffix.
+    """
+
+    directory = os.path.dirname(base_name) or "."
+    folder_root = os.path.basename(base_name)
+
+    pattern = re.compile(rf"^{re.escape(folder_root)}_(\d+)$")
+
+    existing_versions = []
+
+    for entry in os.listdir(directory):
+        full_path = os.path.join(directory, entry)
+        if os.path.isdir(full_path):
+            match = pattern.match(entry)
+            if match:
+                existing_versions.append(int(match.group(1)))
+
+    next_version = max(existing_versions, default=0) + 1
+    return os.path.join(directory, f"{folder_root}_{next_version}")
 
 def list_imports(node: ast, imports: list[str]):
     """Lists the imports of the file.
@@ -577,12 +605,13 @@ def in_list(value: str, list_str: list[str]) -> bool:
     return False
 
 
-def write_functions_to_json(func_with_file: list[dict], output: str) -> str:
+def write_functions_to_json(func_with_file: list[dict], output: str, dir:str|None = None) -> str:
     """Writes a list of function dictionaries to a JSON file.
 
     Args:
         functions (list[dict]): The list of function dictionaries to write.
         output (str): The output file path or base name for the JSON file.
+        dir (str|None): The directory to save the JSON file in. If None, uses current directory.
 
     Returns:
         str: The path to the written JSON file, or an empty string if writing failed.
@@ -590,7 +619,11 @@ def write_functions_to_json(func_with_file: list[dict], output: str) -> str:
     try:
         base_name = os.path.basename(output)
         base_name_no_ext = os.path.splitext(base_name)[0]
-        base_output_name = f"results/{base_name_no_ext}_func_concepts"
+        if dir is not None:
+            os.makedirs(dir, exist_ok=True)
+            base_output_name = f"{dir}/{base_name_no_ext}_func_concepts"
+        else:
+            base_output_name = f"results/{base_name_no_ext}_func_concepts"
         output_file = next_available_filename(base_output_name, ext="json")
         with open(output_file, "w", encoding="utf-8") as out:
             json.dump(func_with_file, out, indent=4, ensure_ascii=False)

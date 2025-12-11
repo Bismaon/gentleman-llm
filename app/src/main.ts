@@ -6,7 +6,7 @@ import PROJECTION from './model/projection.json';
 
 import { LLM_API } from './llm/import_functions.js'
 import { uploadFile, analyze } from './api.js'
-import FUNCTIONS_DATA from '../../documents/results/annuaire_parser_func_concepts_2.json';
+import FUNCTIONS_DATA from '../../documents/results/repertoire_parser_func_concepts_2.json'; // MODIFY THIS
 
 // const CodeForm = getElement('#codeForm') as HTMLFormElement;
 // const fileNames =  []
@@ -49,12 +49,13 @@ editor.init({
   projectionModel: PROJECTION
 });
 
+let folderName: string;
 
 btnUpload.addEventListener("click", (event) => {
-  const filePath = "/code/fichier_test.py"
+  const filepath = "/code/fichier_test.py"
 
   uploadFile({
-    filename: filePath,
+    filepath: filepath,
     content: `
 import os
 
@@ -81,12 +82,14 @@ def list_files(directory: str) -> list[str]:
         print(f"Error listing files in {directory}: {e}")
         return []
     `
-  }).then(console.log)
+  }).then(name =>{
+    folderName = name
+  })
     .catch(console.error)
 })
 
 btnAnalyze.addEventListener("click", (event) => {
-  const filePath = "/code/fichier_test.py"
+  const filePath = "/"+folderName+"/fichier_test.py"
   const token = "" // get from .env
   analyze({
     filepath: filePath,
